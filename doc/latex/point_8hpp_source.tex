@@ -1,0 +1,172 @@
+\hypertarget{point_8hpp_source}{}\doxysection{point.\+hpp}
+\label{point_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/point.hpp@{/home/jere/cpp\_visual\_slam/src/point.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef VISUAL\_SLAM\_POINT}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define VISUAL\_SLAM\_POINT}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include <Eigen/Dense>} }
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include "{}frame.hpp"{}}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include <tuple>}}
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{11 }
+\DoxyCodeLine{17 \textcolor{keyword}{class }\mbox{\hyperlink{classPoint3D}{Point3D}}\{}
+\DoxyCodeLine{18 \textcolor{keyword}{public}:}
+\DoxyCodeLine{23     \mbox{\hyperlink{classPoint3D_a4cdd58a3669fbaad3e5ed7c775b40793}{Point3D}}(\textcolor{keywordtype}{int} ID, cv::Mat location\_3d) : \mbox{\hyperlink{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}{ID\_}}(ID), \mbox{\hyperlink{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}{location\_3d\_}}(location\_3d) \{}
+\DoxyCodeLine{24         \textcolor{comment}{//std::cout << "{}Point Base constructor called "{} << std::endl;}}
+\DoxyCodeLine{25         \mbox{\hyperlink{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}{ID\_}} = ID;}
+\DoxyCodeLine{26         \mbox{\hyperlink{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}{location\_3d\_}} = location\_3d;}
+\DoxyCodeLine{27     \}}
+\DoxyCodeLine{28 }
+\DoxyCodeLine{29 }
+\DoxyCodeLine{33     \textcolor{comment}{// Point3D(const Point3D\& p) \{}}
+\DoxyCodeLine{34     \textcolor{comment}{//     //std::cout << "{}Point Copy constructor called "{} << std::endl;}}
+\DoxyCodeLine{35     \textcolor{comment}{//     ID\_ = p.ID\_;}}
+\DoxyCodeLine{36     \textcolor{comment}{//     location\_3d\_ = p.location\_3d\_;}}
+\DoxyCodeLine{37     \textcolor{comment}{//     frames\_ = p.frames\_;}}
+\DoxyCodeLine{38     \textcolor{comment}{// \}}}
+\DoxyCodeLine{39     }
+\DoxyCodeLine{40     }
+\DoxyCodeLine{45     \textcolor{comment}{//Point3D\& operator=(const Point3D\& t)}}
+\DoxyCodeLine{46     \textcolor{comment}{//\{}}
+\DoxyCodeLine{47         \textcolor{comment}{//std::cout << "{}Point Assignment operator called "{} << std::endl;}}
+\DoxyCodeLine{48        \textcolor{comment}{// return *this;}}
+\DoxyCodeLine{49     \textcolor{comment}{//\}}}
+\DoxyCodeLine{50     }
+\DoxyCodeLine{51     \textcolor{comment}{// destructor}}
+\DoxyCodeLine{52     \textcolor{comment}{//\string~Point3D();}}
+\DoxyCodeLine{53 }
+\DoxyCodeLine{58     \textcolor{keywordtype}{int} \mbox{\hyperlink{classPoint3D_ae4d0536b13bc48dcf64f649505c8de0c}{GetID}}() \{}
+\DoxyCodeLine{59         \textcolor{keywordflow}{return} \mbox{\hyperlink{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}{ID\_}};}
+\DoxyCodeLine{60     \}}
+\DoxyCodeLine{61     }
+\DoxyCodeLine{66     std::shared\_ptr<Frame> \mbox{\hyperlink{classPoint3D_a2735191cc122810a943c67f41d273bc2}{GetFrame}}(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{67         \textcolor{keywordflow}{if} (\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.find(frame\_id) == \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.end()) \{}
+\DoxyCodeLine{68         \textcolor{comment}{// not found}}
+\DoxyCodeLine{69         \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"{}Tried to accessing non-\/existing frame in point to fetch frame pointer"{}});}
+\DoxyCodeLine{70         \textcolor{keywordflow}{return} \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{71         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{72         \textcolor{comment}{// found}}
+\DoxyCodeLine{73             \textcolor{keyword}{auto} it = \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.find(frame\_id);}
+\DoxyCodeLine{74             \textcolor{comment}{// return second element from map. ie. return value. not all values but first value that is frame pointer}}
+\DoxyCodeLine{75             \textcolor{keywordflow}{return} std::get<0>(it-\/>second);}
+\DoxyCodeLine{76         \}}
+\DoxyCodeLine{77     \}}
+\DoxyCodeLine{78 }
+\DoxyCodeLine{79     cv::Mat GetFrame2(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{80         \textcolor{keywordflow}{if} (\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.find(frame\_id) == \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.end()) \{}
+\DoxyCodeLine{81         \textcolor{comment}{// not found}}
+\DoxyCodeLine{82         \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"{}Tried to accessing non-\/existing frame in point to fetch image point (ver2)"{}});}
+\DoxyCodeLine{83         cv::Mat ret;}
+\DoxyCodeLine{84         \textcolor{keywordflow}{return} ret;}
+\DoxyCodeLine{85         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{86         \textcolor{comment}{// found}}
+\DoxyCodeLine{87             \textcolor{keyword}{auto} it = \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.find(frame\_id);}
+\DoxyCodeLine{88             \textcolor{comment}{// return second element from map. ie. return value. not all values but second value that is image point}}
+\DoxyCodeLine{89             \textcolor{keywordflow}{return} std::get<1>(it-\/>second);}
+\DoxyCodeLine{90         \}}
+\DoxyCodeLine{91     \}}
+\DoxyCodeLine{92 }
+\DoxyCodeLine{93 }
+\DoxyCodeLine{98     cv::Mat \mbox{\hyperlink{classPoint3D_a5d0051b8738ec1a952c500a45d25d32e}{GetImagePoint}}(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{99         \textcolor{keywordflow}{if} (\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.find(frame\_id) == \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.end()) \{}
+\DoxyCodeLine{100         \textcolor{comment}{// not found}}
+\DoxyCodeLine{101         \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"{}Tried to access non-\/existing frame in point to fetch image point"{}});}
+\DoxyCodeLine{102         cv::Mat ret;}
+\DoxyCodeLine{103         \textcolor{keywordflow}{return} ret;}
+\DoxyCodeLine{104         \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{105         \textcolor{comment}{// found}}
+\DoxyCodeLine{106             \textcolor{keyword}{auto} it = \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.find(frame\_id);}
+\DoxyCodeLine{107             \textcolor{comment}{// return second element from map. ie. return value. not all values but second value that is image point}}
+\DoxyCodeLine{108             \textcolor{keywordflow}{return} std::get<1>(it-\/>second);}
+\DoxyCodeLine{109         \}}
+\DoxyCodeLine{110     \}}
+\DoxyCodeLine{111 }
+\DoxyCodeLine{112     }
+\DoxyCodeLine{113     std::map<int, std::tuple<std::shared\_ptr<Frame>, cv::Mat, cv::Mat>> SubsetOfFrames(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{114         std::map<int, std::tuple<std::shared\_ptr<Frame>, cv::Mat, cv::Mat>> ret;}
+\DoxyCodeLine{115         \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.begin(); it != \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.end(); ++it) \{}
+\DoxyCodeLine{116             \textcolor{keywordflow}{if} (frame\_id == it-\/>first) \{}
+\DoxyCodeLine{117                 ret[frame\_id] = std::tuple(std::get<0>(it-\/>second), std::get<1>(it-\/>second), std::get<2>(it-\/>second));}
+\DoxyCodeLine{118                 \textcolor{keywordflow}{return} ret;}
+\DoxyCodeLine{119             \}}
+\DoxyCodeLine{120         \}}
+\DoxyCodeLine{121     \}}
+\DoxyCodeLine{122     }
+\DoxyCodeLine{128     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPoint3D_aa8e98e3ab5cf7bd9b75e3f666ecbf68f}{AddFrame}}(std::shared\_ptr<Frame> frame, cv::Mat uv, cv::Mat descriptor) \{}
+\DoxyCodeLine{129         \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}[frame-\/>GetID()] = std::tuple(frame, uv, descriptor);}
+\DoxyCodeLine{130     \}}
+\DoxyCodeLine{131 }
+\DoxyCodeLine{135     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPoint3D_a555c32d1f135e35a328d502785f1a143}{UpdatePoint}}(cv::Mat new\_location) \{}
+\DoxyCodeLine{136         \mbox{\hyperlink{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}{location\_3d\_}} = new\_location;}
+\DoxyCodeLine{137     \}}
+\DoxyCodeLine{138 }
+\DoxyCodeLine{143     \textcolor{keywordtype}{bool} \mbox{\hyperlink{classPoint3D_a8b2f57456c4a17721bc6aaa471438af4}{IsVisibleTo}}(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{144         \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.begin(); it != \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.end(); ++it) \{}
+\DoxyCodeLine{145             \textcolor{keywordflow}{if} (frame\_id == it-\/>first) \{}
+\DoxyCodeLine{146                 \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{147             \}}
+\DoxyCodeLine{148         \}}
+\DoxyCodeLine{149         \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{150     \}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{156     \textcolor{comment}{// get imagepoint and feature with frame id (1x)}}
+\DoxyCodeLine{157     std::tuple<cv::Mat, cv::Mat> \mbox{\hyperlink{classPoint3D_af17b6d126555906a431d0d4480fcaf8b}{GetImagePointAndFeature}}(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{158         \textcolor{keywordflow}{if}(\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.find(frame\_id)==\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.end())\{}
+\DoxyCodeLine{159             std::cout << \textcolor{stringliteral}{"{}Unknown frame: "{}} << std::to\_string(frame\_id) << \textcolor{stringliteral}{"{} to point: "{}} << std::to\_string(\mbox{\hyperlink{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}{ID\_}}) << std::endl;}
+\DoxyCodeLine{160             std::tuple<cv::Mat, cv::Mat> ret;}
+\DoxyCodeLine{161             \textcolor{keywordflow}{return} ret; \textcolor{comment}{// return empty}}
+\DoxyCodeLine{162         \}}
+\DoxyCodeLine{163         std::tuple<std::shared\_ptr<Frame>, cv::Mat, cv::Mat> temp = \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}[frame\_id];}
+\DoxyCodeLine{164         std::tuple<cv::Mat, cv::Mat> ret = std::make\_tuple(std::get<1>(temp), std::get<2>(temp));}
+\DoxyCodeLine{165         \textcolor{keywordflow}{return} ret;}
+\DoxyCodeLine{166     \}}
+\DoxyCodeLine{167  }
+\DoxyCodeLine{171     cv::Mat \mbox{\hyperlink{classPoint3D_aef1a90d2a053161bc8660ee56dcbf2a3}{Get3dPoint}}() \{}
+\DoxyCodeLine{172         \textcolor{keywordflow}{return} \mbox{\hyperlink{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}{location\_3d\_}};}
+\DoxyCodeLine{173     \}}
+\DoxyCodeLine{174 }
+\DoxyCodeLine{178     \textcolor{keywordtype}{int} \mbox{\hyperlink{classPoint3D_a15c4223df6268afdd307aae131cfab24}{GetNVisibleFrames}}() \{}
+\DoxyCodeLine{179         \textcolor{keywordflow}{return} \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.size();}
+\DoxyCodeLine{180     \}}
+\DoxyCodeLine{184     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPoint3D_a5d2590957f55832e87554023c684aecf}{SetFrames}}(std::map<\textcolor{keywordtype}{int}, std::tuple<std::shared\_ptr<Frame>, cv::Mat, cv::Mat>> subset\_of\_frames) \{}
+\DoxyCodeLine{185         \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}} = subset\_of\_frames;}
+\DoxyCodeLine{186     \}}
+\DoxyCodeLine{187 }
+\DoxyCodeLine{191     std::map<int, std::tuple<std::shared\_ptr<Frame>, cv::Mat, cv::Mat>>\& \mbox{\hyperlink{classPoint3D_a54fd4f1e5b2b3aef36c2e3ab8d06b447}{GetFrames}}()\{}
+\DoxyCodeLine{192         \textcolor{keywordflow}{return} \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}};}
+\DoxyCodeLine{193     \}}
+\DoxyCodeLine{197     \textcolor{keywordtype}{bool} \mbox{\hyperlink{classPoint3D_a13dbff1422ab6fe7c56ce696e1c4dc9f}{IsBad}}() \{}
+\DoxyCodeLine{198         \textcolor{keywordflow}{if} (\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.size() < 3) \{}
+\DoxyCodeLine{199             \textcolor{keywordflow}{return} \textcolor{keyword}{true};}
+\DoxyCodeLine{200         \}}
+\DoxyCodeLine{201         \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{202             \textcolor{keywordflow}{return} \textcolor{keyword}{false};}
+\DoxyCodeLine{203         \}}
+\DoxyCodeLine{204     \}}
+\DoxyCodeLine{205 }
+\DoxyCodeLine{206     \textcolor{keyword}{friend} std::ostream\& operator<<(std::ostream\& os, \textcolor{keyword}{const} \mbox{\hyperlink{classPoint3D}{Point3D}}\& p);}
+\DoxyCodeLine{207 }
+\DoxyCodeLine{208 \textcolor{keyword}{private}:}
+\DoxyCodeLine{209     \textcolor{keywordtype}{int} \mbox{\hyperlink{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}{ID\_}}; }
+\DoxyCodeLine{210     cv::Mat \mbox{\hyperlink{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}{location\_3d\_}}; }
+\DoxyCodeLine{211     \textcolor{comment}{// 3D location of thhe point}}
+\DoxyCodeLine{212     \textcolor{comment}{// map(key=Frame\_ID, values = frame, image\_point, descriptrors)}}
+\DoxyCodeLine{213     std::map<int, std::tuple<std::shared\_ptr<Frame>, cv::Mat, cv::Mat>> \mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}; }
+\DoxyCodeLine{214 \};}
+\DoxyCodeLine{215 }
+\DoxyCodeLine{216 std::ostream\& operator<<(std::ostream\& os, \textcolor{keyword}{const} \mbox{\hyperlink{classPoint3D}{Point3D}}\& p)\{}
+\DoxyCodeLine{217     os << \textcolor{stringliteral}{"{}Point with ID: "{}} << p.\mbox{\hyperlink{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}{ID\_}} << \textcolor{stringliteral}{"{}, 3d location: "{}} << p.\mbox{\hyperlink{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}{location\_3d\_}} << \textcolor{stringliteral}{"{}, And Point-\/>Frame correspondences:\(\backslash\)n"{}};}
+\DoxyCodeLine{218     \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it2 = p.\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.begin(); it2 != p.\mbox{\hyperlink{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}{frames\_}}.end(); ++it2)\{}
+\DoxyCodeLine{219         os << \textcolor{stringliteral}{"{}Frame id: "{}} << it2-\/>first << std::flush << \textcolor{stringliteral}{"{}, uv: "{}} << std::get<1>(it2-\/>second) << \textcolor{stringliteral}{"{}\(\backslash\)n"{}} << std::flush;}
+\DoxyCodeLine{220     \}}
+\DoxyCodeLine{221     \textcolor{keywordflow}{return} os;}
+\DoxyCodeLine{222 \};}
+\DoxyCodeLine{223 }
+\DoxyCodeLine{224 }
+\DoxyCodeLine{225 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

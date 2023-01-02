@@ -1,0 +1,24 @@
+main.\+cpp
+\begin{DoxyItemize}
+\item Main program execution.
+\end{DoxyItemize}
+
+\mbox{\hyperlink{map_8hpp_source}{map.\+hpp}}
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{classMap}{Map}} object holds maps (std\+::map), with pointers (std\+::shared\+\_\+ptr) to \mbox{\hyperlink{classFrame}{Frame}} and \mbox{\hyperlink{classPoint3D}{Point3D}} objects as values and corresponding frame ids and point ids as keys. \mbox{\hyperlink{classMap}{Map}} also contains the main algorithmic workload
+\end{DoxyItemize}
+
+\mbox{\hyperlink{point_8hpp_source}{point.\+hpp}}
+\begin{DoxyItemize}
+\item Point object stores estimated 3D location and map (std\+::map) with correspondences to imagepoints and features in \mbox{\hyperlink{classFrame}{Frame}} objects that see this map point.
+\end{DoxyItemize}
+
+\mbox{\hyperlink{frame_8hpp_source}{frame.\+hpp}}
+\begin{DoxyItemize}
+\item \mbox{\hyperlink{classFrame}{Frame}} object stores information processed from individual video frames. Also includes \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} and Feature Extractor classes.
+\end{DoxyItemize}
+
+\mbox{\hyperlink{helper__functions_8hpp_source}{helper\+\_\+functions.\+hpp}}
+\begin{DoxyItemize}
+\item Various helper functions for repetitive procedures like slicing of matrices and conversions to different matrix types for cv\+::\+Mat and Eigen. 
+\end{DoxyItemize}

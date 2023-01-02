@@ -1,0 +1,251 @@
+\hypertarget{classPoint3D}{}\doxysection{Point3D Class Reference}
+\label{classPoint3D}\index{Point3D@{Point3D}}
+
+
+Point class is used to store point id, 3D point locations and corresponding frame information.  
+
+
+
+
+{\ttfamily \#include $<$point.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classPoint3D_a4cdd58a3669fbaad3e5ed7c775b40793}{Point3D}} (int ID, cv\+::\+Mat location\+\_\+3d)
+\item 
+int \mbox{\hyperlink{classPoint3D_ae4d0536b13bc48dcf64f649505c8de0c}{Get\+ID}} ()
+\begin{DoxyCompactList}\small\item\em method Get\+ID returns point\+\_\+id \end{DoxyCompactList}\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ \mbox{\hyperlink{classPoint3D_a2735191cc122810a943c67f41d273bc2}{Get\+Frame}} (int frame\+\_\+id)
+\item 
+\mbox{\Hypertarget{classPoint3D_a7ec03224a59f551fb91846c893322087}\label{classPoint3D_a7ec03224a59f551fb91846c893322087}} 
+cv\+::\+Mat {\bfseries Get\+Frame2} (int frame\+\_\+id)
+\item 
+cv\+::\+Mat \mbox{\hyperlink{classPoint3D_a5d0051b8738ec1a952c500a45d25d32e}{Get\+Image\+Point}} (int frame\+\_\+id)
+\item 
+\mbox{\Hypertarget{classPoint3D_a4eeadbc8e5e1f5327bb931b7d4d8af35}\label{classPoint3D_a4eeadbc8e5e1f5327bb931b7d4d8af35}} 
+std\+::map$<$ int, std\+::tuple$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$, cv\+::\+Mat, cv\+::\+Mat $>$ $>$ {\bfseries Subset\+Of\+Frames} (int frame\+\_\+id)
+\item 
+void \mbox{\hyperlink{classPoint3D_aa8e98e3ab5cf7bd9b75e3f666ecbf68f}{Add\+Frame}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ frame, cv\+::\+Mat uv, cv\+::\+Mat descriptor)
+\item 
+void \mbox{\hyperlink{classPoint3D_a555c32d1f135e35a328d502785f1a143}{Update\+Point}} (cv\+::\+Mat new\+\_\+location)
+\item 
+bool \mbox{\hyperlink{classPoint3D_a8b2f57456c4a17721bc6aaa471438af4}{Is\+Visible\+To}} (int frame\+\_\+id)
+\item 
+std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat $>$ \mbox{\hyperlink{classPoint3D_af17b6d126555906a431d0d4480fcaf8b}{Get\+Image\+Point\+And\+Feature}} (int frame\+\_\+id)
+\item 
+cv\+::\+Mat \mbox{\hyperlink{classPoint3D_aef1a90d2a053161bc8660ee56dcbf2a3}{Get3d\+Point}} ()
+\item 
+int \mbox{\hyperlink{classPoint3D_a15c4223df6268afdd307aae131cfab24}{Get\+NVisible\+Frames}} ()
+\item 
+void \mbox{\hyperlink{classPoint3D_a5d2590957f55832e87554023c684aecf}{Set\+Frames}} (std\+::map$<$ int, std\+::tuple$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$, cv\+::\+Mat, cv\+::\+Mat $>$ $>$ subset\+\_\+of\+\_\+frames)
+\item 
+std\+::map$<$ int, std\+::tuple$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$, cv\+::\+Mat, cv\+::\+Mat $>$ $>$ \& \mbox{\hyperlink{classPoint3D_a54fd4f1e5b2b3aef36c2e3ab8d06b447}{Get\+Frames}} ()
+\item 
+bool \mbox{\hyperlink{classPoint3D_a13dbff1422ab6fe7c56ce696e1c4dc9f}{Is\+Bad}} ()
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}\label{classPoint3D_a161d54dea046995145c0d7dbdcf1761f}} 
+int {\bfseries ID\+\_\+}
+\begin{DoxyCompactList}\small\item\em unique ID that defines the point (Bool) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}\label{classPoint3D_a37c59f2c53d9adc30af58a1cdbc4042a}} 
+cv\+::\+Mat {\bfseries location\+\_\+3d\+\_\+}
+\begin{DoxyCompactList}\small\item\em 3D location of thhe point (cv\+::\+Mat) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}\label{classPoint3D_a3c25cd96d0da91516bf870481464e7ae}} 
+std\+::map$<$ int, std\+::tuple$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$, cv\+::\+Mat, cv\+::\+Mat $>$ $>$ {\bfseries frames\+\_\+}
+\begin{DoxyCompactList}\small\item\em map of frames that see this particular point object (std\+::map\texorpdfstring{$<$}{<}int, std\+::tuple\texorpdfstring{$<$}{<}std\+::shared\+\_\+ptr$<$\+Frame$>$, cv\+::\+Mat, cv\+::\+Mat\texorpdfstring{$>$}{>}\texorpdfstring{$>$}{>}) // map of frames that see this particular point object \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPoint3D_aafac82ac91d945986ee8ada23e5f88ef}\label{classPoint3D_aafac82ac91d945986ee8ada23e5f88ef}} 
+std\+::ostream \& {\bfseries operator$<$$<$} (std\+::ostream \&os, const \mbox{\hyperlink{classPoint3D}{Point3D}} \&p)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Point class is used to store point id, 3D point locations and corresponding frame information. 
+
+\begin{DoxyAuthor}{Author}
+Jere Knuutinen 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+December 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classPoint3D_a4cdd58a3669fbaad3e5ed7c775b40793}\label{classPoint3D_a4cdd58a3669fbaad3e5ed7c775b40793}} 
+\index{Point3D@{Point3D}!Point3D@{Point3D}}
+\index{Point3D@{Point3D}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{Point3D()}{Point3D()}}
+{\footnotesize\ttfamily Point3\+D\+::\+Point3D (\begin{DoxyParamCaption}\item[{int}]{ID,  }\item[{cv\+::\+Mat}]{location\+\_\+3d }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Constructor 
+\begin{DoxyParams}{Parameters}
+{\em ID} & -\/ Unique identifier of the point when added \\
+\hline
+{\em location\+\_\+3d\+\_\+} & -\/ 3D location of the point \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPoint3D_aa8e98e3ab5cf7bd9b75e3f666ecbf68f}\label{classPoint3D_aa8e98e3ab5cf7bd9b75e3f666ecbf68f}} 
+\index{Point3D@{Point3D}!AddFrame@{AddFrame}}
+\index{AddFrame@{AddFrame}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{AddFrame()}{AddFrame()}}
+{\footnotesize\ttfamily void Point3\+D\+::\+Add\+Frame (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{frame,  }\item[{cv\+::\+Mat}]{uv,  }\item[{cv\+::\+Mat}]{descriptor }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Add\+Frame adds frame to frames\+\_\+ map container 
+\begin{DoxyParams}{Parameters}
+{\em frame} & std\+::shared\+\_\+ptr corresponding to frame object \\
+\hline
+{\em uv} & cv\+::\+Mat corresponding to image points \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+cv\+::\+Mat corresponding to descriptors 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_aef1a90d2a053161bc8660ee56dcbf2a3}\label{classPoint3D_aef1a90d2a053161bc8660ee56dcbf2a3}} 
+\index{Point3D@{Point3D}!Get3dPoint@{Get3dPoint}}
+\index{Get3dPoint@{Get3dPoint}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{Get3dPoint()}{Get3dPoint()}}
+{\footnotesize\ttfamily cv\+::\+Mat Point3\+D\+::\+Get3d\+Point (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Get3d\+Point getter for getting 3d location \begin{DoxyReturn}{Returns}
+cv\+::\+Mat corresponding to 3d point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_a2735191cc122810a943c67f41d273bc2}\label{classPoint3D_a2735191cc122810a943c67f41d273bc2}} 
+\index{Point3D@{Point3D}!GetFrame@{GetFrame}}
+\index{GetFrame@{GetFrame}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{GetFrame()}{GetFrame()}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ Point3\+D\+::\+Get\+Frame (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Get\+Frame gets frame with frame id 
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & int corresponding to frame id \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+shared pointer corresponding to frame 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_a54fd4f1e5b2b3aef36c2e3ab8d06b447}\label{classPoint3D_a54fd4f1e5b2b3aef36c2e3ab8d06b447}} 
+\index{Point3D@{Point3D}!GetFrames@{GetFrames}}
+\index{GetFrames@{GetFrames}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{GetFrames()}{GetFrames()}}
+{\footnotesize\ttfamily std\+::map$<$ int, std\+::tuple$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$, cv\+::\+Mat, cv\+::\+Mat $>$ $>$ \& Point3\+D\+::\+Get\+Frames (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Get\+Frames getter for getting frames \begin{DoxyReturn}{Returns}
+std\+::map\texorpdfstring{$<$}{<}int, std\+::tuple\texorpdfstring{$<$}{<}std\+::shared\+\_\+ptr$<$\+Frame$>$ 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_ae4d0536b13bc48dcf64f649505c8de0c}\label{classPoint3D_ae4d0536b13bc48dcf64f649505c8de0c}} 
+\index{Point3D@{Point3D}!GetID@{GetID}}
+\index{GetID@{GetID}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{GetID()}{GetID()}}
+{\footnotesize\ttfamily int Point3\+D\+::\+Get\+ID (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Get\+ID returns point\+\_\+id 
+
+Copy constructor 
+\begin{DoxyParams}{Parameters}
+{\em p} & constant reference to point object method operator= performs copy assignment \\
+\hline
+{\em t} & constant reference to point object \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+reference to t 
+
+int type corresponding to frame\+\_\+id 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_a5d0051b8738ec1a952c500a45d25d32e}\label{classPoint3D_a5d0051b8738ec1a952c500a45d25d32e}} 
+\index{Point3D@{Point3D}!GetImagePoint@{GetImagePoint}}
+\index{GetImagePoint@{GetImagePoint}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{GetImagePoint()}{GetImagePoint()}}
+{\footnotesize\ttfamily cv\+::\+Mat Point3\+D\+::\+Get\+Image\+Point (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Get\+Image\+Point gets image point with frame\+\_\+id 
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & int corresponding to frame id \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+cv\+::\+Mat image points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_af17b6d126555906a431d0d4480fcaf8b}\label{classPoint3D_af17b6d126555906a431d0d4480fcaf8b}} 
+\index{Point3D@{Point3D}!GetImagePointAndFeature@{GetImagePointAndFeature}}
+\index{GetImagePointAndFeature@{GetImagePointAndFeature}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{GetImagePointAndFeature()}{GetImagePointAndFeature()}}
+{\footnotesize\ttfamily std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat $>$ Point3\+D\+::\+Get\+Image\+Point\+And\+Feature (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Get\+Image\+Point\+And\+Feature gets imagepoint and feature with frame id 
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & id corresponding to frame idetifier \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+std\+::tuple$<$cv\+::\+Mat, cv\+::\+Mat$>$ corresponding to image point and descriptors 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_a15c4223df6268afdd307aae131cfab24}\label{classPoint3D_a15c4223df6268afdd307aae131cfab24}} 
+\index{Point3D@{Point3D}!GetNVisibleFrames@{GetNVisibleFrames}}
+\index{GetNVisibleFrames@{GetNVisibleFrames}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{GetNVisibleFrames()}{GetNVisibleFrames()}}
+{\footnotesize\ttfamily int Point3\+D\+::\+Get\+NVisible\+Frames (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Get\+NVisible\+Frames getter for getting number of frames that see the point \begin{DoxyReturn}{Returns}
+cv\+::\+Mat corresponding to 3d point 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_a13dbff1422ab6fe7c56ce696e1c4dc9f}\label{classPoint3D_a13dbff1422ab6fe7c56ce696e1c4dc9f}} 
+\index{Point3D@{Point3D}!IsBad@{IsBad}}
+\index{IsBad@{IsBad}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{IsBad()}{IsBad()}}
+{\footnotesize\ttfamily bool Point3\+D\+::\+Is\+Bad (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Is\+Bad for determining if point should be used \begin{DoxyReturn}{Returns}
+bool if point is seen with less than 3 frames return true, else false 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_a8b2f57456c4a17721bc6aaa471438af4}\label{classPoint3D_a8b2f57456c4a17721bc6aaa471438af4}} 
+\index{Point3D@{Point3D}!IsVisibleTo@{IsVisibleTo}}
+\index{IsVisibleTo@{IsVisibleTo}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{IsVisibleTo()}{IsVisibleTo()}}
+{\footnotesize\ttfamily bool Point3\+D\+::\+Is\+Visible\+To (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Is\+Visible\+To checks if the frame with frame\+\_\+id sees this point 
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & id corresponding to frame idetifier \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+bool true if frame sees that point, else false 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classPoint3D_a5d2590957f55832e87554023c684aecf}\label{classPoint3D_a5d2590957f55832e87554023c684aecf}} 
+\index{Point3D@{Point3D}!SetFrames@{SetFrames}}
+\index{SetFrames@{SetFrames}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{SetFrames()}{SetFrames()}}
+{\footnotesize\ttfamily void Point3\+D\+::\+Set\+Frames (\begin{DoxyParamCaption}\item[{std\+::map$<$ int, std\+::tuple$<$ std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$, cv\+::\+Mat, cv\+::\+Mat $>$ $>$}]{subset\+\_\+of\+\_\+frames }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Set\+Frames sets sub set of frames 
+\begin{DoxyParams}{Parameters}
+{\em std\+::map$<$int,std\+::tuple$<$std\+::shared\+\_\+ptr$<$\+Frame$>$,cv\+::\+Mat,cv\+::\+Mat$>$$>$} & map corresponding to frame information \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPoint3D_a555c32d1f135e35a328d502785f1a143}\label{classPoint3D_a555c32d1f135e35a328d502785f1a143}} 
+\index{Point3D@{Point3D}!UpdatePoint@{UpdatePoint}}
+\index{UpdatePoint@{UpdatePoint}!Point3D@{Point3D}}
+\doxysubsubsection{\texorpdfstring{UpdatePoint()}{UpdatePoint()}}
+{\footnotesize\ttfamily void Point3\+D\+::\+Update\+Point (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{new\+\_\+location }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Method Update\+Point updates 3d point location 
+\begin{DoxyParams}{Parameters}
+{\em uv} & cv\+::\+Mat corresponding to new 3d location \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/jere/cpp\+\_\+visual\+\_\+slam/src/point.\+hpp\end{DoxyCompactItemize}

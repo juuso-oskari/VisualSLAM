@@ -1,0 +1,85 @@
+\hypertarget{classScreen}{}\doxysection{Screen Class Reference}
+\label{classScreen}\index{Screen@{Screen}}
+
+
+The screen class is used to interface with the viewer output. It manages the state of the UI, holds handles to the Open\+GL buffers used by Easy3D, and other things required to keep the visualization running. The screen class does NOT keep track of the point clouds used by the program. That responsibility is in the \mbox{\hyperlink{classPointClouds}{Point\+Clouds}} class.  
+
+
+
+
+{\ttfamily \#include $<$screen.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classScreen_a80504df47f6d60a4f10b915458b80940}{Screen}} (std\+::string title)
+\begin{DoxyCompactList}\small\item\em Initialize Easy3D and construct a new \mbox{\hyperlink{classScreen}{Screen}} object. This will also do some configuration to optimize the output. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classScreen_ab9377d9098aff0b9af221e728f6601a5}{Register\+Point\+Cloud}} (easy3d\+::\+Point\+Cloud $\ast$cloud)
+\begin{DoxyCompactList}\small\item\em Registers a point cloud to be rendered using this screen object. Any updates sent to the cloud will now be shown on screen. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{classScreen_a36ed40c7c9824e39051a5d857a529f42}{Run}} ()
+\begin{DoxyCompactList}\small\item\em Blocking call; boots up the visualizer and runs until it completes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classScreen_a1b3c29147a28bd3e08b2f254330e0ecd}\label{classScreen_a1b3c29147a28bd3e08b2f254330e0ecd}} 
+easy3d\+::\+Viewer $\ast$ {\bfseries viewer\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+The screen class is used to interface with the viewer output. It manages the state of the UI, holds handles to the Open\+GL buffers used by Easy3D, and other things required to keep the visualization running. The screen class does NOT keep track of the point clouds used by the program. That responsibility is in the \mbox{\hyperlink{classPointClouds}{Point\+Clouds}} class. 
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classScreen_a80504df47f6d60a4f10b915458b80940}\label{classScreen_a80504df47f6d60a4f10b915458b80940}} 
+\index{Screen@{Screen}!Screen@{Screen}}
+\index{Screen@{Screen}!Screen@{Screen}}
+\doxysubsubsection{\texorpdfstring{Screen()}{Screen()}}
+{\footnotesize\ttfamily Screen\+::\+Screen (\begin{DoxyParamCaption}\item[{std\+::string}]{title }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+
+
+Initialize Easy3D and construct a new \mbox{\hyperlink{classScreen}{Screen}} object. This will also do some configuration to optimize the output. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em title} & The title of the visualizer window \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classScreen_ab9377d9098aff0b9af221e728f6601a5}\label{classScreen_ab9377d9098aff0b9af221e728f6601a5}} 
+\index{Screen@{Screen}!RegisterPointCloud@{RegisterPointCloud}}
+\index{RegisterPointCloud@{RegisterPointCloud}!Screen@{Screen}}
+\doxysubsubsection{\texorpdfstring{RegisterPointCloud()}{RegisterPointCloud()}}
+{\footnotesize\ttfamily void Screen\+::\+Register\+Point\+Cloud (\begin{DoxyParamCaption}\item[{easy3d\+::\+Point\+Cloud $\ast$}]{cloud }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Registers a point cloud to be rendered using this screen object. Any updates sent to the cloud will now be shown on screen. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em cloud} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classScreen_a36ed40c7c9824e39051a5d857a529f42}\label{classScreen_a36ed40c7c9824e39051a5d857a529f42}} 
+\index{Screen@{Screen}!Run@{Run}}
+\index{Run@{Run}!Screen@{Screen}}
+\doxysubsubsection{\texorpdfstring{Run()}{Run()}}
+{\footnotesize\ttfamily int Screen\+::\+Run (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Blocking call; boots up the visualizer and runs until it completes. 
+
+\begin{DoxyReturn}{Returns}
+int the return code of the visualizer; 0 if success, nonzero otherwise 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/jere/cpp\+\_\+visual\+\_\+slam/src/screen.\+hpp\end{DoxyCompactItemize}

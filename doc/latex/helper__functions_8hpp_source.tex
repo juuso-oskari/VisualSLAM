@@ -1,0 +1,402 @@
+\hypertarget{helper__functions_8hpp_source}{}\doxysection{helper\+\_\+functions.\+hpp}
+\label{helper__functions_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/helper\_functions.hpp@{/home/jere/cpp\_visual\_slam/src/helper\_functions.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef VISUAL\_SLAM\_HELPER\_FUNCTIONS}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define VISUAL\_SLAM\_HELPER\_FUNCTIONS}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 }
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include "{}isometry3d.hpp"{}}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include <Eigen/Dense>} }
+\DoxyCodeLine{9 }
+\DoxyCodeLine{10 }
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include <tuple>}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <opencv2/calib3d.hpp>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <opencv2/core/core.hpp>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <opencv2/features2d/features2d.hpp>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <opencv2/core/eigen.hpp>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <opencv2/highgui/highgui.hpp>}}
+\DoxyCodeLine{18 }
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#ifndef G2O\_USE\_VENDORED\_CERES}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#define G2O\_USE\_VENDORED\_CERES}}
+\DoxyCodeLine{21 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include "{}g2o/config.h"{}}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#include "{}g2o/core/block\_solver.h"{}}}
+\DoxyCodeLine{25 \textcolor{preprocessor}{\#include "{}g2o/core/optimization\_algorithm\_levenberg.h"{}}}
+\DoxyCodeLine{26 \textcolor{preprocessor}{\#include "{}g2o/solvers/eigen/linear\_solver\_eigen.h"{}}}
+\DoxyCodeLine{27 \textcolor{preprocessor}{\#include "{}g2o/types/sba/types\_six\_dof\_expmap.h"{}}}
+\DoxyCodeLine{28 \textcolor{preprocessor}{\#include "{}g2o/core/robust\_kernel\_impl.h"{}}}
+\DoxyCodeLine{29 \textcolor{preprocessor}{\#include "{}g2o/solvers/dense/linear\_solver\_dense.h"{}}}
+\DoxyCodeLine{30 \textcolor{preprocessor}{\#include "{}g2o/types/sim3/types\_seven\_dof\_expmap.h"{}}}
+\DoxyCodeLine{31 \textcolor{preprocessor}{\#include "{}g2o/core/solver.h"{}}}
+\DoxyCodeLine{32 \textcolor{preprocessor}{\#include "{}g2o/core/sparse\_optimizer.h"{}}}
+\DoxyCodeLine{33 \textcolor{preprocessor}{\#include "{}g2o/solvers/dense/linear\_solver\_dense.h"{}}}
+\DoxyCodeLine{34 }
+\DoxyCodeLine{35 }
+\DoxyCodeLine{36 }
+\DoxyCodeLine{41 cv::Mat MakeHomogeneous(cv::Mat x) \{}
+\DoxyCodeLine{42     cv::Mat col\_of\_ones = cv::Mat::ones(x.rows, 1, CV\_64F);}
+\DoxyCodeLine{43     cv::Mat ret;}
+\DoxyCodeLine{44     cv::hconcat(x, col\_of\_ones, ret);}
+\DoxyCodeLine{45     \textcolor{keywordflow}{return} ret;}
+\DoxyCodeLine{46 \}}
+\DoxyCodeLine{47 }
+\DoxyCodeLine{48 }
+\DoxyCodeLine{54 cv::Mat CameraProjectionMatrix2(cv::Mat Pose,cv::Mat K) \{}
+\DoxyCodeLine{55     \textcolor{keywordflow}{return} K.t()*Pose(cv::Rect(0,0,4,3));}
+\DoxyCodeLine{56 \}}
+\DoxyCodeLine{57 }
+\DoxyCodeLine{62 cv::Mat GetRotation(cv::Mat T\_) \{}
+\DoxyCodeLine{63     cv::Mat R = (cv::Mat1d(3,3) <<  T\_.at<\textcolor{keywordtype}{double}>(0,0), T\_.at<\textcolor{keywordtype}{double}>(0,1), T\_.at<\textcolor{keywordtype}{double}>(0,2),T\_.at<\textcolor{keywordtype}{double}>(1,0), T\_.at<\textcolor{keywordtype}{double}>(1,1), T\_.at<\textcolor{keywordtype}{double}>(1,2),T\_.at<\textcolor{keywordtype}{double}>(2,0), T\_.at<\textcolor{keywordtype}{double}>(2,1), T\_.at<\textcolor{keywordtype}{double}>(2,2));}
+\DoxyCodeLine{64     \textcolor{keywordflow}{return} R;    }
+\DoxyCodeLine{65 \}}
+\DoxyCodeLine{70 cv::Mat GetTranslation(cv::Mat T\_) \{}
+\DoxyCodeLine{71     cv::Mat t =  (cv::Mat1d(3,1) << T\_.at<\textcolor{keywordtype}{double}>(0,3), T\_.at<\textcolor{keywordtype}{double}>(1,3), T\_.at<\textcolor{keywordtype}{double}>(2,3));}
+\DoxyCodeLine{72     \textcolor{keywordflow}{return} t; }
+\DoxyCodeLine{73 \}}
+\DoxyCodeLine{74 \textcolor{comment}{/*Taken partly from Project ORB\_SLAM2 (https://github.com/raulmur/ORB\_SLAM2)*/}}
+\DoxyCodeLine{75 }
+\DoxyCodeLine{85 cv::Mat triangulate(cv::Mat pose1, cv::Mat pose2,cv::Mat pts1,cv::Mat pts2, cv::Mat K, cv::Mat\& inlierMask) \{}
+\DoxyCodeLine{86     cv::Mat ret;}
+\DoxyCodeLine{87 }
+\DoxyCodeLine{88     cv::Mat Rcw1 = GetRotation(pose1);}
+\DoxyCodeLine{89     cv::Mat Rwc1 = Rcw1.t();}
+\DoxyCodeLine{90     cv::Mat tcw1 = GetTranslation(pose1);;}
+\DoxyCodeLine{91     cv::Mat Tcw1(3,4,CV\_64F);}
+\DoxyCodeLine{92     Rcw1.copyTo(Tcw1.colRange(0,3));}
+\DoxyCodeLine{93     tcw1.copyTo(Tcw1.col(3));}
+\DoxyCodeLine{94     }
+\DoxyCodeLine{95     \textcolor{comment}{//cv::Mat Ow1 = mpCurrentKeyFrame-\/>GetCameraCenter();}}
+\DoxyCodeLine{96 }
+\DoxyCodeLine{97     cv::Mat Rcw2 = GetRotation(pose2);}
+\DoxyCodeLine{98     cv::Mat Rwc2 = Rcw2.t();}
+\DoxyCodeLine{99     cv::Mat tcw2 = GetTranslation(pose2);}
+\DoxyCodeLine{100     cv::Mat Tcw2(3,4,CV\_64F);}
+\DoxyCodeLine{101     Rcw2.copyTo(Tcw2.colRange(0,3));}
+\DoxyCodeLine{102     tcw2.copyTo(Tcw2.col(3));}
+\DoxyCodeLine{103     }
+\DoxyCodeLine{104     \textcolor{keywordtype}{double} fx = 535.4; \textcolor{keywordtype}{double} fy = 539.2; \textcolor{keywordtype}{double} cx = 320.1; \textcolor{keywordtype}{double} cy = 247.6; \textcolor{keywordtype}{double} invfx = 1.0/fx; \textcolor{keywordtype}{double} invfy = 1.0/fy;}
+\DoxyCodeLine{105     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < pts1.rows; i++) \{ }
+\DoxyCodeLine{106         cv::Mat xn1 = (cv::Mat\_<double>(3,1) << (pts1.at<\textcolor{keywordtype}{double}>(i, 0)-\/cx)*invfx, (pts1.at<\textcolor{keywordtype}{double}>(i, 1)-\/cy)*invfy, 1.0);}
+\DoxyCodeLine{107         cv::Mat xn2 = (cv::Mat\_<double>(3,1) << (pts2.at<\textcolor{keywordtype}{double}>(i, 0)-\/cx)*invfx, (pts2.at<\textcolor{keywordtype}{double}>(i, 1)-\/cy)*invfy, 1.0);}
+\DoxyCodeLine{108         cv::Mat x3D;}
+\DoxyCodeLine{109         cv::Mat A(4,4,CV\_64F);}
+\DoxyCodeLine{110         A.row(0) = xn1.at<\textcolor{keywordtype}{double}>(0)*Tcw1.row(2)-\/Tcw1.row(0);}
+\DoxyCodeLine{111         A.row(1) = xn1.at<\textcolor{keywordtype}{double}>(1)*Tcw1.row(2)-\/Tcw1.row(1);}
+\DoxyCodeLine{112         A.row(2) = xn2.at<\textcolor{keywordtype}{double}>(0)*Tcw2.row(2)-\/Tcw2.row(0);}
+\DoxyCodeLine{113         A.row(3) = xn2.at<\textcolor{keywordtype}{double}>(1)*Tcw2.row(2)-\/Tcw2.row(1);}
+\DoxyCodeLine{114         cv::Mat w,u,vt;}
+\DoxyCodeLine{115         cv::SVD::compute(A,w,u,vt,cv::SVD::MODIFY\_A| cv::SVD::FULL\_UV);}
+\DoxyCodeLine{116         x3D = vt.row(3).t();}
+\DoxyCodeLine{117 }
+\DoxyCodeLine{118         \textcolor{comment}{// Euclidean coordinates}}
+\DoxyCodeLine{119         x3D = x3D.rowRange(0,3)/x3D.at<\textcolor{keywordtype}{double}>(3);}
+\DoxyCodeLine{120         }
+\DoxyCodeLine{121         cv::Mat x3Dt = x3D.t();}
+\DoxyCodeLine{122         ret.push\_back(x3D.t());}
+\DoxyCodeLine{123         \textcolor{comment}{// Get camera centers}}
+\DoxyCodeLine{124         }
+\DoxyCodeLine{125         \textcolor{comment}{// NOTICE! THIS IS BASICALLY COPIED FROM ORB-\/SLAM}}
+\DoxyCodeLine{126         cv::Mat Ow1 = GetTranslation(pose1);}
+\DoxyCodeLine{127         cv::Mat Ow2 = GetTranslation(pose2);}
+\DoxyCodeLine{128         \textcolor{comment}{//Check triangulation in front of cameras}}
+\DoxyCodeLine{129         \textcolor{keywordtype}{double} z1 = Rcw1.row(2).dot(x3Dt)+tcw1.at<\textcolor{keywordtype}{double}>(2);}
+\DoxyCodeLine{130         \textcolor{keywordflow}{if}(z1<=0)\{}
+\DoxyCodeLine{131             inlierMask.push\_back((uchar)0);\textcolor{keywordflow}{continue};}
+\DoxyCodeLine{132         \}}
+\DoxyCodeLine{133             }
+\DoxyCodeLine{134 }
+\DoxyCodeLine{135         \textcolor{keywordtype}{double} z2 = Rcw2.row(2).dot(x3Dt)+tcw2.at<\textcolor{keywordtype}{double}>(2);}
+\DoxyCodeLine{136         \textcolor{keywordflow}{if}(z2<=0)\{}
+\DoxyCodeLine{137             inlierMask.push\_back((uchar)0);\textcolor{keywordflow}{continue};}
+\DoxyCodeLine{138         \}}
+\DoxyCodeLine{139             }
+\DoxyCodeLine{140         \textcolor{comment}{//Check reprojection error in first keyframe}}
+\DoxyCodeLine{141         \textcolor{keyword}{const} \textcolor{keywordtype}{double} \&sigmaSquare1 = 1;\textcolor{comment}{//mpCurrentKeyFrame-\/>mvLevelSigma2[kp1.octave];}}
+\DoxyCodeLine{142         \textcolor{keyword}{const} \textcolor{keywordtype}{double} x1 = Rcw1.row(0).dot(x3Dt)+tcw1.at<\textcolor{keywordtype}{double}>(0);}
+\DoxyCodeLine{143         \textcolor{keyword}{const} \textcolor{keywordtype}{double} y1 = Rcw1.row(1).dot(x3Dt)+tcw1.at<\textcolor{keywordtype}{double}>(1);}
+\DoxyCodeLine{144         \textcolor{keyword}{const} \textcolor{keywordtype}{double} invz1 = 1.0/z1;}
+\DoxyCodeLine{145 }
+\DoxyCodeLine{146         }
+\DoxyCodeLine{147         \textcolor{keywordtype}{double} u1 = fx*x1*invz1+cx;}
+\DoxyCodeLine{148         \textcolor{keywordtype}{double} v1 = fy*y1*invz1+cy;}
+\DoxyCodeLine{149         \textcolor{keywordtype}{double} errX1 = u1 -\/ pts1.at<\textcolor{keywordtype}{double}>(i, 0);}
+\DoxyCodeLine{150         \textcolor{keywordtype}{double} errY1 = v1 -\/ pts1.at<\textcolor{keywordtype}{double}>(i, 1);}
+\DoxyCodeLine{151         \textcolor{keywordflow}{if}((errX1*errX1+errY1*errY1)>5.991*sigmaSquare1)\{}
+\DoxyCodeLine{152             inlierMask.push\_back((uchar)0);\textcolor{keywordflow}{continue};}
+\DoxyCodeLine{153         \}}
+\DoxyCodeLine{154             }
+\DoxyCodeLine{155 }
+\DoxyCodeLine{156         \textcolor{comment}{//Check reprojection error in second keyframe}}
+\DoxyCodeLine{157         \textcolor{keyword}{const} \textcolor{keywordtype}{double} sigmaSquare2 = 1; \textcolor{comment}{//pKF2-\/>mvLevelSigma2[kp2.octave];}}
+\DoxyCodeLine{158         \textcolor{keyword}{const} \textcolor{keywordtype}{double} x2 = Rcw2.row(0).dot(x3Dt)+tcw2.at<\textcolor{keywordtype}{double}>(0);}
+\DoxyCodeLine{159         \textcolor{keyword}{const} \textcolor{keywordtype}{double} y2 = Rcw2.row(1).dot(x3Dt)+tcw2.at<\textcolor{keywordtype}{double}>(1);}
+\DoxyCodeLine{160         \textcolor{keyword}{const} \textcolor{keywordtype}{double} invz2 = 1.0/z2;}
+\DoxyCodeLine{161 }
+\DoxyCodeLine{162         \textcolor{keywordtype}{double} u2 = fx*x2*invz2+cx;}
+\DoxyCodeLine{163         \textcolor{keywordtype}{double} v2 = fy*y2*invz2+cy;}
+\DoxyCodeLine{164         \textcolor{keywordtype}{double} errX2 = u2 -\/ pts2.at<\textcolor{keywordtype}{double}>(i, 0);}
+\DoxyCodeLine{165         \textcolor{keywordtype}{double} errY2 = v2 -\/ pts2.at<\textcolor{keywordtype}{double}>(i, 1);}
+\DoxyCodeLine{166         \textcolor{keywordflow}{if}((errX2*errX2+errY2*errY2)>5.991*sigmaSquare2)\{}
+\DoxyCodeLine{167             inlierMask.push\_back((uchar)0);\textcolor{keywordflow}{continue};}
+\DoxyCodeLine{168         \}}
+\DoxyCodeLine{169             }
+\DoxyCodeLine{170 }
+\DoxyCodeLine{171         \textcolor{comment}{//Check scale consistency}}
+\DoxyCodeLine{172         cv::Mat normal1 = x3D-\/Ow1;}
+\DoxyCodeLine{173         \textcolor{keywordtype}{double} dist1 = cv::norm(normal1);}
+\DoxyCodeLine{174 }
+\DoxyCodeLine{175         cv::Mat normal2 = x3D-\/Ow2;}
+\DoxyCodeLine{176         \textcolor{keywordtype}{double} dist2 = cv::norm(normal2);}
+\DoxyCodeLine{177 }
+\DoxyCodeLine{178         \textcolor{keywordflow}{if}(dist1==0 || dist2==0)\{}
+\DoxyCodeLine{179             inlierMask.push\_back((uchar)0);\textcolor{keywordflow}{continue};}
+\DoxyCodeLine{180         \}}
+\DoxyCodeLine{181             }
+\DoxyCodeLine{182         \textcolor{comment}{// NOTICE! THIS IS BASICALLY COPIED FROM ORB-\/SLAM UP TO HERE}}
+\DoxyCodeLine{183          }
+\DoxyCodeLine{184         \textcolor{comment}{// /*const double ratioDist = dist2/dist1;}}
+\DoxyCodeLine{185         \textcolor{comment}{// const double ratioOctave = mpCurrentKeyFrame-\/>mvScaleFactors[kp1.octave]/pKF2-\/>mvScaleFactors[kp2.octave];}}
+\DoxyCodeLine{186 }
+\DoxyCodeLine{187         \textcolor{comment}{// /*if(fabs(ratioDist-\/ratioOctave)>ratioFactor)}}
+\DoxyCodeLine{188         \textcolor{comment}{//     continue;*/}}
+\DoxyCodeLine{189         \textcolor{comment}{// if(ratioDist*ratioFactor<ratioOctave || ratioDist>ratioOctave*ratioFactor)}}
+\DoxyCodeLine{190         \textcolor{comment}{//     continue;}}
+\DoxyCodeLine{191 }
+\DoxyCodeLine{192         \textcolor{comment}{// */}}
+\DoxyCodeLine{193         inlierMask.push\_back((uchar)1);}
+\DoxyCodeLine{194     \}}
+\DoxyCodeLine{195     \textcolor{keywordflow}{return} ret;}
+\DoxyCodeLine{196 \}}
+\DoxyCodeLine{197 }
+\DoxyCodeLine{198 }
+\DoxyCodeLine{204 std::vector<int> GetListDiff(cv::Mat kp1, cv::Mat kp2) \{}
+\DoxyCodeLine{205     std::vector<int> idx\_list;}
+\DoxyCodeLine{206     \textcolor{keywordtype}{bool} found = \textcolor{keyword}{false};}
+\DoxyCodeLine{207     \textcolor{keywordtype}{double} eps = 1; \textcolor{comment}{// up to numerical instabilities}}
+\DoxyCodeLine{208     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i\_kp1 = 0; i\_kp1 < kp1.rows; i\_kp1++)\{ }
+\DoxyCodeLine{209         found=\textcolor{keyword}{false};}
+\DoxyCodeLine{210         \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i\_kp2 = 0; i\_kp2 < kp2.rows; i\_kp2++)\{ }
+\DoxyCodeLine{211             \textcolor{keywordflow}{if}( (std::abs(kp1.at<\textcolor{keywordtype}{double}>(i\_kp1,0) -\/ kp2.at<\textcolor{keywordtype}{double}>(i\_kp2,0)) < eps) \&\& (std::abs((kp1.at<\textcolor{keywordtype}{double}>(i\_kp1,1) -\/ kp2.at<\textcolor{keywordtype}{double}>(i\_kp2,1))) < eps) ) \{}
+\DoxyCodeLine{212                 found = \textcolor{keyword}{true};}
+\DoxyCodeLine{213             \}}
+\DoxyCodeLine{214         \}}
+\DoxyCodeLine{215         \textcolor{keywordflow}{if} (found==\textcolor{keyword}{false}) \{}
+\DoxyCodeLine{216             idx\_list.push\_back(i\_kp1);}
+\DoxyCodeLine{217         \}}
+\DoxyCodeLine{218     \}}
+\DoxyCodeLine{219     \textcolor{keywordflow}{return} idx\_list;}
+\DoxyCodeLine{220 \}}
+\DoxyCodeLine{221     }
+\DoxyCodeLine{222 }
+\DoxyCodeLine{223 \textcolor{comment}{// get rows from m according to queryIdx in matches}}
+\DoxyCodeLine{229 \textcolor{comment}{}cv::Mat GetQueryMatches(cv::Mat m, std::vector<cv::DMatch> matches)\{}
+\DoxyCodeLine{230     cv::Mat matched\_m;}
+\DoxyCodeLine{231     \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = matches.begin(); it != matches.end(); it++)\{}
+\DoxyCodeLine{232         matched\_m.push\_back( m.row((*it).queryIdx));}
+\DoxyCodeLine{233     \}}
+\DoxyCodeLine{234     \textcolor{keywordflow}{return} matched\_m;}
+\DoxyCodeLine{235 \}}
+\DoxyCodeLine{236 }
+\DoxyCodeLine{237 std::vector<int> GetQueryMatches(std::vector<int> point\_ids, std::vector<cv::DMatch> matches)\{}
+\DoxyCodeLine{238     std::vector<int> matching\_point\_ids;}
+\DoxyCodeLine{239     \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = matches.begin(); it != matches.end(); it++)\{}
+\DoxyCodeLine{240         matching\_point\_ids.push\_back( point\_ids[(*it).queryIdx]);}
+\DoxyCodeLine{241     \}}
+\DoxyCodeLine{242     \textcolor{keywordflow}{return} matching\_point\_ids;}
+\DoxyCodeLine{243 \}}
+\DoxyCodeLine{244 }
+\DoxyCodeLine{250 cv::Mat GetImagePointsWithIdxList(std::vector<int> idx\_list, cv::Mat image\_points)\{}
+\DoxyCodeLine{251     cv::Mat new\_image\_points;}
+\DoxyCodeLine{252     \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = idx\_list.begin(); it != idx\_list.end(); it++)\{}
+\DoxyCodeLine{253         \textcolor{comment}{//new\_image\_points.push\_back(image\_points.at<double>(*it));}}
+\DoxyCodeLine{254         new\_image\_points.push\_back(image\_points.row(*it));}
+\DoxyCodeLine{255     \}}
+\DoxyCodeLine{256     \textcolor{keywordflow}{return} new\_image\_points;}
+\DoxyCodeLine{257 \}}
+\DoxyCodeLine{263 cv::Mat GetImageDescWithIdxList(std::vector<int> idx\_list, cv::Mat image\_points)\{}
+\DoxyCodeLine{264     cv::Mat new\_image\_points;}
+\DoxyCodeLine{265     \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = idx\_list.begin(); it != idx\_list.end(); it++)\{}
+\DoxyCodeLine{266         new\_image\_points.push\_back(image\_points.row(*it));}
+\DoxyCodeLine{267     \}}
+\DoxyCodeLine{268     \textcolor{keywordflow}{return} new\_image\_points;}
+\DoxyCodeLine{269 \}}
+\DoxyCodeLine{270 }
+\DoxyCodeLine{271 }
+\DoxyCodeLine{277 cv::Mat MaskMat(cv::Mat inFrame, cv::Mat mask)\{}
+\DoxyCodeLine{278     cv::Mat outFrame;}
+\DoxyCodeLine{279     \textcolor{comment}{//inFrame.copyTo(outFrame, mask);}}
+\DoxyCodeLine{280     \textcolor{comment}{//return outFrame;}}
+\DoxyCodeLine{281     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < inFrame.rows; i++)\{}
+\DoxyCodeLine{282         \textcolor{comment}{//std::cout << (int)mask.at<uchar>(i) << std::endl;}}
+\DoxyCodeLine{283         \textcolor{keywordtype}{int} mask\_val = mask.at<uchar>(i);}
+\DoxyCodeLine{284         \textcolor{keywordflow}{if}(mask\_val == 1)\{}
+\DoxyCodeLine{285             outFrame.push\_back(inFrame.row(i));}
+\DoxyCodeLine{286         \}}
+\DoxyCodeLine{287     \}}
+\DoxyCodeLine{288     \textcolor{keywordflow}{return} outFrame;}
+\DoxyCodeLine{289     }
+\DoxyCodeLine{290 \}}
+\DoxyCodeLine{291 }
+\DoxyCodeLine{292 }
+\DoxyCodeLine{293 \textcolor{comment}{// returns Nx2 cv::Mat}}
+\DoxyCodeLine{294 }
+\DoxyCodeLine{300 cv::Mat KeyPoint2Mat(std::vector<cv::KeyPoint> keypoints)\{}
+\DoxyCodeLine{301     cv::Mat pointmatrix(keypoints.size(), 2, CV\_64F);}
+\DoxyCodeLine{302     \textcolor{keywordtype}{int} row = 0;}
+\DoxyCodeLine{303     \textcolor{keywordflow}{for} (\textcolor{keyword}{auto}\& kp: keypoints) \{}
+\DoxyCodeLine{304         pointmatrix.at<\textcolor{keywordtype}{double}>(row, 0) = kp.pt.x;}
+\DoxyCodeLine{305         pointmatrix.at<\textcolor{keywordtype}{double}>(row, 1) = kp.pt.y;}
+\DoxyCodeLine{306         row++;}
+\DoxyCodeLine{307     \}}
+\DoxyCodeLine{308     \textcolor{keywordflow}{return} pointmatrix;}
+\DoxyCodeLine{309 \}}
+\DoxyCodeLine{310 }
+\DoxyCodeLine{311 }
+\DoxyCodeLine{317 cv::Mat KeyPoint2MatUndistord(std::vector<cv::KeyPoint> keypoints, cv::Mat cameraMatrix, cv::Mat distCoeffs, \textcolor{keywordtype}{bool} do\_undistord = \textcolor{keyword}{false})\{}
+\DoxyCodeLine{318     \textcolor{comment}{// convert to Point2f}}
+\DoxyCodeLine{319     std::vector<cv::Point2f> points;}
+\DoxyCodeLine{320     cv::KeyPoint::convert(keypoints, points);}
+\DoxyCodeLine{321 }
+\DoxyCodeLine{322     std::vector<cv::Point2f> outputUndistortedPoints;}
+\DoxyCodeLine{323     \textcolor{keywordflow}{if}(do\_undistord)\{}
+\DoxyCodeLine{324         cv::undistortPoints(points, outputUndistortedPoints, cameraMatrix, distCoeffs);}
+\DoxyCodeLine{325     \}\textcolor{keywordflow}{else}\{}
+\DoxyCodeLine{326         outputUndistortedPoints = points;}
+\DoxyCodeLine{327     \}}
+\DoxyCodeLine{328     \textcolor{comment}{// flatten}}
+\DoxyCodeLine{329     cv::Mat output = cv::Mat(outputUndistortedPoints.size(), 2, CV\_64F, outputUndistortedPoints.data());}
+\DoxyCodeLine{330     \textcolor{keywordflow}{return} output;}
+\DoxyCodeLine{331 \}}
+\DoxyCodeLine{332 }
+\DoxyCodeLine{341 \textcolor{keywordtype}{void} EstimateEssential(\textcolor{keyword}{const} cv::Mat\& points1, \textcolor{keyword}{const} cv::Mat\& points2, \textcolor{keyword}{const} cv::Mat\& K, cv::Mat\& RelativePoseTransformation, cv::Mat\& triangulatedPoints, cv::Mat\& inlierMask)\{}
+\DoxyCodeLine{342     cv::Mat E = cv::findEssentialMat(points1, points2, K, cv::RANSAC, 0.999, 2, inlierMask);    }
+\DoxyCodeLine{343     cv::Mat R; \textcolor{comment}{// Rotation}}
+\DoxyCodeLine{344     cv::Mat t; \textcolor{comment}{// translation}}
+\DoxyCodeLine{345     cv::Mat triangulated\_points\_cv(3, points1.rows, CV\_64F); \textcolor{comment}{// 3D locations for inlier points estimated using triangulation and the poses recovered from essential transform}}
+\DoxyCodeLine{346     cv::recoverPose(E, points1, points2, K, R, t, 50, inlierMask, triangulated\_points\_cv);}
+\DoxyCodeLine{347     Eigen::MatrixXd R\_; \textcolor{comment}{// convert to eigen for transformation calculations}}
+\DoxyCodeLine{348     Eigen::VectorXd t\_;}
+\DoxyCodeLine{349     cv::cv2eigen(R, R\_);}
+\DoxyCodeLine{350     cv::cv2eigen(t, t\_);}
+\DoxyCodeLine{351     Eigen::MatrixXd pos = \mbox{\hyperlink{classIsometry3d}{Isometry3d}}(R\_, t\_).inverse().matrix();}
+\DoxyCodeLine{352     cv::eigen2cv(pos, RelativePoseTransformation);}
+\DoxyCodeLine{353     \textcolor{comment}{//triangulatedPoints = triangulated\_points\_cv.t(); // transpose and return}}
+\DoxyCodeLine{354     \textcolor{comment}{// make euclidean}}
+\DoxyCodeLine{355     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i=0; i < triangulated\_points\_cv.cols; i++)\{}
+\DoxyCodeLine{356         cv::Mat x3D = triangulated\_points\_cv.col(i);}
+\DoxyCodeLine{357         triangulatedPoints.push\_back( (x3D.rowRange(0,3)/x3D.at<\textcolor{keywordtype}{double}>(3)).t() );}
+\DoxyCodeLine{358     \}}
+\DoxyCodeLine{359 }
+\DoxyCodeLine{360 \}}
+\DoxyCodeLine{361  }
+\DoxyCodeLine{362 cv::Mat segment(cv::Mat mat, \textcolor{keywordtype}{int} start\_idx, \textcolor{keywordtype}{int} end\_idx)\{}
+\DoxyCodeLine{363     cv::Mat segmented\_mat;}
+\DoxyCodeLine{364     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < mat.cols; i++)\{}
+\DoxyCodeLine{365         \textcolor{keywordflow}{if}(i>=start\_idx \&\& i<end\_idx)\{}
+\DoxyCodeLine{366             segmented\_mat.push\_back(mat.col(i));}
+\DoxyCodeLine{367         \}}
+\DoxyCodeLine{368     \}}
+\DoxyCodeLine{369     \textcolor{keywordflow}{return} segmented\_mat.t();}
+\DoxyCodeLine{370 \}}
+\DoxyCodeLine{371 }
+\DoxyCodeLine{378 cv::Mat transformMatrix(cv::Mat rvec, cv::Mat tvec) \{}
+\DoxyCodeLine{379     cv::Mat R;}
+\DoxyCodeLine{380     cv::Rodrigues(rvec, R);}
+\DoxyCodeLine{381     cv::Mat T\_temp;}
+\DoxyCodeLine{382     cv::hconcat(R,tvec,T\_temp); \textcolor{comment}{// horizontal concatenation}}
+\DoxyCodeLine{383     cv::Mat z  = (cv::Mat1d(1,4) << 0.0, 0.0, 0.0, 1.0);}
+\DoxyCodeLine{384     cv::Mat T;}
+\DoxyCodeLine{385     cv::vconcat(T\_temp,z,T); \textcolor{comment}{// vertical   concatenation}}
+\DoxyCodeLine{386     \textcolor{keywordflow}{return} T;}
+\DoxyCodeLine{387 \}}
+\DoxyCodeLine{388 }
+\DoxyCodeLine{389 }
+\DoxyCodeLine{390 }
+\DoxyCodeLine{391 \textcolor{comment}{/*Taken from Project ORB\_SLAM2 (https://github.com/raulmur/ORB\_SLAM2)*/}}
+\DoxyCodeLine{392 g2o::SE3Quat toSE3Quat(\textcolor{keyword}{const} cv::Mat \&cvT)}
+\DoxyCodeLine{393 \{}
+\DoxyCodeLine{394     Eigen::Matrix<double,3,3> R;}
+\DoxyCodeLine{395     R << cvT.at<\textcolor{keywordtype}{double}>(0,0), cvT.at<\textcolor{keywordtype}{double}>(0,1), cvT.at<\textcolor{keywordtype}{double}>(0,2),}
+\DoxyCodeLine{396          cvT.at<\textcolor{keywordtype}{double}>(1,0), cvT.at<\textcolor{keywordtype}{double}>(1,1), cvT.at<\textcolor{keywordtype}{double}>(1,2),}
+\DoxyCodeLine{397          cvT.at<\textcolor{keywordtype}{double}>(2,0), cvT.at<\textcolor{keywordtype}{double}>(2,1), cvT.at<\textcolor{keywordtype}{double}>(2,2);}
+\DoxyCodeLine{398 }
+\DoxyCodeLine{399     Eigen::Matrix<double,3,1> t(cvT.at<\textcolor{keywordtype}{double}>(0,3), cvT.at<\textcolor{keywordtype}{double}>(1,3), cvT.at<\textcolor{keywordtype}{double}>(2,3));}
+\DoxyCodeLine{400 }
+\DoxyCodeLine{401     \textcolor{keywordflow}{return} g2o::SE3Quat(R,t);}
+\DoxyCodeLine{402 \}}
+\DoxyCodeLine{403 \textcolor{comment}{/*Taken from Project ORB\_SLAM2 (https://github.com/raulmur/ORB\_SLAM2)*/}}
+\DoxyCodeLine{404 Eigen::Matrix<double,3,1> toVector3d(\textcolor{keyword}{const} cv::Mat \&cvVector)}
+\DoxyCodeLine{405 \{}
+\DoxyCodeLine{406     Eigen::Matrix<double,3,1> v;}
+\DoxyCodeLine{407     v << cvVector.at<\textcolor{keywordtype}{double}>(0), cvVector.at<\textcolor{keywordtype}{double}>(1), cvVector.at<\textcolor{keywordtype}{double}>(2);}
+\DoxyCodeLine{408 }
+\DoxyCodeLine{409     \textcolor{keywordflow}{return} v;}
+\DoxyCodeLine{410 \}}
+\DoxyCodeLine{411 }
+\DoxyCodeLine{412 }
+\DoxyCodeLine{413 \textcolor{comment}{/*Taken from Project ORB\_SLAM2 (https://github.com/raulmur/ORB\_SLAM2)*/}}
+\DoxyCodeLine{414 cv::Mat toCvMat(\textcolor{keyword}{const} Eigen::Matrix<double,4,4> \&m)}
+\DoxyCodeLine{415 \{}
+\DoxyCodeLine{416     cv::Mat cvMat(4,4,CV\_64F);}
+\DoxyCodeLine{417     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i=0;i<4;i++)}
+\DoxyCodeLine{418         \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} j=0; j<4; j++)}
+\DoxyCodeLine{419             cvMat.at<\textcolor{keywordtype}{double}>(i,j)=m(i,j);}
+\DoxyCodeLine{420 }
+\DoxyCodeLine{421     \textcolor{keywordflow}{return} cvMat.clone();}
+\DoxyCodeLine{422 \}}
+\DoxyCodeLine{423 \textcolor{comment}{/*Taken from Project ORB\_SLAM2 (https://github.com/raulmur/ORB\_SLAM2)*/}}
+\DoxyCodeLine{424 cv::Mat toCvMat(\textcolor{keyword}{const} g2o::SE3Quat \&SE3)}
+\DoxyCodeLine{425 \{}
+\DoxyCodeLine{426     Eigen::Matrix<double,4,4> eigMat = SE3.to\_homogeneous\_matrix();}
+\DoxyCodeLine{427     \textcolor{keywordflow}{return} toCvMat(eigMat);}
+\DoxyCodeLine{428 \}}
+\DoxyCodeLine{429 \textcolor{comment}{/*Taken from Project ORB\_SLAM2 (https://github.com/raulmur/ORB\_SLAM2)*/}}
+\DoxyCodeLine{430 cv::Mat toCvMat(\textcolor{keyword}{const} Eigen::Matrix3d \&m)}
+\DoxyCodeLine{431 \{}
+\DoxyCodeLine{432     cv::Mat cvMat(3,3,CV\_64F);}
+\DoxyCodeLine{433     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i=0;i<3;i++)}
+\DoxyCodeLine{434         \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} j=0; j<3; j++)}
+\DoxyCodeLine{435             cvMat.at<\textcolor{keywordtype}{double}>(i,j)=m(i,j);}
+\DoxyCodeLine{436 }
+\DoxyCodeLine{437     \textcolor{keywordflow}{return} cvMat.clone();}
+\DoxyCodeLine{438 \}}
+\DoxyCodeLine{439 \textcolor{comment}{/*Taken from Project ORB\_SLAM2 (https://github.com/raulmur/ORB\_SLAM2)*/}}
+\DoxyCodeLine{440 cv::Mat toCvMat(\textcolor{keyword}{const} Eigen::Matrix<double,3,1> \&m)}
+\DoxyCodeLine{441 \{}
+\DoxyCodeLine{442     cv::Mat cvMat(3,1,CV\_64F);}
+\DoxyCodeLine{443     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i=0;i<3;i++)}
+\DoxyCodeLine{444             cvMat.at<\textcolor{keywordtype}{double}>(i)=m(i);}
+\DoxyCodeLine{445 }
+\DoxyCodeLine{446     \textcolor{keywordflow}{return} cvMat.clone();}
+\DoxyCodeLine{447 \}}
+\DoxyCodeLine{448 }
+\DoxyCodeLine{449 }
+\DoxyCodeLine{450 }
+\DoxyCodeLine{456 cv::Mat NormalizeTranslation(cv::Mat P, \textcolor{keywordtype}{double} median\_depth)\{}
+\DoxyCodeLine{457     P.at<\textcolor{keywordtype}{double}>(0,3) = P.at<\textcolor{keywordtype}{double}>(0,3)/median\_depth;}
+\DoxyCodeLine{458     P.at<\textcolor{keywordtype}{double}>(1,3) = P.at<\textcolor{keywordtype}{double}>(1,3)/median\_depth;}
+\DoxyCodeLine{459     P.at<\textcolor{keywordtype}{double}>(2,3) = P.at<\textcolor{keywordtype}{double}>(2,3)/median\_depth;}
+\DoxyCodeLine{460     \textcolor{keywordflow}{return} P;}
+\DoxyCodeLine{461 \}}
+\DoxyCodeLine{462 }
+\DoxyCodeLine{463 }
+\DoxyCodeLine{468 cv::Mat Points2Homogeneous(cv::Mat points3D)\{}
+\DoxyCodeLine{469     cv::Mat points3D\_euclidean;}
+\DoxyCodeLine{470     \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i=0; i < points3D.rows; i++)\{}
+\DoxyCodeLine{471         cv::Mat x3D = points3D.row(i).t();}
+\DoxyCodeLine{472         x3D = x3D.rowRange(0,3)/x3D.at<\textcolor{keywordtype}{double}>(3);}
+\DoxyCodeLine{473         points3D\_euclidean.push\_back(x3D.t());}
+\DoxyCodeLine{474     \}}
+\DoxyCodeLine{475     \textcolor{keywordflow}{return} points3D\_euclidean;}
+\DoxyCodeLine{476 \}}
+\DoxyCodeLine{477 }
+\DoxyCodeLine{478 }
+\DoxyCodeLine{479 }
+\DoxyCodeLine{480 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

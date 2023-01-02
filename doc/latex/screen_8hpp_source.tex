@@ -1,0 +1,129 @@
+\hypertarget{screen_8hpp_source}{}\doxysection{screen.\+hpp}
+\label{screen_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/screen.hpp@{/home/jere/cpp\_visual\_slam/src/screen.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef VISUAL\_SLAM\_SCREEN}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define VISUAL\_SLAM\_SCREEN}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include <opencv2/core/core.hpp>}}
+\DoxyCodeLine{5 }
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include <easy3d/viewer/viewer.h>}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include <easy3d/renderer/camera.h>}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include <easy3d/renderer/renderer.h>}}
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#include <easy3d/renderer/camera.h>}}
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#include <easy3d/renderer/drawable\_points.h>}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include <easy3d/renderer/drawable\_lines.h>}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <easy3d/renderer/drawable\_triangles.h>}}
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <easy3d/core/types.h>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <easy3d/core/point\_cloud.h>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <easy3d/util/timer.h>}}
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <easy3d/util/logging.h>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <easy3d/util/resource.h>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <easy3d/util/initializer.h>}}
+\DoxyCodeLine{19 }
+\DoxyCodeLine{20 \textcolor{comment}{//using namespace easy3d;}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#include <thread>}}
+\DoxyCodeLine{24 }
+\DoxyCodeLine{33 \textcolor{keyword}{class }\mbox{\hyperlink{classScreen}{Screen}} \{}
+\DoxyCodeLine{34 \textcolor{keyword}{public}:}
+\DoxyCodeLine{41     \textcolor{keyword}{explicit} \mbox{\hyperlink{classScreen_a80504df47f6d60a4f10b915458b80940}{Screen}}(std::string title) \{}
+\DoxyCodeLine{42         viewer\_ = \textcolor{keyword}{new} easy3d::Viewer(title);}
+\DoxyCodeLine{43         \textcolor{comment}{// Initialize some parameters to make the output easier to navigate}}
+\DoxyCodeLine{44         viewer\_-\/>camera()-\/>setViewDirection(easy3d::vec3(1, 0, 0));}
+\DoxyCodeLine{45         viewer\_-\/>camera()-\/>setUpVector(easy3d::vec3(1, 0, 0));}
+\DoxyCodeLine{46     \}}
+\DoxyCodeLine{53     \textcolor{keywordtype}{void} \mbox{\hyperlink{classScreen_ab9377d9098aff0b9af221e728f6601a5}{RegisterPointCloud}}(easy3d::PointCloud* cloud) \{}
+\DoxyCodeLine{54         viewer\_-\/>add\_model(cloud);}
+\DoxyCodeLine{55     \}}
+\DoxyCodeLine{61     \textcolor{keywordtype}{int} \mbox{\hyperlink{classScreen_a36ed40c7c9824e39051a5d857a529f42}{Run}}() \{}
+\DoxyCodeLine{62         std::this\_thread::sleep\_for(std::chrono::milliseconds(1000));}
+\DoxyCodeLine{63         \textcolor{keywordflow}{return} viewer\_-\/>run();}
+\DoxyCodeLine{64     \}}
+\DoxyCodeLine{65 \textcolor{keyword}{private}:}
+\DoxyCodeLine{66     easy3d::Viewer * viewer\_;}
+\DoxyCodeLine{67 \};}
+\DoxyCodeLine{68 }
+\DoxyCodeLine{82 \textcolor{keywordtype}{void} ConfigurePointCloud(}
+\DoxyCodeLine{83     easy3d::PointCloud * cloud,}
+\DoxyCodeLine{84     \textcolor{keywordtype}{float} point\_size = 1.0f,}
+\DoxyCodeLine{85     \textcolor{keywordtype}{bool} plain\_style = \textcolor{keyword}{false},}
+\DoxyCodeLine{86     easy3d::vec4 color = easy3d::vec4(1.0, 1.0, 1.0, 1.0)}
+\DoxyCodeLine{87 ) \{}
+\DoxyCodeLine{88     \textcolor{keyword}{auto} drawable = cloud-\/>renderer()-\/>get\_points\_drawable(\textcolor{stringliteral}{"{}vertices"{}});}
+\DoxyCodeLine{89     drawable-\/>set\_point\_size(point\_size);}
+\DoxyCodeLine{90     \textcolor{keywordflow}{if} (plain\_style) \{}
+\DoxyCodeLine{91         drawable-\/>set\_impostor\_type(easy3d::PointsDrawable::PLAIN);}
+\DoxyCodeLine{92     \}}
+\DoxyCodeLine{93     \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{94         drawable-\/>set\_impostor\_type(easy3d::PointsDrawable::SPHERE);}
+\DoxyCodeLine{95     \}}
+\DoxyCodeLine{96     drawable-\/>set\_color(color);}
+\DoxyCodeLine{97 }
+\DoxyCodeLine{98 \}}
+\DoxyCodeLine{99 }
+\DoxyCodeLine{108 \textcolor{keywordtype}{void} SpawnWorkerThread(std::function<\textcolor{keywordtype}{void} ()> callback) \{}
+\DoxyCodeLine{109     easy3d::Timer<>::single\_shot(0, [\&]()\{}
+\DoxyCodeLine{110         callback();}
+\DoxyCodeLine{111     \});}
+\DoxyCodeLine{112 \}}
+\DoxyCodeLine{113 }
+\DoxyCodeLine{129 \textcolor{keyword}{class }\mbox{\hyperlink{classPointClouds}{PointClouds}} \{}
+\DoxyCodeLine{130 \textcolor{keyword}{public}:}
+\DoxyCodeLine{131     \textcolor{keyword}{explicit} \mbox{\hyperlink{classPointClouds}{PointClouds}}(easy3d::PointCloud* points, easy3d::PointCloud* poses) : points\_(points), poses\_(poses) \{\}}
+\DoxyCodeLine{141     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_ada6af2406cc9f5e9463e43bc748df938}{AddPoint}}(\textcolor{keywordtype}{double} x, \textcolor{keywordtype}{double} y, \textcolor{keywordtype}{double} z, \textcolor{keywordtype}{bool} poses = \textcolor{keyword}{false}) \{}
+\DoxyCodeLine{142         \textcolor{comment}{// It would be possible to use the same point cloud for both points and poses,}}
+\DoxyCodeLine{143         \textcolor{comment}{// but this solution also works and requires less extra configuration.}}
+\DoxyCodeLine{144         \textcolor{keywordflow}{if} (poses) \{}
+\DoxyCodeLine{145             poses\_-\/>add\_vertex(easy3d::vec3(x, y, z));}
+\DoxyCodeLine{146         \}}
+\DoxyCodeLine{147         \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{148             points\_-\/>add\_vertex(easy3d::vec3(x, y, z));}
+\DoxyCodeLine{149         \}}
+\DoxyCodeLine{150     \}}
+\DoxyCodeLine{151 }
+\DoxyCodeLine{159     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_aaaf001c4747587d25ae077736e6a0f65}{AddPointMat}}(cv::Mat point, \textcolor{keywordtype}{bool} poses = \textcolor{keyword}{false}) \{}
+\DoxyCodeLine{160         \mbox{\hyperlink{classPointClouds_ada6af2406cc9f5e9463e43bc748df938}{AddPoint}}(point.at<\textcolor{keywordtype}{double}>(0), point.at<\textcolor{keywordtype}{double}>(1), point.at<\textcolor{keywordtype}{double}>(2), poses);}
+\DoxyCodeLine{161     \}}
+\DoxyCodeLine{169     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_a1973a9464fc06cff3c6310aad85819b8}{AddPose}}(\textcolor{keywordtype}{double} x, \textcolor{keywordtype}{double} y, \textcolor{keywordtype}{double} z) \{}
+\DoxyCodeLine{170         \mbox{\hyperlink{classPointClouds_ada6af2406cc9f5e9463e43bc748df938}{AddPoint}}(x, y, z, \textcolor{keyword}{true});}
+\DoxyCodeLine{171     \}}
+\DoxyCodeLine{176     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_a672ca119e044eca3016027e21aa27049}{UpdateView}}() \{}
+\DoxyCodeLine{177         points\_-\/>renderer()-\/>update();}
+\DoxyCodeLine{178         poses\_-\/>renderer()-\/>update();}
+\DoxyCodeLine{179     \}}
+\DoxyCodeLine{180 }
+\DoxyCodeLine{186     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}{Clear}}(\textcolor{keywordtype}{bool} poses = \textcolor{keyword}{false}) \{}
+\DoxyCodeLine{187         \textcolor{keywordflow}{if} (poses) \{}
+\DoxyCodeLine{188             poses\_-\/>clear();}
+\DoxyCodeLine{189         \}}
+\DoxyCodeLine{190         \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{191             points\_-\/>clear();}
+\DoxyCodeLine{192         \}}
+\DoxyCodeLine{193     \}}
+\DoxyCodeLine{194 }
+\DoxyCodeLine{199     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_a9117d88aa1aeb7f0374e02a40c2e4a93}{ClearAll}}() \{}
+\DoxyCodeLine{200         \mbox{\hyperlink{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}{Clear}}(\textcolor{keyword}{true});}
+\DoxyCodeLine{201         \mbox{\hyperlink{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}{Clear}}(\textcolor{keyword}{false});}
+\DoxyCodeLine{202     \}}
+\DoxyCodeLine{203 }
+\DoxyCodeLine{211     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_a8aa7a0340a517d78682abfb8904742f8}{SetPointsMatUpdate}}(std::vector<cv::Mat> points, \textcolor{keywordtype}{bool} poses = \textcolor{keyword}{false}) \{}
+\DoxyCodeLine{212         \mbox{\hyperlink{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}{Clear}}(poses);}
+\DoxyCodeLine{213         \mbox{\hyperlink{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}{AddPointsMatUpdate}}(points, poses);}
+\DoxyCodeLine{214     \}}
+\DoxyCodeLine{215 }
+\DoxyCodeLine{223     \textcolor{keywordtype}{void} \mbox{\hyperlink{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}{AddPointsMatUpdate}}(std::vector<cv::Mat> points, \textcolor{keywordtype}{bool} poses = \textcolor{keyword}{false}) \{}
+\DoxyCodeLine{224         \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} point : points) \{}
+\DoxyCodeLine{225             \mbox{\hyperlink{classPointClouds_aaaf001c4747587d25ae077736e6a0f65}{AddPointMat}}(point, poses);}
+\DoxyCodeLine{226         \}}
+\DoxyCodeLine{227         \mbox{\hyperlink{classPointClouds_a672ca119e044eca3016027e21aa27049}{UpdateView}}();}
+\DoxyCodeLine{228     \}}
+\DoxyCodeLine{229 \textcolor{keyword}{private}:}
+\DoxyCodeLine{230     easy3d::PointCloud * points\_;}
+\DoxyCodeLine{231     easy3d::PointCloud * poses\_;}
+\DoxyCodeLine{232 \};}
+\DoxyCodeLine{233 }
+\DoxyCodeLine{234 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

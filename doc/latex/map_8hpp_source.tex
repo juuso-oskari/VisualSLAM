@@ -1,0 +1,526 @@
+\hypertarget{map_8hpp_source}{}\doxysection{map.\+hpp}
+\label{map_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/map.hpp@{/home/jere/cpp\_visual\_slam/src/map.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef VISUAL\_SLAM\_MAP}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define VISUAL\_SLAM\_MAP}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include "{}screen.hpp"{}}}
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include "{}isometry3d.hpp"{}}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include "{}frame.hpp"{}}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include "{}point.hpp"{}}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include "{}helper\_functions.hpp"{}}}
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#include "{}transformation.hpp"{}}}
+\DoxyCodeLine{10 }
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{12 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{13 }
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <chrono>}}
+\DoxyCodeLine{15 \textcolor{preprocessor}{\#include <Eigen/Dense>} }
+\DoxyCodeLine{16 }
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <tuple>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include <opencv2/core/eigen.hpp>}}
+\DoxyCodeLine{20 \textcolor{preprocessor}{\#include <opencv2/videoio.hpp>}}
+\DoxyCodeLine{21 }
+\DoxyCodeLine{22 \textcolor{preprocessor}{\#ifndef G2O\_USE\_VENDORED\_CERES}}
+\DoxyCodeLine{23 \textcolor{preprocessor}{\#define G2O\_USE\_VENDORED\_CERES}}
+\DoxyCodeLine{24 \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{25 }
+\DoxyCodeLine{26 \textcolor{preprocessor}{\#include "{}g2o/config.h"{}}}
+\DoxyCodeLine{27 \textcolor{preprocessor}{\#include "{}g2o/core/block\_solver.h"{}}}
+\DoxyCodeLine{28 \textcolor{preprocessor}{\#include "{}g2o/core/optimization\_algorithm\_levenberg.h"{}}}
+\DoxyCodeLine{29 \textcolor{preprocessor}{\#include "{}g2o/solvers/eigen/linear\_solver\_eigen.h"{}}}
+\DoxyCodeLine{30 \textcolor{preprocessor}{\#include "{}g2o/types/sba/types\_six\_dof\_expmap.h"{}}}
+\DoxyCodeLine{31 \textcolor{preprocessor}{\#include "{}g2o/core/robust\_kernel\_impl.h"{}}}
+\DoxyCodeLine{32 \textcolor{preprocessor}{\#include "{}g2o/solvers/dense/linear\_solver\_dense.h"{}}}
+\DoxyCodeLine{33 \textcolor{preprocessor}{\#include "{}g2o/types/sim3/types\_seven\_dof\_expmap.h"{}}}
+\DoxyCodeLine{34 \textcolor{preprocessor}{\#include "{}g2o/core/solver.h"{}}}
+\DoxyCodeLine{35 \textcolor{preprocessor}{\#include "{}g2o/core/sparse\_optimizer.h"{}}}
+\DoxyCodeLine{36 \textcolor{preprocessor}{\#include "{}g2o/solvers/dense/linear\_solver\_dense.h"{}}}
+\DoxyCodeLine{37 }
+\DoxyCodeLine{38 \textcolor{comment}{//\#include "{}helper\_functions.hpp"{}}}
+\DoxyCodeLine{39 }
+\DoxyCodeLine{47 \textcolor{keyword}{class }\mbox{\hyperlink{classMap}{Map}} \{}
+\DoxyCodeLine{48     \textcolor{keyword}{public}:}
+\DoxyCodeLine{58         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_aa9a647846b469d9e34beabc4896ba3ac}{InitializeMap}}(std::vector<std::filesystem::path>::iterator\& input\_video\_it, \textcolor{keywordtype}{int}\& id\_frame, \textcolor{keywordtype}{int}\& id\_point, \mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}} feature\_extractor, \mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}} feature\_matcher, cv::Mat cameraIntrinsicsMatrix, \textcolor{keywordtype}{bool} visualize = \textcolor{keyword}{false})\{}
+\DoxyCodeLine{59             \textcolor{comment}{// store first frame as prev\_frame}}
+\DoxyCodeLine{60             cv::Mat img, dispImg;}
+\DoxyCodeLine{61             img = cv::imread(*input\_video\_it);}
+\DoxyCodeLine{62             \textcolor{comment}{//std::shared\_ptr<Frame> prev\_frame(new Frame(img, id\_frame)); // create frame object out of image}}
+\DoxyCodeLine{63             std::shared\_ptr<Frame> prev\_frame = std::make\_shared<Frame>(img, id\_frame);}
+\DoxyCodeLine{64             prev\_frame-\/>process(feature\_extractor);}
+\DoxyCodeLine{65             prev\_frame-\/>SetAsKeyFrame();}
+\DoxyCodeLine{66             prev\_frame-\/>AddPose(cv::Mat::eye(4,4,CV\_64F)); \textcolor{comment}{// add Identity as initial pose}}
+\DoxyCodeLine{67             (*this).AddFrame(id\_frame, prev\_frame); \textcolor{comment}{// add to map}}
+\DoxyCodeLine{68             id\_frame++;}
+\DoxyCodeLine{69             \textcolor{comment}{// read next image}}
+\DoxyCodeLine{70             input\_video\_it++;}
+\DoxyCodeLine{71             cv::Mat image;}
+\DoxyCodeLine{72             image = cv::imread(*input\_video\_it);}
+\DoxyCodeLine{73             \textcolor{keywordflow}{while}(!img.empty())\{}
+\DoxyCodeLine{74                 \textcolor{comment}{//std::shared\_ptr<Frame> cur\_frame(new Frame(image, id\_frame)); // create frame object out of image}}
+\DoxyCodeLine{75                 std::shared\_ptr<Frame> cur\_frame = std::make\_shared<Frame>(image, id\_frame);}
+\DoxyCodeLine{76                 image = cv::imread(*input\_video\_it);}
+\DoxyCodeLine{77                 input\_video\_it++;}
+\DoxyCodeLine{78                 cur\_frame-\/>process(feature\_extractor);}
+\DoxyCodeLine{79                 std::vector<cv::DMatch> matches; cv::Mat preMatchedPoints; cv::Mat preMatchedFeatures; cv::Mat curMatchedPoints; cv::Mat curMatchedFeatures;}
+\DoxyCodeLine{80                 std::tuple<std::vector<cv::DMatch>, cv::Mat , cv::Mat, cv::Mat , cv::Mat> match\_info}
+\DoxyCodeLine{81                      = \mbox{\hyperlink{classFrame_ad98c4c5de25e7251579887a2c740b0e4}{Frame::Match2Frames}}(prev\_frame, cur\_frame, feature\_matcher);}
+\DoxyCodeLine{82                 \textcolor{comment}{// parse tuple to objects}}
+\DoxyCodeLine{83                 matches = std::get<0>(match\_info); preMatchedPoints = std::get<1>(match\_info); preMatchedFeatures = std::get<2>(match\_info);}
+\DoxyCodeLine{84                 curMatchedPoints = std::get<3>(match\_info); curMatchedFeatures = std::get<4>(match\_info);}
+\DoxyCodeLine{85                 \textcolor{comment}{// draw matches}}
+\DoxyCodeLine{86                 \textcolor{keywordflow}{if}(visualize)\{}
+\DoxyCodeLine{87                     cv::drawMatches(prev\_frame-\/>GetRGB(), prev\_frame-\/>GetKeyPointsAsVector(),}
+\DoxyCodeLine{88                     cur\_frame-\/>GetRGB(), cur\_frame-\/>GetKeyPointsAsVector(), matches, dispImg);}
+\DoxyCodeLine{89                     cv::imshow(\textcolor{stringliteral}{"{}Display Image"{}}, dispImg);}
+\DoxyCodeLine{90                     cv::waitKey(1);}
+\DoxyCodeLine{91                 \}}
+\DoxyCodeLine{92                 \textcolor{keywordflow}{if}(matches.size() < 100)\{}
+\DoxyCodeLine{94                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{95                 \}}
+\DoxyCodeLine{96                 \textcolor{comment}{//Essential transformation = Essential();               }}
+\DoxyCodeLine{97                 \textcolor{comment}{//transformation.Estimate(preMatchedPoints, curMatchedPoints, cameraIntrinsicsMatrix);}}
+\DoxyCodeLine{99 \textcolor{comment}{}}
+\DoxyCodeLine{100                 cv::Mat inlierMask;}
+\DoxyCodeLine{101                 cv::Mat RelativePoseTransformation, TriangulatedPoints;}
+\DoxyCodeLine{102                 EstimateEssential(preMatchedPoints, curMatchedPoints, cameraIntrinsicsMatrix, RelativePoseTransformation, TriangulatedPoints, inlierMask);}
+\DoxyCodeLine{103                 \textcolor{keywordflow}{if}(cv::sum(inlierMask)[0]/preMatchedPoints.rows < 0.9 )\{}
+\DoxyCodeLine{105                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{106                 \}}
+\DoxyCodeLine{107                 }
+\DoxyCodeLine{108                 \textcolor{comment}{// new keyframe is found}}
+\DoxyCodeLine{109                 cur\_frame-\/>SetAsKeyFrame();}
+\DoxyCodeLine{110                 cv::Mat cur\_pose = RelativePoseTransformation; \textcolor{comment}{// shortcut as previous pose is identity, inverse because opencv treats transformation as "{}where the points move"{} instead of "{}where the camera moves"{}}}
+\DoxyCodeLine{111                 \textcolor{comment}{// Adds cur frame to map with estimated pose, parent frame, and relative pose transformation between parent and frame}}
+\DoxyCodeLine{112 }
+\DoxyCodeLine{113                 (*this).AddPoseNode(id\_frame, cur\_frame, cur\_pose, id\_frame -\/ 1, RelativePoseTransformation);}
+\DoxyCodeLine{114                 id\_frame++;}
+\DoxyCodeLine{115                 \textcolor{comment}{// get inliers and turn to eigen matrices }}
+\DoxyCodeLine{116                 (*this).AddPoints3D(id\_point, TriangulatedPoints, prev\_frame, preMatchedPoints, preMatchedFeatures, cur\_frame, curMatchedPoints, curMatchedFeatures, inlierMask);}
+\DoxyCodeLine{117                 \textcolor{comment}{// at end of loop}}
+\DoxyCodeLine{118                 \textcolor{keywordflow}{break};}
+\DoxyCodeLine{119             \}}
+\DoxyCodeLine{120         \}}
+\DoxyCodeLine{121 }
+\DoxyCodeLine{136         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a1937e4dc23c1a06435c7d0986f759193}{localTracking}}(std::vector<std::filesystem::path>::iterator\& input\_video\_it, \textcolor{keywordtype}{int}\& id\_frame, \textcolor{keywordtype}{int}\& id\_point, \mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}} feature\_extractor, \mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}} feature\_matcher, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients, \mbox{\hyperlink{classPointClouds}{PointClouds}}\& clouds, \textcolor{keywordtype}{bool} visualize = \textcolor{keyword}{true}, \textcolor{keywordtype}{bool} verbose\_optimization = \textcolor{keyword}{false})\{}
+\DoxyCodeLine{137             \textcolor{comment}{//Get the map points that the last keyframe sees}}
+\DoxyCodeLine{138             \textcolor{keywordtype}{int} lastkeyframe\_idx = id\_frame-\/1;}
+\DoxyCodeLine{139             std::tuple<cv::Mat, cv::Mat, cv::Mat, std::vector<int>> map\_points = \mbox{\hyperlink{classMap_a1abc85be6f20969fccc1400eef0d2137}{GetImagePointsWithFrameID}}(lastkeyframe\_idx); \textcolor{comment}{// get information of the points the last keyframe sees}}
+\DoxyCodeLine{140             \textcolor{comment}{// start tracking}}
+\DoxyCodeLine{141             input\_video\_it++;}
+\DoxyCodeLine{142             cv::Mat image;}
+\DoxyCodeLine{143             image = cv::imread(*input\_video\_it);}
+\DoxyCodeLine{144             \textcolor{keywordtype}{int} trackFrameCount = 0;}
+\DoxyCodeLine{145             \textcolor{keywordflow}{while}(!image.empty())\{}
+\DoxyCodeLine{146                 \textcolor{comment}{// create Frame object from video frame and increase videoframe iterator}}
+\DoxyCodeLine{147                 \textcolor{comment}{//std::shared\_ptr<Frame> cur\_frame(new Frame(image, id\_frame)); // create frame object out of image}}
+\DoxyCodeLine{148                 std::shared\_ptr<Frame> cur\_frame = std::make\_shared<Frame>(image, id\_frame);}
+\DoxyCodeLine{149                 image = cv::imread(*input\_video\_it);}
+\DoxyCodeLine{150                 input\_video\_it++;}
+\DoxyCodeLine{151                 cur\_frame-\/>process(feature\_extractor);}
+\DoxyCodeLine{152                 \textcolor{comment}{// pass imagepoints of map points (last keyframe), descriptors of map points (last keyframe), current frame imagepoints, and current frame for feature matching}}
+\DoxyCodeLine{153                 std::vector<cv::DMatch> matches; cv::Mat preMatchedPoints; cv::Mat preMatchedFeatures; cv::Mat curMatchedPoints; cv::Mat curMatchedFeatures;}
+\DoxyCodeLine{154                 std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> match\_info = feature\_matcher.match\_features(std::get<0>(map\_points), std::get<1>(map\_points), cur\_frame-\/>GetKeyPoints(), cur\_frame-\/>GetFeatures());}
+\DoxyCodeLine{155                 \textcolor{comment}{// parse tuple to objects}}
+\DoxyCodeLine{156                 matches = std::get<0>(match\_info); preMatchedPoints = std::get<1>(match\_info); preMatchedFeatures = std::get<2>(match\_info); curMatchedPoints = std::get<3>(match\_info); curMatchedFeatures = std::get<4>(match\_info);}
+\DoxyCodeLine{157                 \textcolor{comment}{// get 3d locations of matching imagepoints and corresponding point ids}}
+\DoxyCodeLine{158                 \textcolor{comment}{// matched\_3d are 3d point locations of those map points that we are able to match in the current frame}}
+\DoxyCodeLine{159                 cv::Mat matched\_3d = GetQueryMatches(std::get<2>(map\_points), matches); }
+\DoxyCodeLine{160                 std::cout << \textcolor{stringliteral}{"{}TRACKING "{}} << matched\_3d.rows << \textcolor{stringliteral}{"{} POINTS"{}} << std::endl;}
+\DoxyCodeLine{161                 \textcolor{comment}{// corresponding\_point\_ids are point ids of those map points that we are able to match in the current frame}}
+\DoxyCodeLine{162                 std::vector<int> corresponding\_point\_ids = GetQueryMatches(std::get<3>(map\_points), matches);}
+\DoxyCodeLine{163                 cv::Mat rvec, tvec;}
+\DoxyCodeLine{164                 cv::Mat inliers;}
+\DoxyCodeLine{165                 cv::solvePnPRansac(matched\_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, \textcolor{keyword}{false}, 200, 3.0F, 0.95, inliers);}
+\DoxyCodeLine{166                 \textcolor{keywordflow}{if}(inliers.rows<10)\{}
+\DoxyCodeLine{167                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{168                 \}}
+\DoxyCodeLine{169                 \textcolor{comment}{//std::cout << "{}Inliers passing solvePnPRansack: "{} << inliers.rows << "{}/"{} << curMatchedPoints.rows << std::endl;}}
+\DoxyCodeLine{170                 cv::Mat T = transformMatrix(rvec,tvec);}
+\DoxyCodeLine{171                 cv::Mat W\_T\_curr = T.inv(); \textcolor{comment}{// From w to curr frame W\_T\_curr}}
+\DoxyCodeLine{172                 \textcolor{comment}{//PnP transformation = PnP();}}
+\DoxyCodeLine{173                 \textcolor{comment}{//transformation.Estimate(matched\_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients);}}
+\DoxyCodeLine{174                 cv::Mat prev\_T\_W = (\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetPose()).inv(); \textcolor{comment}{// From prev to world frame W\_T\_curr}}
+\DoxyCodeLine{175                 cv::Mat Relative\_pose\_trans = prev\_T\_W * W\_T\_curr;}
+\DoxyCodeLine{176                 \mbox{\hyperlink{classMap_a46301e9a0b4bc22f3f1c06dc9488b53e}{AddParentAndPose}}(id\_frame-\/1, id\_frame, cur\_frame, Relative\_pose\_trans, W\_T\_curr);}
+\DoxyCodeLine{177                 id\_frame++;}
+\DoxyCodeLine{178                 \mbox{\hyperlink{classMap_a07840c5ad0d970a919311ff98c081741}{AddPointToFrameCorrespondances}}(corresponding\_point\_ids, curMatchedPoints, curMatchedFeatures, cur\_frame, inliers);}
+\DoxyCodeLine{179                 \mbox{\hyperlink{classMap_a193ee3366fd19db55bcdabdb89560fb6}{BundleAdjustement}}(\textcolor{keyword}{true}, \textcolor{keyword}{false}, verbose\_optimization); \textcolor{comment}{// Do motion only (=points are fixed) bundleadjustement by setting tracking to true}}
+\DoxyCodeLine{180                 \textcolor{keywordflow}{if}(visualize)\{}
+\DoxyCodeLine{181                     cv::Mat dispImg;}
+\DoxyCodeLine{182                     cv::drawMatches(\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(lastkeyframe\_idx)-\/>GetRGB(), \mbox{\hyperlink{classFrame_ae3d9499ba6a8f087e99d8b7d9ca44889}{Frame::GetKeyPointsAsVector}}(std::get<0>(map\_points)), cur\_frame-\/>GetRGB(), cur\_frame-\/>GetKeyPointsAsVector(), matches, dispImg);}
+\DoxyCodeLine{183                     cv::imshow(\textcolor{stringliteral}{"{}Display Image"{}}, dispImg);}
+\DoxyCodeLine{184                     cv::waitKey(1);}
+\DoxyCodeLine{185                 \}}
+\DoxyCodeLine{186                 \textcolor{comment}{// Check if current frame is a key frame:}}
+\DoxyCodeLine{187                 \textcolor{comment}{// 1. at least 20 frames has passed or current frame tracks less than 80 map points}}
+\DoxyCodeLine{188                 \textcolor{comment}{// 2. The map points tracked are fewer than 90\% of the map points seen by the last key frame}}
+\DoxyCodeLine{189                 std::cout << ((double)inliers.rows) / ((double)std::get<0>(map\_points).rows) << std::endl;}
+\DoxyCodeLine{190                 \textcolor{keywordflow}{if}( (trackFrameCount > 20 || inliers.rows < 80) \&\& ( (((double)inliers.rows) / ((double)std::get<0>(map\_points).rows)) < 0.9) )\{ \textcolor{comment}{// || ( (((double)inliers.rows) / ((double)std::get<0>(map\_points).rows)) < 0.9) ) \{ //|| (inliers.rows / std::get<0>(map\_points).rows < 0.9))\{}}
+\DoxyCodeLine{191                 \textcolor{comment}{//if( (trackFrameCount > 15 \&\& inliers.rows < 120)  )\{}}
+\DoxyCodeLine{192                     std::cout<<\textcolor{stringliteral}{"{}New keyframe found"{}} << std::endl;}
+\DoxyCodeLine{193                     \textcolor{keywordflow}{break};}
+\DoxyCodeLine{194                 \}}
+\DoxyCodeLine{195                 trackFrameCount++;}
+\DoxyCodeLine{196                 \textcolor{comment}{// visualize all points}}
+\DoxyCodeLine{197                 std::vector<cv::Mat> created\_points = \mbox{\hyperlink{classMap_ab302f82577207581235a078ba7fdae6c}{GetAll3DPoints}}();}
+\DoxyCodeLine{198                 std::vector<cv::Mat> camera\_locs = \mbox{\hyperlink{classMap_a46a64016efaaa22453133b6ea542541f}{GetAllCameraLocations}}();}
+\DoxyCodeLine{199                 clouds.\mbox{\hyperlink{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}{Clear}}();}
+\DoxyCodeLine{200                 clouds.\mbox{\hyperlink{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}{AddPointsMatUpdate}}(created\_points, \textcolor{keyword}{false});}
+\DoxyCodeLine{201                 clouds.\mbox{\hyperlink{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}{AddPointsMatUpdate}}(camera\_locs, \textcolor{keyword}{true});}
+\DoxyCodeLine{202             \}}
+\DoxyCodeLine{203             }
+\DoxyCodeLine{204         \}}
+\DoxyCodeLine{205 }
+\DoxyCodeLine{218         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a8b58b11b8682777eae3bbd277c3ff205}{localMapping}}(\textcolor{keywordtype}{int}\& id\_frame, \textcolor{keywordtype}{int}\& id\_point, \mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}} feature\_extractor, \mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}} feature\_matcher, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients,\textcolor{keywordtype}{int}\& last\_key\_frame\_id, \textcolor{keywordtype}{bool} visualize = \textcolor{keyword}{false})\{}
+\DoxyCodeLine{219             \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>SetAsKeyFrame(); \textcolor{comment}{// Set lastly added frame to be a new keyframe}}
+\DoxyCodeLine{220             \textcolor{comment}{//\# Get last keyframe pose from global map (from world to previous keyframe)}}
+\DoxyCodeLine{221             cv::Mat W\_T\_prev\_key = \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(last\_key\_frame\_id)-\/>GetPose();}
+\DoxyCodeLine{222             cv::Mat prev\_key\_T\_W = W\_T\_prev\_key.inv(); \textcolor{comment}{// Get pose from previous keyframe to world}}
+\DoxyCodeLine{223             cv::Mat W\_T\_cur\_key = \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetPose(); \textcolor{comment}{// Get pose from W to curr keyframe}}
+\DoxyCodeLine{224             \textcolor{comment}{// (int parent\_frame\_id, cv::Mat transition)}}
+\DoxyCodeLine{225             \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>AddParent(last\_key\_frame\_id, prev\_key\_T\_W*W\_T\_cur\_key);}
+\DoxyCodeLine{226             cv::Mat image\_points\_already\_in\_map = std::get<0>(\mbox{\hyperlink{classMap_a1abc85be6f20969fccc1400eef0d2137}{GetImagePointsWithFrameID}}(last\_key\_frame\_id));}
+\DoxyCodeLine{227             cv::Mat kp1 = \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(last\_key\_frame\_id)-\/>GetKeyPoints(); \textcolor{comment}{// this contains all the image points (matched and unmatched)}}
+\DoxyCodeLine{228             cv::Mat desc1 = \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(last\_key\_frame\_id)-\/>GetFeatures(); }
+\DoxyCodeLine{229             std::vector<int> idx\_list = GetListDiff(kp1, image\_points\_already\_in\_map); \textcolor{comment}{// THIS DOES NOT WORK PERFECTLY CORREC; BUT SUFFICIENT FOR NOW}}
+\DoxyCodeLine{230             \textcolor{comment}{// GetImagePointsWithIdxList}}
+\DoxyCodeLine{231             cv::Mat unmatched\_kp1 = GetImagePointsWithIdxList(idx\_list, kp1);}
+\DoxyCodeLine{232             cv::Mat unmatched\_desc1 = GetImageDescWithIdxList(idx\_list, desc1);}
+\DoxyCodeLine{233             std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> match\_info = feature\_matcher.match\_features(unmatched\_kp1, unmatched\_desc1, \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetKeyPoints(), \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetFeatures());}
+\DoxyCodeLine{234             std::vector<cv::DMatch> matches; cv::Mat last\_keyframe\_points; cv::Mat last\_keyframe\_features; cv::Mat cur\_keyframe\_points; cv::Mat cur\_keyframe\_features;}
+\DoxyCodeLine{235             matches = std::get<0>(match\_info); last\_keyframe\_points = std::get<1>(match\_info); last\_keyframe\_features = std::get<2>(match\_info); cur\_keyframe\_points = std::get<3>(match\_info); cur\_keyframe\_features = std::get<4>(match\_info);}
+\DoxyCodeLine{236             \textcolor{keywordflow}{if}(visualize)\{}
+\DoxyCodeLine{237                 cv::Mat dispImg;}
+\DoxyCodeLine{238                 cv::drawMatches(\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(last\_key\_frame\_id)-\/>GetRGB(), \mbox{\hyperlink{classFrame_ae3d9499ba6a8f087e99d8b7d9ca44889}{Frame::GetKeyPointsAsVector}}(unmatched\_kp1), \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetRGB(), \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetKeyPointsAsVector(), matches, dispImg);}
+\DoxyCodeLine{239                 cv::imshow(\textcolor{stringliteral}{"{}Display Image"{}}, dispImg);}
+\DoxyCodeLine{240                 cv::waitKey(1);}
+\DoxyCodeLine{241             \}}
+\DoxyCodeLine{242             cv::Mat Proj1 = CameraProjectionMatrix2(\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(last\_key\_frame\_id)-\/>GetPose(), cameraIntrinsicsMatrix);}
+\DoxyCodeLine{243             cv::Mat Proj2 = CameraProjectionMatrix2(\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetPose(), cameraIntrinsicsMatrix);}
+\DoxyCodeLine{244             cv::Mat inlierMask;}
+\DoxyCodeLine{245             cv::Mat new\_triagulated\_points = triangulate(\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(last\_key\_frame\_id)-\/>GetPose(), \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1)-\/>GetPose(), last\_keyframe\_points, cur\_keyframe\_points, cameraIntrinsicsMatrix, inlierMask);}
+\DoxyCodeLine{246             }
+\DoxyCodeLine{248             std::cout << \textcolor{stringliteral}{"{}ADDING "{}} << cv::sum(inlierMask)[0] << \textcolor{stringliteral}{"{} NEW MAP POINTS"{}} << std::endl;}
+\DoxyCodeLine{249             \textcolor{comment}{// cleanup bad points from map (seen by less than 3 frames)}}
+\DoxyCodeLine{250             CleanUpBadPoints();}
+\DoxyCodeLine{251 }
+\DoxyCodeLine{252             \mbox{\hyperlink{classMap_a4bdf2cac1536e078b3ff5bb4a914e980}{AddPoints3D}}(id\_point, new\_triagulated\_points, \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(last\_key\_frame\_id), last\_keyframe\_points, last\_keyframe\_features, \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(id\_frame-\/1), cur\_keyframe\_points, cur\_keyframe\_features, inlierMask);}
+\DoxyCodeLine{253         \}}
+\DoxyCodeLine{254 }
+\DoxyCodeLine{255         \textcolor{keywordtype}{void} CleanUpBadPoints()\{}
+\DoxyCodeLine{256             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.cbegin(); it != \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.cend() \textcolor{comment}{/* not hoisted */}; \textcolor{comment}{/* no increment */})}
+\DoxyCodeLine{257             \{}
+\DoxyCodeLine{258             \textcolor{keywordflow}{if} (it-\/>second-\/>IsBad())}
+\DoxyCodeLine{259             \{}
+\DoxyCodeLine{260                 \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.erase(it++);    \textcolor{comment}{// or "{}it = m.erase(it)"{} since C++11}}
+\DoxyCodeLine{261             \}}
+\DoxyCodeLine{262             \textcolor{keywordflow}{else}}
+\DoxyCodeLine{263             \{}
+\DoxyCodeLine{264                 ++it;}
+\DoxyCodeLine{265             \}}
+\DoxyCodeLine{266             \} }
+\DoxyCodeLine{267 }
+\DoxyCodeLine{268         \}}
+\DoxyCodeLine{269 }
+\DoxyCodeLine{270 }
+\DoxyCodeLine{276         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_ac04b632c7e8bf396387ddb2a37a36898}{AddFrame}}(\textcolor{keywordtype}{int} frame\_id, std::shared\_ptr<Frame> frame) \{}
+\DoxyCodeLine{277             \textcolor{comment}{// TODO: add warning for the duplicate}}
+\DoxyCodeLine{278             \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}[frame\_id] = frame;}
+\DoxyCodeLine{279         \}}
+\DoxyCodeLine{280 }
+\DoxyCodeLine{285         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a77568c813061e28f34d6d1da9580ff8c}{AddPoint3D}}(\textcolor{keywordtype}{int} point\_id, std::shared\_ptr<Point3D> point\_3d) \{}
+\DoxyCodeLine{286             \textcolor{comment}{// TODO: add warning for the duplicate}}
+\DoxyCodeLine{287             \textcolor{keywordflow}{if}(\mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.find(point\_id)!=\mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end())\{}
+\DoxyCodeLine{288                 \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"{}Duplicate point\_id in AddPoint3D"{}});}
+\DoxyCodeLine{289             \}}
+\DoxyCodeLine{290             \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}[point\_id] = point\_3d;}
+\DoxyCodeLine{291         \}}
+\DoxyCodeLine{292 }
+\DoxyCodeLine{293         \textcolor{comment}{// Adds multiple points to map with one function call, gets running indexing of points (id\_point), which is increased inside the function,}}
+\DoxyCodeLine{294         \textcolor{comment}{// matrix of 3D point locations (Nx3), pointers to frames (1\&2) that see the point }}
+\DoxyCodeLine{307 \textcolor{comment}{}        \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a4bdf2cac1536e078b3ff5bb4a914e980}{AddPoints3D}}(\textcolor{keywordtype}{int}\& id\_point, cv::Mat points\_3d, std::shared\_ptr<Frame> frame1, cv::Mat uv1, cv::Mat desc1, std::shared\_ptr<Frame> frame2, cv::Mat uv2, cv::Mat desc2, cv::Mat inlierMask)\{         }
+\DoxyCodeLine{308             \textcolor{keywordflow}{for} (\textcolor{keywordtype}{int} i = 0; i < points\_3d.rows; i++) \{}
+\DoxyCodeLine{309                 \textcolor{keywordtype}{int} mask\_val = inlierMask.at<uchar>(i);}
+\DoxyCodeLine{310                 \textcolor{comment}{//std::cout << "{}Mask value: "{}<< mask\_val << "{}, z location: "{} << (points\_3d.at<double>(i,2)) << std::endl;}}
+\DoxyCodeLine{311                 \textcolor{keywordflow}{if}( (mask\_val == 1))\{}
+\DoxyCodeLine{312                     \textcolor{comment}{// make sure it is normalized, use helper segment to make euclidean}}
+\DoxyCodeLine{313                     \textcolor{comment}{// cv::Mat location\_3D = segment(points\_3d.row(i) / points\_3d.at<double>(i,3), 0, 3); }}
+\DoxyCodeLine{314                     cv::Mat location\_3D = points\_3d.row(i);}
+\DoxyCodeLine{315                     std::shared\_ptr<Point3D> pt\_object(\textcolor{keyword}{new} \mbox{\hyperlink{classPoint3D}{Point3D}}(id\_point, location\_3D));}
+\DoxyCodeLine{316                     pt\_object-\/>AddFrame(frame1, uv1.row(i), desc1.row(i));}
+\DoxyCodeLine{317                     pt\_object-\/>AddFrame(frame2, uv2.row(i), desc2.row(i));}
+\DoxyCodeLine{318                     (*this).AddPoint3D(id\_point, pt\_object);}
+\DoxyCodeLine{319                     id\_point++;;}
+\DoxyCodeLine{320                 \}}
+\DoxyCodeLine{321             \}}
+\DoxyCodeLine{322         \}}
+\DoxyCodeLine{323  }
+\DoxyCodeLine{329         std::vector<int> \mbox{\hyperlink{classMap_a069104df608ee51296ea28cf84b0587d}{GetPointsVisibleToFrame}}(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{330             std::vector<int> point\_id\_list;}
+\DoxyCodeLine{331             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.begin(); it != \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end(); ++it) \{}
+\DoxyCodeLine{332                 \textcolor{keywordflow}{if}(it-\/>second-\/>IsVisibleTo(frame\_id))\{}
+\DoxyCodeLine{333                     point\_id\_list.push\_back(it-\/>first);}
+\DoxyCodeLine{334                 \}}
+\DoxyCodeLine{335             \}}
+\DoxyCodeLine{336             \textcolor{keywordflow}{return} point\_id\_list;}
+\DoxyCodeLine{337         \}}
+\DoxyCodeLine{338 }
+\DoxyCodeLine{344         std::vector<int> \mbox{\hyperlink{classMap_a69b40e57dedea142af91bffc011d9e4e}{GetPointsVisibleToFrames}}(std::vector<int> frame\_id\_list) \{}
+\DoxyCodeLine{345             std::vector<int> point\_id\_list;}
+\DoxyCodeLine{346             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.begin(); it != \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end(); ++it) \{}
+\DoxyCodeLine{347                 \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} it2 = frame\_id\_list.begin(); it2 != frame\_id\_list.end(); ++it2) \{}
+\DoxyCodeLine{348                     \textcolor{comment}{// it contrain key values, take value which is pointer to object instance which has Is visible function}}
+\DoxyCodeLine{349                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{350                     \textcolor{comment}{//visibility.push\_back(((*it).second)-\/>IsVisibleTo(*it2));}}
+\DoxyCodeLine{351                 \}}
+\DoxyCodeLine{352             \}}
+\DoxyCodeLine{353             \textcolor{keywordflow}{return} point\_id\_list;}
+\DoxyCodeLine{354         \}}
+\DoxyCodeLine{355 }
+\DoxyCodeLine{361         std::tuple<cv::Mat, cv::Mat, cv::Mat, std::vector<int>> \mbox{\hyperlink{classMap_a1abc85be6f20969fccc1400eef0d2137}{GetImagePointsWithFrameID}}(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{362             \textcolor{comment}{//std::vector<std::tuple<cv::Mat, cv::Mat, cv::Mat, int>> ret; // return vector of tuples image points, desctiptors and point 3d eigen vectors}}
+\DoxyCodeLine{363             std::tuple<cv::Mat, cv::Mat, cv::Mat, std::vector<int>> ret; \textcolor{comment}{// return tuple image points, descriptors and point 3d vectors}}
+\DoxyCodeLine{364             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} ptr\_point\_obj = \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.begin(); ptr\_point\_obj != \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end(); ++ptr\_point\_obj) \{}
+\DoxyCodeLine{365                 \textcolor{keywordflow}{if}(ptr\_point\_obj-\/>second-\/>IsVisibleTo(frame\_id))\{}
+\DoxyCodeLine{366                     \textcolor{comment}{// Get the imagepoint and feature corresponding to the frame}}
+\DoxyCodeLine{367                     std::tuple<cv::Mat, cv::Mat>  imgpoint\_and\_feature = ptr\_point\_obj-\/>second-\/>GetImagePointAndFeature(frame\_id);}
+\DoxyCodeLine{368                     cv::Mat location\_3d = ptr\_point\_obj-\/>second-\/>Get3dPoint();}
+\DoxyCodeLine{369                     \textcolor{keywordtype}{int} point\_id = ptr\_point\_obj-\/>second-\/>GetID();}
+\DoxyCodeLine{370                     std::get<0>(ret).push\_back(std::get<0>(imgpoint\_and\_feature)); std::get<1>(ret).push\_back(std::get<1>(imgpoint\_and\_feature)); std::get<2>(ret).push\_back(location\_3d); std::get<3>(ret).push\_back(point\_id);                  \}}
+\DoxyCodeLine{371             \}}
+\DoxyCodeLine{372             \textcolor{keywordflow}{return} ret;}
+\DoxyCodeLine{373 }
+\DoxyCodeLine{374         \}}
+\DoxyCodeLine{375 }
+\DoxyCodeLine{376 }
+\DoxyCodeLine{382         std::vector<cv::Mat> \mbox{\hyperlink{classMap_aab2063d9f32475b31b8c4266d097db21}{Get3DPointsWithIDs}}(std::vector<int> id\_list) \{}
+\DoxyCodeLine{383             std::vector<cv::Mat> points;}
+\DoxyCodeLine{384             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} it = id\_list.begin(); it != id\_list.end(); ++it) \{}
+\DoxyCodeLine{385                 points.push\_back(\mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}[*it]-\/>Get3dPoint());}
+\DoxyCodeLine{386             \}}
+\DoxyCodeLine{387             \textcolor{keywordflow}{return} points;}
+\DoxyCodeLine{388         \}}
+\DoxyCodeLine{389 }
+\DoxyCodeLine{394         std::vector<cv::Mat> \mbox{\hyperlink{classMap_ab302f82577207581235a078ba7fdae6c}{GetAll3DPoints}}() \{}
+\DoxyCodeLine{395             std::vector<cv::Mat> all\_points;}
+\DoxyCodeLine{396             \textcolor{keywordflow}{for} (\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.begin(); it != \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end(); ++it) \{}
+\DoxyCodeLine{397                 all\_points.push\_back(it-\/>second-\/>Get3dPoint());}
+\DoxyCodeLine{398             \}}
+\DoxyCodeLine{399             \textcolor{keywordflow}{return} all\_points;}
+\DoxyCodeLine{400         \}}
+\DoxyCodeLine{401 }
+\DoxyCodeLine{405         std::vector<cv::Mat> \mbox{\hyperlink{classMap_a222cd8ce725fe131276c0d653b844c25}{GetAllPoses}}() \{}
+\DoxyCodeLine{406             std::vector<cv::Mat> allposes;}
+\DoxyCodeLine{407             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.begin(); it != \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.end(); ++it) \{}
+\DoxyCodeLine{408                 cv::Mat temp = it-\/>second-\/>GetPose();}
+\DoxyCodeLine{409                 allposes.push\_back(temp);}
+\DoxyCodeLine{410             \}}
+\DoxyCodeLine{411             \textcolor{keywordflow}{return} allposes;}
+\DoxyCodeLine{412         \}}
+\DoxyCodeLine{413 }
+\DoxyCodeLine{417         std::vector<cv::Mat> \mbox{\hyperlink{classMap_a46a64016efaaa22453133b6ea542541f}{GetAllCameraLocations}}(\textcolor{keywordtype}{bool} keyframes\_only = \textcolor{keyword}{false}) \{}
+\DoxyCodeLine{418                 std::vector<cv::Mat> all\_cam\_locs;}
+\DoxyCodeLine{419                 \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.begin(); it != \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.end(); ++it) \{}
+\DoxyCodeLine{420                     \textcolor{keywordflow}{if}(keyframes\_only \&\& it-\/>second-\/>IsKeyFrame())\{}
+\DoxyCodeLine{421                         cv::Mat temp = -\/GetRotation(it-\/>second-\/>GetPose()).inv() * GetTranslation(it-\/>second-\/>GetPose());}
+\DoxyCodeLine{422                         all\_cam\_locs.push\_back(temp.t());}
+\DoxyCodeLine{423                     \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(!keyframes\_only)\{}
+\DoxyCodeLine{424                         cv::Mat temp = -\/GetRotation(it-\/>second-\/>GetPose()).inv() * GetTranslation(it-\/>second-\/>GetPose());}
+\DoxyCodeLine{425                         all\_cam\_locs.push\_back(temp.t());}
+\DoxyCodeLine{426                     \}}
+\DoxyCodeLine{427                     }
+\DoxyCodeLine{428                 \}}
+\DoxyCodeLine{429                 \textcolor{keywordflow}{return} all\_cam\_locs;}
+\DoxyCodeLine{430         \}}
+\DoxyCodeLine{434         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a71543ae9f620bd29c5d450d5be9d587b}{UpdatePose}}(cv::Mat new\_pose, \textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{435             \textcolor{comment}{// TODO check if frame with frame\_id even exist yet}}
+\DoxyCodeLine{436             \textcolor{keywordflow}{if}(\mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.find(frame\_id)==\mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.end())\{}
+\DoxyCodeLine{437                 \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"{}No such frame\_id exists in map in UpdatePose: "{}} + frame\_id);}
+\DoxyCodeLine{438             \}}
+\DoxyCodeLine{439             \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}[frame\_id]-\/>UpdatePose(new\_pose); \textcolor{comment}{// TODO: function to convert eigen pose to open cv mat and wise versa}}
+\DoxyCodeLine{440         \}}
+\DoxyCodeLine{441 }
+\DoxyCodeLine{445         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_af38c232b55abfcb5ba62880ec8493232}{UpdatePoint3D}}(cv::Mat new\_point, \textcolor{keywordtype}{int} point\_id) \{}
+\DoxyCodeLine{446             \textcolor{keywordflow}{if}(\mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.find(point\_id)==\mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end())\{}
+\DoxyCodeLine{447                 \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"{}No such point\_id exists in map in UpdatePoint3D: "{}} + point\_id);}
+\DoxyCodeLine{448             \}}
+\DoxyCodeLine{449             \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}[point\_id]-\/>UpdatePoint(new\_point);}
+\DoxyCodeLine{450         \}}
+\DoxyCodeLine{451 }
+\DoxyCodeLine{455         std::shared\_ptr<Frame> \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(\textcolor{keywordtype}{int} frame\_id) \{}
+\DoxyCodeLine{456             \textcolor{keywordflow}{if} (\mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.find(frame\_id) == \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.end()) \{}
+\DoxyCodeLine{457                 std::cout << \textcolor{stringliteral}{"{}Trying to Get non-\/existent frame"{}} << std::endl;}
+\DoxyCodeLine{458                 \textcolor{keywordflow}{return} \textcolor{keyword}{nullptr};}
+\DoxyCodeLine{459             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{460                 \textcolor{keywordflow}{return} \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}[frame\_id];}
+\DoxyCodeLine{461             \}}
+\DoxyCodeLine{462         \}}
+\DoxyCodeLine{466         std::shared\_ptr<Point3D> \mbox{\hyperlink{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}{GetPoint}}(\textcolor{keywordtype}{int} point\_id) \{}
+\DoxyCodeLine{467             \textcolor{keywordflow}{if} (\mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.find(point\_id) == \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end()) \{}
+\DoxyCodeLine{468             \textcolor{comment}{// not found}}
+\DoxyCodeLine{469             \textcolor{keywordflow}{throw} std::invalid\_argument(\textcolor{stringliteral}{"{}No such point\_id exists in map in GetPoint: "{}} + point\_id);}
+\DoxyCodeLine{470             \} \textcolor{keywordflow}{else} \{}
+\DoxyCodeLine{471             \textcolor{comment}{// found}}
+\DoxyCodeLine{472             \textcolor{keywordflow}{return} \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}[point\_id];}
+\DoxyCodeLine{473             \}}
+\DoxyCodeLine{474         \}}
+\DoxyCodeLine{475 }
+\DoxyCodeLine{479         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a78ee141b8ce63f36fb1ff3472bbfcda0}{Store3DPoints}}(std::map<\textcolor{keywordtype}{int}, std::shared\_ptr<Point3D>> points\_map) \{}
+\DoxyCodeLine{480             \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.insert(points\_map.begin(), points\_map.end());}
+\DoxyCodeLine{481         \}}
+\DoxyCodeLine{482         }
+\DoxyCodeLine{489         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a46301e9a0b4bc22f3f1c06dc9488b53e}{AddParentAndPose}}(\textcolor{keywordtype}{int} parent\_id, \textcolor{keywordtype}{int} frame\_id, std::shared\_ptr<Frame> frame\_obj, cv::Mat rel\_pose\_trans, cv::Mat pose) \{}
+\DoxyCodeLine{490             frame\_obj-\/>AddParent(parent\_id, rel\_pose\_trans);}
+\DoxyCodeLine{491             frame\_obj-\/>AddPose(pose);}
+\DoxyCodeLine{492             frame\_obj-\/>AddID(frame\_id);}
+\DoxyCodeLine{493             this-\/>\mbox{\hyperlink{classMap_ac04b632c7e8bf396387ddb2a37a36898}{AddFrame}}(frame\_id, frame\_obj);}
+\DoxyCodeLine{494         \}}
+\DoxyCodeLine{495 }
+\DoxyCodeLine{503         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a893e322cd98366a8f0bc8e5f4182a929}{AddPoseNode}}(\textcolor{keywordtype}{int} frame\_id, std::shared\_ptr<Frame> frame\_obj, cv::Mat pose, \textcolor{keywordtype}{int} parent\_id, cv::Mat rel\_pose\_trans) \{}
+\DoxyCodeLine{504             frame\_obj-\/>AddParent(parent\_id, rel\_pose\_trans);}
+\DoxyCodeLine{505             frame\_obj-\/>AddPose(pose);}
+\DoxyCodeLine{506             frame\_obj-\/>AddID(frame\_id);}
+\DoxyCodeLine{507             this-\/>\mbox{\hyperlink{classMap_ac04b632c7e8bf396387ddb2a37a36898}{AddFrame}}(frame\_id, frame\_obj);}
+\DoxyCodeLine{508         \}}
+\DoxyCodeLine{509 }
+\DoxyCodeLine{514         std::vector<int> \mbox{\hyperlink{classMap_aa983b4c4a225036a980a22742a8bb5a6}{GetAllFrameIDs}}() \{}
+\DoxyCodeLine{515             std::vector<int> frame\_id\_list;}
+\DoxyCodeLine{516             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.begin(); it != \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}.end(); ++it) \{}
+\DoxyCodeLine{517                 \textcolor{keywordtype}{int} frame\_id = it-\/>first;}
+\DoxyCodeLine{518                 frame\_id\_list.push\_back(frame\_id);}
+\DoxyCodeLine{519             \}}
+\DoxyCodeLine{520             \textcolor{keywordflow}{return} frame\_id\_list;}
+\DoxyCodeLine{521 }
+\DoxyCodeLine{522         \}}
+\DoxyCodeLine{523 }
+\DoxyCodeLine{527         std::vector<int> \mbox{\hyperlink{classMap_aaaf2cdc58286fcde351bb6b2fe1b46ed}{GetAllPointIDs}}() \{}
+\DoxyCodeLine{528             std::vector<int> point\_id\_list;}
+\DoxyCodeLine{529             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.begin(); it != \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}.end(); ++it) \{}
+\DoxyCodeLine{530                 \textcolor{keywordtype}{int} point\_id = it-\/>first;}
+\DoxyCodeLine{531                 point\_id\_list.push\_back(point\_id);}
+\DoxyCodeLine{532             \}}
+\DoxyCodeLine{533             \textcolor{keywordflow}{return} point\_id\_list;}
+\DoxyCodeLine{534         \}}
+\DoxyCodeLine{542         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a07840c5ad0d970a919311ff98c081741}{AddPointToFrameCorrespondances}}(std::vector<int> point\_ids, cv::Mat image\_points, cv::Mat descriptors, std::shared\_ptr<Frame> frame\_ptr, cv::Mat inliers)\{}
+\DoxyCodeLine{543             \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < inliers.rows; i++)\{}
+\DoxyCodeLine{544                 \textcolor{keywordtype}{int} inlier\_idx = inliers.at<\textcolor{keywordtype}{int}>(i,0);}
+\DoxyCodeLine{545                 \mbox{\hyperlink{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}{GetPoint}}(point\_ids[inlier\_idx])-\/>AddFrame(frame\_ptr, image\_points.row(inlier\_idx), descriptors.row(inlier\_idx));}
+\DoxyCodeLine{546             \}}
+\DoxyCodeLine{547         \}}
+\DoxyCodeLine{554         \textcolor{keywordtype}{void} \mbox{\hyperlink{classMap_a193ee3366fd19db55bcdabdb89560fb6}{BundleAdjustement}}(\textcolor{keywordtype}{bool} tracking, \textcolor{keywordtype}{bool} scale=\textcolor{keyword}{false}, \textcolor{keywordtype}{bool} verbose = \textcolor{keyword}{false}, \textcolor{keywordtype}{int} n\_iterations = 10)\{}
+\DoxyCodeLine{555             \textcolor{keywordtype}{double} fx = 535.4; \textcolor{keywordtype}{double} fy = 539.2; \textcolor{keywordtype}{double} cx = 320.1; \textcolor{keywordtype}{double} cy = 247.6;}
+\DoxyCodeLine{556             \textcolor{comment}{// set up BA solver}}
+\DoxyCodeLine{557             \textcolor{keyword}{typedef} g2o::BlockSolver< g2o::BlockSolverTraits<6,3> > Block; }
+\DoxyCodeLine{558             std::unique\_ptr<Block::LinearSolverType> linearSolver (\textcolor{keyword}{new} g2o::LinearSolverEigen<Block::PoseMatrixType>()); }
+\DoxyCodeLine{559             std::unique\_ptr<Block> solver\_ptr( \textcolor{keyword}{new} Block(std::move(linearSolver)));}
+\DoxyCodeLine{560             g2o::OptimizationAlgorithmLevenberg* solver = \textcolor{keyword}{new} g2o::OptimizationAlgorithmLevenberg ( std::move(solver\_ptr) );}
+\DoxyCodeLine{561             g2o::SparseOptimizer optimizer;}
+\DoxyCodeLine{562             optimizer.setAlgorithm ( solver );}
+\DoxyCodeLine{563             }
+\DoxyCodeLine{564             std::vector<int> frame\_id\_list = this-\/>\mbox{\hyperlink{classMap_aa983b4c4a225036a980a22742a8bb5a6}{GetAllFrameIDs}}();}
+\DoxyCodeLine{565             std::vector<int> point\_id\_list = this-\/>\mbox{\hyperlink{classMap_aaaf2cdc58286fcde351bb6b2fe1b46ed}{GetAllPointIDs}}();}
+\DoxyCodeLine{566 }
+\DoxyCodeLine{567             \textcolor{comment}{// loop trough all the frames}}
+\DoxyCodeLine{568             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = frame\_id\_list.begin(); it != frame\_id\_list.end(); ++it) \{}
+\DoxyCodeLine{569                 \textcolor{keywordtype}{int} frame\_id = *it;}
+\DoxyCodeLine{570                 \textcolor{keywordflow}{if}( this-\/>\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(frame\_id)-\/>IsKeyFrame() \&\& !tracking)\{}
+\DoxyCodeLine{571                     cv::Mat pose\_cv = this-\/>\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(frame\_id)-\/>GetPose();}
+\DoxyCodeLine{572                     g2o::VertexSE3Expmap* vSE3 = \textcolor{keyword}{new} g2o::VertexSE3Expmap();}
+\DoxyCodeLine{573                     vSE3-\/>setEstimate(toSE3Quat(pose\_cv));}
+\DoxyCodeLine{574                     vSE3-\/>setId((*it)*2);}
+\DoxyCodeLine{575                     vSE3-\/>setFixed(*it==0);}
+\DoxyCodeLine{576                     optimizer.addVertex(vSE3);}
+\DoxyCodeLine{577                     \textcolor{comment}{//std::cout << "{}Adding to graph pose: "{} << frame\_id << std::endl;}}
+\DoxyCodeLine{578                 \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(tracking)\{}
+\DoxyCodeLine{579                     cv::Mat pose\_cv = this-\/>\mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(frame\_id)-\/>GetPose();}
+\DoxyCodeLine{580                     g2o::VertexSE3Expmap* vSE3 = \textcolor{keyword}{new} g2o::VertexSE3Expmap();}
+\DoxyCodeLine{581                     vSE3-\/>setEstimate(toSE3Quat(pose\_cv));}
+\DoxyCodeLine{582                     vSE3-\/>setId((*it)*2);}
+\DoxyCodeLine{583                     vSE3-\/>setFixed(*it==0);}
+\DoxyCodeLine{584                     optimizer.addVertex(vSE3);}
+\DoxyCodeLine{585                 \}}
+\DoxyCodeLine{586                 }
+\DoxyCodeLine{587             \}}
+\DoxyCodeLine{588 }
+\DoxyCodeLine{589             \textcolor{keyword}{const} \textcolor{keywordtype}{float} thHuber2D = sqrt(5.99);}
+\DoxyCodeLine{590             \textcolor{comment}{// loop through all points and (inside) create edges to frames that see the point}}
+\DoxyCodeLine{591             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = point\_id\_list.begin(); it != point\_id\_list.end(); ++it) \{}
+\DoxyCodeLine{592                 \textcolor{keywordtype}{int} point\_id = *it;}
+\DoxyCodeLine{593                 g2o::VertexPointXYZ* vPoint = \textcolor{keyword}{new} g2o::VertexPointXYZ();}
+\DoxyCodeLine{594                 vPoint-\/>setEstimate(toVector3d((this-\/>\mbox{\hyperlink{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}{GetPoint}}(point\_id)-\/>Get3dPoint()).t()));}
+\DoxyCodeLine{595                 vPoint-\/>setId(point\_id*2+1);}
+\DoxyCodeLine{596                 vPoint-\/>setMarginalized(\textcolor{keyword}{true});}
+\DoxyCodeLine{597                 vPoint-\/>setFixed(tracking);}
+\DoxyCodeLine{598                 optimizer.addVertex(vPoint);}
+\DoxyCodeLine{599                 \textcolor{comment}{// GetFrames() returns std::map<int, std::tuple<std::shared\_ptr<Frame>, cv::Mat, cv::Mat>> frames\_; // map of frames that see this  particular point object}}
+\DoxyCodeLine{600                 \textcolor{keyword}{auto} it2\_start = this-\/>\mbox{\hyperlink{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}{GetPoint}}(point\_id)-\/>GetFrames().begin();}
+\DoxyCodeLine{601                 \textcolor{keyword}{auto} it2\_end = this-\/>\mbox{\hyperlink{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}{GetPoint}}(point\_id)-\/>GetFrames().end();}
+\DoxyCodeLine{602                 \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it2 = it2\_start; it2 != it2\_end; it2++)\{}
+\DoxyCodeLine{603 }
+\DoxyCodeLine{604                     \textcolor{keywordflow}{if}(optimizer.vertex((it2-\/>first)*2) == NULL)\{}
+\DoxyCodeLine{605                         \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{606                     \}}
+\DoxyCodeLine{607 }
+\DoxyCodeLine{608                     Eigen::MatrixXd uv;}
+\DoxyCodeLine{609                     cv::cv2eigen(std::get<1>(it2-\/>second).t(), uv);}
+\DoxyCodeLine{611                     g2o::EdgeSE3ProjectXYZ* e = \textcolor{keyword}{new} g2o::EdgeSE3ProjectXYZ();}
+\DoxyCodeLine{612                     e-\/>setVertex(0, \textcolor{keyword}{dynamic\_cast<}g2o::OptimizableGraph::Vertex*\textcolor{keyword}{>}(optimizer.vertex(point\_id*2+1)));}
+\DoxyCodeLine{613                     e-\/>setVertex(1, \textcolor{keyword}{dynamic\_cast<}g2o::OptimizableGraph::Vertex*\textcolor{keyword}{>}(optimizer.vertex((it2-\/>first)*2)));}
+\DoxyCodeLine{614                     e-\/>setMeasurement(uv);}
+\DoxyCodeLine{615                     e-\/>setId(point\_id+100000);}
+\DoxyCodeLine{616                     e-\/>setInformation(Eigen::Matrix2d::Identity());}
+\DoxyCodeLine{617                     g2o::RobustKernelHuber* rk = \textcolor{keyword}{new} g2o::RobustKernelHuber;}
+\DoxyCodeLine{618                     e-\/>setRobustKernel(rk);}
+\DoxyCodeLine{619                     rk-\/>setDelta(thHuber2D);}
+\DoxyCodeLine{620                     e-\/>fx = fx;}
+\DoxyCodeLine{621                     e-\/>fy = fy;}
+\DoxyCodeLine{622                     e-\/>cx = cx;}
+\DoxyCodeLine{623                     e-\/>cy = cy;}
+\DoxyCodeLine{624                     optimizer.addEdge(e);}
+\DoxyCodeLine{625                 \}}
+\DoxyCodeLine{626             \}}
+\DoxyCodeLine{627             \textcolor{comment}{//optimizer.save("{}beforeopt.g2o"{});}}
+\DoxyCodeLine{628             optimizer.initializeOptimization();}
+\DoxyCodeLine{629             optimizer.setVerbose(verbose);}
+\DoxyCodeLine{630             optimizer.optimize(n\_iterations);}
+\DoxyCodeLine{631             \textcolor{comment}{//optimizer.save("{}afteropt.g2o"{});}}
+\DoxyCodeLine{632 }
+\DoxyCodeLine{633             \textcolor{keywordtype}{double} median\_depth = 1;}
+\DoxyCodeLine{634             \textcolor{keywordflow}{if}(scale)\{}
+\DoxyCodeLine{635                 \textcolor{keywordtype}{int} num\_points = 0;}
+\DoxyCodeLine{636                 std::vector<double> median\_vec;}
+\DoxyCodeLine{637                 \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = point\_id\_list.begin(); it != point\_id\_list.end(); ++it) \{}
+\DoxyCodeLine{638                     \textcolor{keywordtype}{int} point\_id = *it;}
+\DoxyCodeLine{639                     g2o::VertexPointXYZ* vPoint = \textcolor{keyword}{static\_cast<}g2o::VertexPointXYZ*\textcolor{keyword}{>}(optimizer.vertex(point\_id*2+1));}
+\DoxyCodeLine{641                     median\_vec.push\_back( cv::norm(toCvMat(vPoint-\/>estimate()).t()) );}
+\DoxyCodeLine{642                 \}}
+\DoxyCodeLine{643                 std::sort(median\_vec.begin(), median\_vec.end()); \textcolor{comment}{// sort so that median depth is middle element}}
+\DoxyCodeLine{644                 median\_depth = median\_vec[median\_vec.size()/2];}
+\DoxyCodeLine{645             \}}
+\DoxyCodeLine{646             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = frame\_id\_list.begin(); it != frame\_id\_list.end(); ++it) \{}
+\DoxyCodeLine{647                 \textcolor{keywordtype}{int} frame\_id = *it;}
+\DoxyCodeLine{648                 \textcolor{keywordflow}{if}(optimizer.vertex(frame\_id*2) == NULL)\{}
+\DoxyCodeLine{649                     \textcolor{keywordflow}{continue};}
+\DoxyCodeLine{650                 \}}
+\DoxyCodeLine{651                 g2o::VertexSE3Expmap* vSE3 = \textcolor{keyword}{static\_cast<}g2o::VertexSE3Expmap*\textcolor{keyword}{>}(optimizer.vertex(frame\_id*2));}
+\DoxyCodeLine{652                 g2o::SE3Quat SE3quat = vSE3-\/>estimate();}
+\DoxyCodeLine{654                 \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{GetFrame}}(frame\_id)-\/>UpdatePose(NormalizeTranslation(toCvMat(SE3quat), median\_depth));}
+\DoxyCodeLine{655             \}}
+\DoxyCodeLine{656             \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = point\_id\_list.begin(); it != point\_id\_list.end(); ++it) \{}
+\DoxyCodeLine{657                 \textcolor{keywordtype}{int} point\_id = *it;}
+\DoxyCodeLine{658                 g2o::VertexPointXYZ* vPoint = \textcolor{keyword}{static\_cast<}g2o::VertexPointXYZ*\textcolor{keyword}{>}(optimizer.vertex(point\_id*2+1));}
+\DoxyCodeLine{660                 \mbox{\hyperlink{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}{GetPoint}}(point\_id)-\/>UpdatePoint(toCvMat(vPoint-\/>estimate()).t()/median\_depth);}
+\DoxyCodeLine{661             \}    }
+\DoxyCodeLine{662         \}}
+\DoxyCodeLine{663 }
+\DoxyCodeLine{664     \textcolor{keyword}{private}:}
+\DoxyCodeLine{665         std::map<int, std::shared\_ptr<Frame>> \mbox{\hyperlink{classMap_ab3933267cfb96b7049e00e62390f5eb4}{frames\_}}; }
+\DoxyCodeLine{666         std::map<int, std::shared\_ptr<Point3D>> \mbox{\hyperlink{classMap_acc327e03619bca7dc7fbc13200c1dd9e}{point\_3d\_}}; }
+\DoxyCodeLine{667 \};}
+\DoxyCodeLine{668 }
+\DoxyCodeLine{669 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

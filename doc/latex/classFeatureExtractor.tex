@@ -1,0 +1,22 @@
+\hypertarget{classFeatureExtractor}{}\doxysection{Feature\+Extractor Class Reference}
+\label{classFeatureExtractor}\index{FeatureExtractor@{FeatureExtractor}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFeatureExtractor_a4c610569284b9ebfea26e77628ef54c7}\label{classFeatureExtractor_a4c610569284b9ebfea26e77628ef54c7}} 
+std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat $>$ {\bfseries compute\+\_\+features} (const cv\+::\+Mat \&img)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFeatureExtractor_a7f6725525d1a57a90c9f8052f09b4448}\label{classFeatureExtractor_a7f6725525d1a57a90c9f8052f09b4448}} 
+cv\+::\+Ptr$<$ cv\+::\+Feature\+Detector $>$ {\bfseries detector} = cv\+::\+ORB\+::create(1500)
+\item 
+\mbox{\Hypertarget{classFeatureExtractor_a720cc8e504d1fd5fa004daef88236c83}\label{classFeatureExtractor_a720cc8e504d1fd5fa004daef88236c83}} 
+cv\+::\+Ptr$<$ cv\+::\+Descriptor\+Extractor $>$ {\bfseries descriptor} = cv\+::\+ORB\+::create(1500)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/jere/cpp\+\_\+visual\+\_\+slam/src/frame.\+hpp\end{DoxyCompactItemize}

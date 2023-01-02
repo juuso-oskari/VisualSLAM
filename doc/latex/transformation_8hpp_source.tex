@@ -1,0 +1,146 @@
+\hypertarget{transformation_8hpp_source}{}\doxysection{transformation.\+hpp}
+\label{transformation_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/transformation.hpp@{/home/jere/cpp\_visual\_slam/src/transformation.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#ifndef VISUAL\_SLAM\_TRANSFORMATION}}
+\DoxyCodeLine{3 \textcolor{preprocessor}{\#define VISUAL\_SLAM\_TRANSFORMATION}}
+\DoxyCodeLine{4 }
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include "{}isometry3d.hpp"{}}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include "{}frame.hpp"{}}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include "{}point.hpp"{}}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include "{}helper\_functions.hpp"{}}}
+\DoxyCodeLine{9 }
+\DoxyCodeLine{10 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{11 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{12 }
+\DoxyCodeLine{13 \textcolor{preprocessor}{\#include <chrono>}}
+\DoxyCodeLine{14 \textcolor{preprocessor}{\#include <Eigen/Dense>} }
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16 \textcolor{preprocessor}{\#include <tuple>}}
+\DoxyCodeLine{17 \textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{18 \textcolor{preprocessor}{\#include <opencv2/core/eigen.hpp>}}
+\DoxyCodeLine{19 \textcolor{preprocessor}{\#include <opencv2/videoio.hpp>}}
+\DoxyCodeLine{20 }
+\DoxyCodeLine{21 \textcolor{keyword}{class }\mbox{\hyperlink{classTransformation}{Transformation}} \{}
+\DoxyCodeLine{22     \textcolor{keyword}{public}:}
+\DoxyCodeLine{23         \textcolor{comment}{//empty constructor}}
+\DoxyCodeLine{24         \mbox{\hyperlink{classTransformation}{Transformation}}()\{\}}
+\DoxyCodeLine{25         \textcolor{comment}{//base constructor}}
+\DoxyCodeLine{26         \mbox{\hyperlink{classTransformation}{Transformation}}(cv::Mat\& T): T\_(T)\{\}}
+\DoxyCodeLine{27         \textcolor{comment}{//alternative constructor}}
+\DoxyCodeLine{28         \mbox{\hyperlink{classTransformation}{Transformation}}(cv::Mat R, cv::Mat t)\{}
+\DoxyCodeLine{29             T\_(cv::Rect(0,0,3,3)) = R;}
+\DoxyCodeLine{30             T\_(cv::Rect(0,3,1,3)) = t;}
+\DoxyCodeLine{31         \}}
+\DoxyCodeLine{32 }
+\DoxyCodeLine{33         cv::Mat GetTransformation() \{}
+\DoxyCodeLine{34             \textcolor{keywordflow}{return} T\_;}
+\DoxyCodeLine{35         \}}
+\DoxyCodeLine{36 }
+\DoxyCodeLine{37         Eigen::MatrixXd GetEigen()\{}
+\DoxyCodeLine{38             Eigen::MatrixXd eigen\_mat;}
+\DoxyCodeLine{39             cv::cv2eigen(T\_, eigen\_mat);}
+\DoxyCodeLine{40             \textcolor{keywordflow}{return} eigen\_mat;}
+\DoxyCodeLine{41         \}}
+\DoxyCodeLine{42 }
+\DoxyCodeLine{43         }
+\DoxyCodeLine{44 }
+\DoxyCodeLine{45         \textcolor{keywordtype}{void} SetTransformation(cv::Mat T)\{}
+\DoxyCodeLine{46             T\_ = T;}
+\DoxyCodeLine{47         \}}
+\DoxyCodeLine{48 }
+\DoxyCodeLine{49         \textcolor{keywordtype}{void} SetTransformation(Eigen::MatrixXd T)\{}
+\DoxyCodeLine{50             cv::eigen2cv(T, T\_);}
+\DoxyCodeLine{51         \}}
+\DoxyCodeLine{52 }
+\DoxyCodeLine{53 }
+\DoxyCodeLine{54         cv::Mat GetRotation() \{}
+\DoxyCodeLine{55             cv::Mat R = (cv::Mat1d(3,3) <<  T\_.at<\textcolor{keywordtype}{double}>(0,0), T\_.at<\textcolor{keywordtype}{double}>(0,1), T\_.at<\textcolor{keywordtype}{double}>(0,2),T\_.at<\textcolor{keywordtype}{double}>(1,0), T\_.at<\textcolor{keywordtype}{double}>(1,1), T\_.at<\textcolor{keywordtype}{double}>(1,2),T\_.at<\textcolor{keywordtype}{double}>(2,0), T\_.at<\textcolor{keywordtype}{double}>(2,1), T\_.at<\textcolor{keywordtype}{double}>(2,2));}
+\DoxyCodeLine{56             \textcolor{keywordflow}{return} R;    }
+\DoxyCodeLine{57         \}}
+\DoxyCodeLine{58 }
+\DoxyCodeLine{59         cv::Mat GetTranslation() \{}
+\DoxyCodeLine{60             cv::Mat t =  (cv::Mat1d(3,3) << T\_.at<\textcolor{keywordtype}{double}>(0,3), T\_.at<\textcolor{keywordtype}{double}>(1,3), T\_.at<\textcolor{keywordtype}{double}>(2,3));}
+\DoxyCodeLine{61             \textcolor{keywordflow}{return} t; }
+\DoxyCodeLine{62         \}}
+\DoxyCodeLine{63 }
+\DoxyCodeLine{64         cv::Mat GetInverseTransformation() \{}
+\DoxyCodeLine{65             \textcolor{keywordflow}{return} T\_.inv();}
+\DoxyCodeLine{66         \}}
+\DoxyCodeLine{67         \textcolor{comment}{// returns the fraction N\_inlierPoints / N\_Points, where N\_inlierPoints: number of points fitting the estimated transformation, N\_points}}
+\DoxyCodeLine{68         \textcolor{keywordtype}{double} GetValidFraction()\{}
+\DoxyCodeLine{69             \textcolor{keywordtype}{double} fraction = 0;}
+\DoxyCodeLine{70             \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < inlierMask.rows; i++)\{}
+\DoxyCodeLine{71                 \textcolor{comment}{//std::cout << (int)mask.at<uchar>(i) << std::endl;}}
+\DoxyCodeLine{72                 \textcolor{keywordtype}{int} mask\_val = inlierMask.at<uchar>(i);}
+\DoxyCodeLine{73                 \textcolor{keywordflow}{if}(mask\_val == 1)\{}
+\DoxyCodeLine{74                     fraction += 1;}
+\DoxyCodeLine{75                 \}}
+\DoxyCodeLine{76             \}}
+\DoxyCodeLine{77             fraction /= inlierMask.rows;}
+\DoxyCodeLine{78             \textcolor{keywordflow}{return} fraction;}
+\DoxyCodeLine{79         \}}
+\DoxyCodeLine{80         }
+\DoxyCodeLine{81         cv::Mat GetCVMat()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{82             \textcolor{keywordflow}{return} T\_;}
+\DoxyCodeLine{83         \}}
+\DoxyCodeLine{84 }
+\DoxyCodeLine{85         \textcolor{keyword}{friend} \mbox{\hyperlink{classTransformation}{Transformation}} operator*(\textcolor{keyword}{const} \mbox{\hyperlink{classTransformation}{Transformation}}\& op1, \textcolor{keyword}{const} \mbox{\hyperlink{classTransformation}{Transformation}}\& op2);}
+\DoxyCodeLine{86 }
+\DoxyCodeLine{87 }
+\DoxyCodeLine{88         \textcolor{keyword}{virtual} \textcolor{keywordtype}{void} Estimate()\{}
+\DoxyCodeLine{89             std::cout << \textcolor{stringliteral}{"{}Virtual Estimate() called, usually an error"{}} << std::endl;}
+\DoxyCodeLine{90         \}}
+\DoxyCodeLine{91 }
+\DoxyCodeLine{92     \textcolor{keyword}{protected}:}
+\DoxyCodeLine{93         cv::Mat T\_ = cv::Mat1d(4,4);}
+\DoxyCodeLine{94         cv::Mat inlierMask; \textcolor{comment}{// needed to assess the success of transform estimation}}
+\DoxyCodeLine{95 \};}
+\DoxyCodeLine{96 }
+\DoxyCodeLine{97 \mbox{\hyperlink{classTransformation}{Transformation}} operator*(\textcolor{keyword}{const} \mbox{\hyperlink{classTransformation}{Transformation}}\& op1, \textcolor{keyword}{const} \mbox{\hyperlink{classTransformation}{Transformation}}\& op2)\{}
+\DoxyCodeLine{98     \mbox{\hyperlink{classTransformation}{Transformation}} t = \mbox{\hyperlink{classTransformation}{Transformation}}(op1.GetCVMat(), op2.GetCVMat());}
+\DoxyCodeLine{99     \textcolor{keywordflow}{return} t;}
+\DoxyCodeLine{100 \}}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102 }
+\DoxyCodeLine{103 \textcolor{keyword}{class }\mbox{\hyperlink{classEssential}{Essential}} : \textcolor{keyword}{public} \mbox{\hyperlink{classTransformation}{Transformation}} \{}
+\DoxyCodeLine{104     \textcolor{keyword}{public}:}
+\DoxyCodeLine{105     \textcolor{keywordtype}{void} Estimate(\textcolor{keyword}{const} cv::Mat\& points1, \textcolor{keyword}{const} cv::Mat\& points2, \textcolor{keyword}{const} cv::Mat\& K)\{}
+\DoxyCodeLine{106         cv::Mat E = cv::findEssentialMat(points1, points2, K, cv::RANSAC, 0.999, 2, inlierMask);    }
+\DoxyCodeLine{107         cv::Mat R; \textcolor{comment}{// Rotation}}
+\DoxyCodeLine{108         cv::Mat t; \textcolor{comment}{// translation}}
+\DoxyCodeLine{109         cv::Mat triangulated\_points\_cv(3, points1.rows, CV\_64F); \textcolor{comment}{// 3D locations for inlier points estimated using triangulation and the poses recovered from essential transform}}
+\DoxyCodeLine{110         cv::recoverPose(E, points1, points2, K, R, t, 50, inlierMask, triangulated\_points\_cv);}
+\DoxyCodeLine{111         Eigen::MatrixXd R\_; \textcolor{comment}{// convert to eigen for transformation calculations}}
+\DoxyCodeLine{112         Eigen::VectorXd t\_;}
+\DoxyCodeLine{113         cv::cv2eigen(R, R\_);}
+\DoxyCodeLine{114         cv::cv2eigen(t, t\_);}
+\DoxyCodeLine{115         Eigen::MatrixXd pos = \mbox{\hyperlink{classIsometry3d}{Isometry3d}}(R\_, t\_).matrix().inverse();}
+\DoxyCodeLine{116         cv::eigen2cv(pos, T\_); }
+\DoxyCodeLine{117         triangulatedPoints = triangulated\_points\_cv.t(); \textcolor{comment}{// transpose and store to private member}}
+\DoxyCodeLine{118     \}}
+\DoxyCodeLine{119 }
+\DoxyCodeLine{120     \textcolor{keyword}{private}:}
+\DoxyCodeLine{121         cv::Mat triangulatedPoints; \textcolor{comment}{// recoverPose also estimates 3D locations for inlier points}}
+\DoxyCodeLine{122 }
+\DoxyCodeLine{123 \};}
+\DoxyCodeLine{124 }
+\DoxyCodeLine{125 \textcolor{keyword}{class }\mbox{\hyperlink{classPnP}{PnP}} : \textcolor{keyword}{public} \mbox{\hyperlink{classTransformation}{Transformation}} \{}
+\DoxyCodeLine{126     \textcolor{keyword}{public}:}
+\DoxyCodeLine{127     \textcolor{keywordtype}{void} Estimate(cv::Mat matched\_3d, cv::Mat curMatchedPoints, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients) \{}
+\DoxyCodeLine{128         cv::Mat rvec, tvec, inliers;}
+\DoxyCodeLine{129         cv::solvePnPRansac(matched\_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, \textcolor{keyword}{false}, 100, 8.0F, 0.9899999999999999911, inliers);}
+\DoxyCodeLine{130         T\_ = transformMatrix(rvec,tvec);}
+\DoxyCodeLine{131         \textcolor{comment}{//store inlier indices to mask}}
+\DoxyCodeLine{132         inlierMask = cv::Mat::zeros(curMatchedPoints.rows, 1, CV\_64F);}
+\DoxyCodeLine{133         \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < inliers.rows; i++)\{}
+\DoxyCodeLine{134             \textcolor{keywordtype}{int} inlier\_idx = inliers.at<\textcolor{keywordtype}{int}>(i);}
+\DoxyCodeLine{135             inlierMask.at<\textcolor{keywordtype}{int}>(inlier\_idx) = 1; \textcolor{comment}{// conversion to uchar from int}}
+\DoxyCodeLine{136         \}}
+\DoxyCodeLine{137     \}}
+\DoxyCodeLine{138 \};}
+\DoxyCodeLine{139 }
+\DoxyCodeLine{140 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

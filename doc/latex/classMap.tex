@@ -1,0 +1,549 @@
+\hypertarget{classMap}{}\doxysection{Map Class Reference}
+\label{classMap}\index{Map@{Map}}
+
+
+\mbox{\hyperlink{classMap}{Map}} class is used to store \mbox{\hyperlink{classFrame}{Frame}} and \mbox{\hyperlink{classPoint3D}{Point3D}} objects.  
+
+
+
+
+{\ttfamily \#include $<$map.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classMap_aa9a647846b469d9e34beabc4896ba3ac}{Initialize\+Map}} (std\+::vector$<$ std\+::filesystem\+::path $>$\+::iterator \&input\+\_\+video\+\_\+it, int \&id\+\_\+frame, int \&id\+\_\+point, \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} feature\+\_\+extractor, \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} feature\+\_\+matcher, cv\+::\+Mat camera\+Intrinsics\+Matrix, bool visualize=false)
+\begin{DoxyCompactList}\small\item\em Initializes map based on first two keyframes from video (first being the 1st frame and 2nd is being found) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a1937e4dc23c1a06435c7d0986f759193}{local\+Tracking}} (std\+::vector$<$ std\+::filesystem\+::path $>$\+::iterator \&input\+\_\+video\+\_\+it, int \&id\+\_\+frame, int \&id\+\_\+point, \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} feature\+\_\+extractor, \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} feature\+\_\+matcher, cv\+::\+Mat camera\+Intrinsics\+Matrix, cv\+::\+Mat Dist\+Coefficients, \mbox{\hyperlink{classPointClouds}{Point\+Clouds}} \&clouds, bool visualize=true, bool verbose\+\_\+optimization=false)
+\begin{DoxyCompactList}\small\item\em Tracks map points in consecutive video frames and estimates poses using Pn\+P-\/algorithm. Breaks when a new keyframe is found\+: \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a8b58b11b8682777eae3bbd277c3ff205}{local\+Mapping}} (int \&id\+\_\+frame, int \&id\+\_\+point, \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} feature\+\_\+extractor, \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} feature\+\_\+matcher, cv\+::\+Mat camera\+Intrinsics\+Matrix, cv\+::\+Mat Dist\+Coefficients, int \&last\+\_\+key\+\_\+frame\+\_\+id, bool visualize=false)
+\begin{DoxyCompactList}\small\item\em Does mapping using the last keyframe and new keyframe\+: Tries to find new matches between their descriptors and triangulate 3d locations for matches using their estimated poses. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMap_a4b40828f2ef2e5e48efd4cab71e09ee6}\label{classMap_a4b40828f2ef2e5e48efd4cab71e09ee6}} 
+void {\bfseries Clean\+Up\+Bad\+Points} ()
+\item 
+void \mbox{\hyperlink{classMap_ac04b632c7e8bf396387ddb2a37a36898}{Add\+Frame}} (int frame\+\_\+id, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ frame)
+\begin{DoxyCompactList}\small\item\em Adds frame to map. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a77568c813061e28f34d6d1da9580ff8c}{Add\+Point3D}} (int point\+\_\+id, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPoint3D}{Point3D}} $>$ point\+\_\+3d)
+\begin{DoxyCompactList}\small\item\em Adds point to map. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a4bdf2cac1536e078b3ff5bb4a914e980}{Add\+Points3D}} (int \&id\+\_\+point, cv\+::\+Mat points\+\_\+3d, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ frame1, cv\+::\+Mat uv1, cv\+::\+Mat desc1, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ frame2, cv\+::\+Mat uv2, cv\+::\+Mat desc2, cv\+::\+Mat inlier\+Mask)
+\begin{DoxyCompactList}\small\item\em Adds multiple points to map with one function call. \end{DoxyCompactList}\item 
+std\+::vector$<$ int $>$ \mbox{\hyperlink{classMap_a069104df608ee51296ea28cf84b0587d}{Get\+Points\+Visible\+To\+Frame}} (int frame\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Gets ids of points that are visible to frame. \end{DoxyCompactList}\item 
+std\+::vector$<$ int $>$ \mbox{\hyperlink{classMap_a69b40e57dedea142af91bffc011d9e4e}{Get\+Points\+Visible\+To\+Frames}} (std\+::vector$<$ int $>$ frame\+\_\+id\+\_\+list)
+\begin{DoxyCompactList}\small\item\em Gets ids of points that are visible to frames. \end{DoxyCompactList}\item 
+std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat, std\+::vector$<$ int $>$ $>$ \mbox{\hyperlink{classMap_a1abc85be6f20969fccc1400eef0d2137}{Get\+Image\+Points\+With\+Frame\+ID}} (int frame\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Gets information about the map points that are visible to frame with frame id. \end{DoxyCompactList}\item 
+std\+::vector$<$ cv\+::\+Mat $>$ \mbox{\hyperlink{classMap_aab2063d9f32475b31b8c4266d097db21}{Get3\+DPoints\+With\+IDs}} (std\+::vector$<$ int $>$ id\+\_\+list)
+\begin{DoxyCompactList}\small\item\em Gets 3d locations of points with a vector of ids. \end{DoxyCompactList}\item 
+std\+::vector$<$ cv\+::\+Mat $>$ \mbox{\hyperlink{classMap_ab302f82577207581235a078ba7fdae6c}{Get\+All3\+DPoints}} ()
+\begin{DoxyCompactList}\small\item\em Gets all 3d locations of points in the map. \end{DoxyCompactList}\item 
+std\+::vector$<$ cv\+::\+Mat $>$ \mbox{\hyperlink{classMap_a222cd8ce725fe131276c0d653b844c25}{Get\+All\+Poses}} ()
+\begin{DoxyCompactList}\small\item\em Gets all poses of \mbox{\hyperlink{classFrame}{Frame}} objects stored in the map. \end{DoxyCompactList}\item 
+std\+::vector$<$ cv\+::\+Mat $>$ \mbox{\hyperlink{classMap_a46a64016efaaa22453133b6ea542541f}{Get\+All\+Camera\+Locations}} (bool keyframes\+\_\+only=false)
+\begin{DoxyCompactList}\small\item\em Gets all translation components (xyz camera locations) of poses of \mbox{\hyperlink{classFrame}{Frame}} objects stored in the map. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a71543ae9f620bd29c5d450d5be9d587b}{Update\+Pose}} (cv\+::\+Mat new\+\_\+pose, int frame\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Updates the pose of the frame to new\+\_\+pose. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_af38c232b55abfcb5ba62880ec8493232}{Update\+Point3D}} (cv\+::\+Mat new\+\_\+point, int point\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Updates the 3d location of the point. \end{DoxyCompactList}\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ \mbox{\hyperlink{classMap_a38b03d0a1b1b525e21256c71c084e394}{Get\+Frame}} (int frame\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Gets the pointer to frame if the frame id exists in map. \end{DoxyCompactList}\item 
+std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPoint3D}{Point3D}} $>$ \mbox{\hyperlink{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}{Get\+Point}} (int point\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Gets the pointer to point if the point id exists in map. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a78ee141b8ce63f36fb1ff3472bbfcda0}{Store3\+DPoints}} (std\+::map$<$ int, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPoint3D}{Point3D}} $>$ $>$ points\+\_\+map)
+\begin{DoxyCompactList}\small\item\em Stores multiple \mbox{\hyperlink{classPoint3D}{Point3D}} objects in the map at once. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a46301e9a0b4bc22f3f1c06dc9488b53e}{Add\+Parent\+And\+Pose}} (int parent\+\_\+id, int frame\+\_\+id, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ frame\+\_\+obj, cv\+::\+Mat rel\+\_\+pose\+\_\+trans, cv\+::\+Mat pose)
+\begin{DoxyCompactList}\small\item\em compilation of calls when frame is inserted to map \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a893e322cd98366a8f0bc8e5f4182a929}{Add\+Pose\+Node}} (int frame\+\_\+id, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ frame\+\_\+obj, cv\+::\+Mat pose, int parent\+\_\+id, cv\+::\+Mat rel\+\_\+pose\+\_\+trans)
+\begin{DoxyCompactList}\small\item\em compilation of calls when frame is inserted to map \end{DoxyCompactList}\item 
+std\+::vector$<$ int $>$ \mbox{\hyperlink{classMap_aa983b4c4a225036a980a22742a8bb5a6}{Get\+All\+Frame\+IDs}} ()
+\begin{DoxyCompactList}\small\item\em Gets all frame ids in the map. \end{DoxyCompactList}\item 
+std\+::vector$<$ int $>$ \mbox{\hyperlink{classMap_aaaf2cdc58286fcde351bb6b2fe1b46ed}{Get\+All\+Point\+IDs}} ()
+\begin{DoxyCompactList}\small\item\em Gets all point ids in the map. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a07840c5ad0d970a919311ff98c081741}{Add\+Point\+To\+Frame\+Correspondances}} (std\+::vector$<$ int $>$ point\+\_\+ids, cv\+::\+Mat image\+\_\+points, cv\+::\+Mat descriptors, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ frame\+\_\+ptr, cv\+::\+Mat inliers)
+\begin{DoxyCompactList}\small\item\em Adds point to frame correspondences from points to frames. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMap_a193ee3366fd19db55bcdabdb89560fb6}{Bundle\+Adjustement}} (bool tracking, bool scale=false, bool verbose=false, int n\+\_\+iterations=10)
+\begin{DoxyCompactList}\small\item\em Optimizes poses and 3D locations of points in the map, Leverberg-\/\+Marquadt used to minimize the reprojection error. Updates points and poses to the optimized values. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classMap_ab3933267cfb96b7049e00e62390f5eb4}\label{classMap_ab3933267cfb96b7049e00e62390f5eb4}} 
+std\+::map$<$ int, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ $>$ {\bfseries frames\+\_\+}
+\begin{DoxyCompactList}\small\item\em frame map container hold unique frame id\textquotesingle{}s as a key and std\+::shared\+\_\+ptr$<$\+Frame$>$ as a value \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMap_acc327e03619bca7dc7fbc13200c1dd9e}\label{classMap_acc327e03619bca7dc7fbc13200c1dd9e}} 
+std\+::map$<$ int, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPoint3D}{Point3D}} $>$ $>$ {\bfseries point\+\_\+3d\+\_\+}
+\begin{DoxyCompactList}\small\item\em point\+\_\+3d\+\_\+ map container hold unique point id\textquotesingle{}s as a key and std\+::shared\+\_\+ptr$<$\+Point3\+D$>$ as a value \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\mbox{\hyperlink{classMap}{Map}} class is used to store \mbox{\hyperlink{classFrame}{Frame}} and \mbox{\hyperlink{classPoint3D}{Point3D}} objects. 
+
+\begin{DoxyAuthor}{Author}
+Juuso Korhonen, Jere Knuutinen 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+December 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classMap_ac04b632c7e8bf396387ddb2a37a36898}\label{classMap_ac04b632c7e8bf396387ddb2a37a36898}} 
+\index{Map@{Map}!AddFrame@{AddFrame}}
+\index{AddFrame@{AddFrame}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{AddFrame()}{AddFrame()}}
+{\footnotesize\ttfamily void Map\+::\+Add\+Frame (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{frame }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adds frame to map. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & -\/ unique identifier for \mbox{\hyperlink{classFrame}{Frame}} in the map \\
+\hline
+{\em frame} & -\/ shared pointer pointing to a created \mbox{\hyperlink{classFrame}{Frame}} object \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a46301e9a0b4bc22f3f1c06dc9488b53e}\label{classMap_a46301e9a0b4bc22f3f1c06dc9488b53e}} 
+\index{Map@{Map}!AddParentAndPose@{AddParentAndPose}}
+\index{AddParentAndPose@{AddParentAndPose}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{AddParentAndPose()}{AddParentAndPose()}}
+{\footnotesize\ttfamily void Map\+::\+Add\+Parent\+And\+Pose (\begin{DoxyParamCaption}\item[{int}]{parent\+\_\+id,  }\item[{int}]{frame\+\_\+id,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{frame\+\_\+obj,  }\item[{cv\+::\+Mat}]{rel\+\_\+pose\+\_\+trans,  }\item[{cv\+::\+Mat}]{pose }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+compilation of calls when frame is inserted to map 
+
+
+\begin{DoxyParams}{Parameters}
+{\em parent\+\_\+id} & id of the parent frame \\
+\hline
+{\em frame\+\_\+obj} & pointer to the \mbox{\hyperlink{classFrame}{Frame}} object itself \\
+\hline
+{\em rel\+\_\+pos\+\_\+trans} & relative pose transformation between parent frame camera pose and frame camera pose \\
+\hline
+{\em pose} & frame camera pose \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a77568c813061e28f34d6d1da9580ff8c}\label{classMap_a77568c813061e28f34d6d1da9580ff8c}} 
+\index{Map@{Map}!AddPoint3D@{AddPoint3D}}
+\index{AddPoint3D@{AddPoint3D}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{AddPoint3D()}{AddPoint3D()}}
+{\footnotesize\ttfamily void Map\+::\+Add\+Point3D (\begin{DoxyParamCaption}\item[{int}]{point\+\_\+id,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPoint3D}{Point3D}} $>$}]{point\+\_\+3d }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adds point to map. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em point\+\_\+id} & -\/ unique identifier for \mbox{\hyperlink{classPoint3D}{Point3D}} object in the map \\
+\hline
+{\em point\+\_\+3d} & -\/ shared pointer pointing to a created Point object \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a4bdf2cac1536e078b3ff5bb4a914e980}\label{classMap_a4bdf2cac1536e078b3ff5bb4a914e980}} 
+\index{Map@{Map}!AddPoints3D@{AddPoints3D}}
+\index{AddPoints3D@{AddPoints3D}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{AddPoints3D()}{AddPoints3D()}}
+{\footnotesize\ttfamily void Map\+::\+Add\+Points3D (\begin{DoxyParamCaption}\item[{int \&}]{id\+\_\+point,  }\item[{cv\+::\+Mat}]{points\+\_\+3d,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{frame1,  }\item[{cv\+::\+Mat}]{uv1,  }\item[{cv\+::\+Mat}]{desc1,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{frame2,  }\item[{cv\+::\+Mat}]{uv2,  }\item[{cv\+::\+Mat}]{desc2,  }\item[{cv\+::\+Mat}]{inlier\+Mask }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adds multiple points to map with one function call. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id\+\_\+point} & -\/ running indexing of points as reference, gets increased inside the function \\
+\hline
+{\em point\+\_\+3d} & -\/ shared pointer pointing to a created Point object \\
+\hline
+{\em frame1} & -\/ shared pointer pointing to a created \mbox{\hyperlink{classFrame}{Frame}} object that sees the point \\
+\hline
+{\em uv1} & -\/ imagepoints in frame 1 \\
+\hline
+{\em desc1} & -\/ descriptors in frame 1 \\
+\hline
+{\em frame2} & -\/ shared pointer pointing to a created \mbox{\hyperlink{classFrame}{Frame}} object that sees the point \\
+\hline
+{\em uv2} & -\/ imagepoints in frame 2 \\
+\hline
+{\em desc2} & -\/ descriptors in frame 2 \\
+\hline
+{\em inlier\+Mask} & -\/ inlier\+Mask containing 1 in the row if the corresponding rows in imagepoints and descriptors should be added \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a07840c5ad0d970a919311ff98c081741}\label{classMap_a07840c5ad0d970a919311ff98c081741}} 
+\index{Map@{Map}!AddPointToFrameCorrespondances@{AddPointToFrameCorrespondances}}
+\index{AddPointToFrameCorrespondances@{AddPointToFrameCorrespondances}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{AddPointToFrameCorrespondances()}{AddPointToFrameCorrespondances()}}
+{\footnotesize\ttfamily void Map\+::\+Add\+Point\+To\+Frame\+Correspondances (\begin{DoxyParamCaption}\item[{std\+::vector$<$ int $>$}]{point\+\_\+ids,  }\item[{cv\+::\+Mat}]{image\+\_\+points,  }\item[{cv\+::\+Mat}]{descriptors,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{frame\+\_\+ptr,  }\item[{cv\+::\+Mat}]{inliers }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adds point to frame correspondences from points to frames. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em point\+\_\+ids} & vector of point ids \\
+\hline
+{\em image\+\_\+points} & image points in frame for points \\
+\hline
+{\em descriptors} & descriptors for image points in frame for points \\
+\hline
+{\em frame\+\_\+ptr} & pointer to \mbox{\hyperlink{classFrame}{Frame}} object \\
+\hline
+{\em inliers} & vector of inlier indices to be used \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a893e322cd98366a8f0bc8e5f4182a929}\label{classMap_a893e322cd98366a8f0bc8e5f4182a929}} 
+\index{Map@{Map}!AddPoseNode@{AddPoseNode}}
+\index{AddPoseNode@{AddPoseNode}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{AddPoseNode()}{AddPoseNode()}}
+{\footnotesize\ttfamily void Map\+::\+Add\+Pose\+Node (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{frame\+\_\+obj,  }\item[{cv\+::\+Mat}]{pose,  }\item[{int}]{parent\+\_\+id,  }\item[{cv\+::\+Mat}]{rel\+\_\+pose\+\_\+trans }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+compilation of calls when frame is inserted to map 
+
+
+\begin{DoxyParams}{Parameters}
+{\em parent\+\_\+id} & id of the parent frame \\
+\hline
+{\em frame\+\_\+obj} & pointer to the \mbox{\hyperlink{classFrame}{Frame}} object itself \\
+\hline
+{\em pose} & frame camera pose \\
+\hline
+{\em rel\+\_\+pos\+\_\+trans} & relative pose transformation between parent frame camera pose and frame camera pose \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a193ee3366fd19db55bcdabdb89560fb6}\label{classMap_a193ee3366fd19db55bcdabdb89560fb6}} 
+\index{Map@{Map}!BundleAdjustement@{BundleAdjustement}}
+\index{BundleAdjustement@{BundleAdjustement}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{BundleAdjustement()}{BundleAdjustement()}}
+{\footnotesize\ttfamily void Map\+::\+Bundle\+Adjustement (\begin{DoxyParamCaption}\item[{bool}]{tracking,  }\item[{bool}]{scale = {\ttfamily false},  }\item[{bool}]{verbose = {\ttfamily false},  }\item[{int}]{n\+\_\+iterations = {\ttfamily 10} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Optimizes poses and 3D locations of points in the map, Leverberg-\/\+Marquadt used to minimize the reprojection error. Updates points and poses to the optimized values. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em tracking} & boolean flag, set true if points are set as fixed (Motion\+Only) \\
+\hline
+{\em scale} & boolean flag, if scaling should be done for depth of points. If true, scales points so that median depth for points is 1. \\
+\hline
+{\em verbose} & should we print information about the optimization process \\
+\hline
+{\em n\+\_\+iterations} & how many iterations to run the optimization algorithm \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_aab2063d9f32475b31b8c4266d097db21}\label{classMap_aab2063d9f32475b31b8c4266d097db21}} 
+\index{Map@{Map}!Get3DPointsWithIDs@{Get3DPointsWithIDs}}
+\index{Get3DPointsWithIDs@{Get3DPointsWithIDs}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{Get3DPointsWithIDs()}{Get3DPointsWithIDs()}}
+{\footnotesize\ttfamily std\+::vector$<$ cv\+::\+Mat $>$ Map\+::\+Get3\+DPoints\+With\+IDs (\begin{DoxyParamCaption}\item[{std\+::vector$<$ int $>$}]{id\+\_\+list }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets 3d locations of points with a vector of ids. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id\+\_\+list} & -\/ ids of points \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+vector of 3d locations of points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_ab302f82577207581235a078ba7fdae6c}\label{classMap_ab302f82577207581235a078ba7fdae6c}} 
+\index{Map@{Map}!GetAll3DPoints@{GetAll3DPoints}}
+\index{GetAll3DPoints@{GetAll3DPoints}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetAll3DPoints()}{GetAll3DPoints()}}
+{\footnotesize\ttfamily std\+::vector$<$ cv\+::\+Mat $>$ Map\+::\+Get\+All3\+DPoints (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets all 3d locations of points in the map. 
+
+\begin{DoxyReturn}{Returns}
+vector of 3d locations of points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_a46a64016efaaa22453133b6ea542541f}\label{classMap_a46a64016efaaa22453133b6ea542541f}} 
+\index{Map@{Map}!GetAllCameraLocations@{GetAllCameraLocations}}
+\index{GetAllCameraLocations@{GetAllCameraLocations}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetAllCameraLocations()}{GetAllCameraLocations()}}
+{\footnotesize\ttfamily std\+::vector$<$ cv\+::\+Mat $>$ Map\+::\+Get\+All\+Camera\+Locations (\begin{DoxyParamCaption}\item[{bool}]{keyframes\+\_\+only = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets all translation components (xyz camera locations) of poses of \mbox{\hyperlink{classFrame}{Frame}} objects stored in the map. 
+
+\begin{DoxyReturn}{Returns}
+vector of camera locations 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_aa983b4c4a225036a980a22742a8bb5a6}\label{classMap_aa983b4c4a225036a980a22742a8bb5a6}} 
+\index{Map@{Map}!GetAllFrameIDs@{GetAllFrameIDs}}
+\index{GetAllFrameIDs@{GetAllFrameIDs}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetAllFrameIDs()}{GetAllFrameIDs()}}
+{\footnotesize\ttfamily std\+::vector$<$ int $>$ Map\+::\+Get\+All\+Frame\+IDs (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets all frame ids in the map. 
+
+\begin{DoxyReturn}{Returns}
+vector of frame ids 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_aaaf2cdc58286fcde351bb6b2fe1b46ed}\label{classMap_aaaf2cdc58286fcde351bb6b2fe1b46ed}} 
+\index{Map@{Map}!GetAllPointIDs@{GetAllPointIDs}}
+\index{GetAllPointIDs@{GetAllPointIDs}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetAllPointIDs()}{GetAllPointIDs()}}
+{\footnotesize\ttfamily std\+::vector$<$ int $>$ Map\+::\+Get\+All\+Point\+IDs (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets all point ids in the map. 
+
+\begin{DoxyReturn}{Returns}
+vector of point ids 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_a222cd8ce725fe131276c0d653b844c25}\label{classMap_a222cd8ce725fe131276c0d653b844c25}} 
+\index{Map@{Map}!GetAllPoses@{GetAllPoses}}
+\index{GetAllPoses@{GetAllPoses}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetAllPoses()}{GetAllPoses()}}
+{\footnotesize\ttfamily std\+::vector$<$ cv\+::\+Mat $>$ Map\+::\+Get\+All\+Poses (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets all poses of \mbox{\hyperlink{classFrame}{Frame}} objects stored in the map. 
+
+\begin{DoxyReturn}{Returns}
+vector of poses 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_a38b03d0a1b1b525e21256c71c084e394}\label{classMap_a38b03d0a1b1b525e21256c71c084e394}} 
+\index{Map@{Map}!GetFrame@{GetFrame}}
+\index{GetFrame@{GetFrame}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetFrame()}{GetFrame()}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ Map\+::\+Get\+Frame (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets the pointer to frame if the frame id exists in map. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id} & id of the frame \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a1abc85be6f20969fccc1400eef0d2137}\label{classMap_a1abc85be6f20969fccc1400eef0d2137}} 
+\index{Map@{Map}!GetImagePointsWithFrameID@{GetImagePointsWithFrameID}}
+\index{GetImagePointsWithFrameID@{GetImagePointsWithFrameID}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetImagePointsWithFrameID()}{GetImagePointsWithFrameID()}}
+{\footnotesize\ttfamily std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat, std\+::vector$<$ int $>$ $>$ Map\+::\+Get\+Image\+Points\+With\+Frame\+ID (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets information about the map points that are visible to frame with frame id. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & -\/ id of the frame \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+tuple of imagepoints, descriptors, 3d locations, point ids of map points corresponding to the frame 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}\label{classMap_ad86f6ad4c07afa7926369e3e00b0fdcf}} 
+\index{Map@{Map}!GetPoint@{GetPoint}}
+\index{GetPoint@{GetPoint}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetPoint()}{GetPoint()}}
+{\footnotesize\ttfamily std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPoint3D}{Point3D}} $>$ Map\+::\+Get\+Point (\begin{DoxyParamCaption}\item[{int}]{point\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets the pointer to point if the point id exists in map. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id} & id of the point \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a069104df608ee51296ea28cf84b0587d}\label{classMap_a069104df608ee51296ea28cf84b0587d}} 
+\index{Map@{Map}!GetPointsVisibleToFrame@{GetPointsVisibleToFrame}}
+\index{GetPointsVisibleToFrame@{GetPointsVisibleToFrame}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetPointsVisibleToFrame()}{GetPointsVisibleToFrame()}}
+{\footnotesize\ttfamily std\+::vector$<$ int $>$ Map\+::\+Get\+Points\+Visible\+To\+Frame (\begin{DoxyParamCaption}\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets ids of points that are visible to frame. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & -\/ id of the frame \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+vector of point ids 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_a69b40e57dedea142af91bffc011d9e4e}\label{classMap_a69b40e57dedea142af91bffc011d9e4e}} 
+\index{Map@{Map}!GetPointsVisibleToFrames@{GetPointsVisibleToFrames}}
+\index{GetPointsVisibleToFrames@{GetPointsVisibleToFrames}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{GetPointsVisibleToFrames()}{GetPointsVisibleToFrames()}}
+{\footnotesize\ttfamily std\+::vector$<$ int $>$ Map\+::\+Get\+Points\+Visible\+To\+Frames (\begin{DoxyParamCaption}\item[{std\+::vector$<$ int $>$}]{frame\+\_\+id\+\_\+list }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets ids of points that are visible to frames. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em frame\+\_\+id} & -\/ ids of the frame \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+vector of point ids 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMap_aa9a647846b469d9e34beabc4896ba3ac}\label{classMap_aa9a647846b469d9e34beabc4896ba3ac}} 
+\index{Map@{Map}!InitializeMap@{InitializeMap}}
+\index{InitializeMap@{InitializeMap}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{InitializeMap()}{InitializeMap()}}
+{\footnotesize\ttfamily void Map\+::\+Initialize\+Map (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::filesystem\+::path $>$\+::iterator \&}]{input\+\_\+video\+\_\+it,  }\item[{int \&}]{id\+\_\+frame,  }\item[{int \&}]{id\+\_\+point,  }\item[{\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}}]{feature\+\_\+extractor,  }\item[{\mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}}}]{feature\+\_\+matcher,  }\item[{cv\+::\+Mat}]{camera\+Intrinsics\+Matrix,  }\item[{bool}]{visualize = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Initializes map based on first two keyframes from video (first being the 1st frame and 2nd is being found) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\+\_\+video\+\_\+it} & -\/ iterator for going through the video frames (image file paths) \\
+\hline
+{\em id\+\_\+frame} & -\/ running indexing for \mbox{\hyperlink{classFrame}{Frame}} objects to be stored in the map \\
+\hline
+{\em id\+\_\+point} & -\/ running indexing for \mbox{\hyperlink{classPoint3D}{Point3D}} objects to be stored in the map \\
+\hline
+{\em feature\+\_\+extractor} & -\/ an instance of \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} class, used for extracting information from the video frames \\
+\hline
+{\em feature\+\_\+matcher} & -\/ an instance of \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} class, used for matching keypoints and features of two video frames \\
+\hline
+{\em camera\+Intrinsics\+Matrix} & -\/ stores camera parameters in matrix form \\
+\hline
+{\em visualize} & -\/ flag to tell if should visualize the matching process with opencv \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a8b58b11b8682777eae3bbd277c3ff205}\label{classMap_a8b58b11b8682777eae3bbd277c3ff205}} 
+\index{Map@{Map}!localMapping@{localMapping}}
+\index{localMapping@{localMapping}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{localMapping()}{localMapping()}}
+{\footnotesize\ttfamily void Map\+::local\+Mapping (\begin{DoxyParamCaption}\item[{int \&}]{id\+\_\+frame,  }\item[{int \&}]{id\+\_\+point,  }\item[{\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}}]{feature\+\_\+extractor,  }\item[{\mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}}}]{feature\+\_\+matcher,  }\item[{cv\+::\+Mat}]{camera\+Intrinsics\+Matrix,  }\item[{cv\+::\+Mat}]{Dist\+Coefficients,  }\item[{int \&}]{last\+\_\+key\+\_\+frame\+\_\+id,  }\item[{bool}]{visualize = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Does mapping using the last keyframe and new keyframe\+: Tries to find new matches between their descriptors and triangulate 3d locations for matches using their estimated poses. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id\+\_\+frame} & -\/ running indexing for \mbox{\hyperlink{classFrame}{Frame}} objects to be stored in the map as reference, gets increased inside the map \\
+\hline
+{\em id\+\_\+point} & -\/ running indexing for \mbox{\hyperlink{classPoint3D}{Point3D}} objects to be stored in the map as reference, gets increased inside the map \\
+\hline
+{\em feature\+\_\+extractor} & -\/ an instance of \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} class, used for extracting information from the video frames \\
+\hline
+{\em feature\+\_\+matcher} & -\/ an instance of \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} class, used for matching keypoints and features of two video frames \\
+\hline
+{\em camera\+Intrinsics\+Matrix} & -\/ stores camera parameters in matrix form \\
+\hline
+{\em Dist\+Coefficients} & -\/ stores camera distortion coefficients in vector form \\
+\hline
+{\em last\+\_\+key\+\_\+frame\+\_\+id} & -\/ index of the last keyframe (store before tracking) \\
+\hline
+{\em visualize} & -\/ flag to tell if should visualize the matching process with opencv \\
+\hline
+{\em verbose\+\_\+optimization} & -\/ flag to tell if we should print details of the motion only optimization \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a1937e4dc23c1a06435c7d0986f759193}\label{classMap_a1937e4dc23c1a06435c7d0986f759193}} 
+\index{Map@{Map}!localTracking@{localTracking}}
+\index{localTracking@{localTracking}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{localTracking()}{localTracking()}}
+{\footnotesize\ttfamily void Map\+::local\+Tracking (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::filesystem\+::path $>$\+::iterator \&}]{input\+\_\+video\+\_\+it,  }\item[{int \&}]{id\+\_\+frame,  }\item[{int \&}]{id\+\_\+point,  }\item[{\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}}]{feature\+\_\+extractor,  }\item[{\mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}}}]{feature\+\_\+matcher,  }\item[{cv\+::\+Mat}]{camera\+Intrinsics\+Matrix,  }\item[{cv\+::\+Mat}]{Dist\+Coefficients,  }\item[{\mbox{\hyperlink{classPointClouds}{Point\+Clouds}} \&}]{clouds,  }\item[{bool}]{visualize = {\ttfamily true},  }\item[{bool}]{verbose\+\_\+optimization = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Tracks map points in consecutive video frames and estimates poses using Pn\+P-\/algorithm. Breaks when a new keyframe is found\+: 
+
+
+\begin{DoxyItemize}
+\item 1. at least 20 frames has passed or current frame tracks less than 80 map points
+\item 2. The map points tracked are fewer than 90\% of the map points seen by the last key frame 
+\begin{DoxyParams}{Parameters}
+{\em input\+\_\+video\+\_\+it} & -\/ iterator for going through the video frames (image file paths) \\
+\hline
+{\em id\+\_\+frame} & -\/ running indexing for \mbox{\hyperlink{classFrame}{Frame}} objects to be stored in the map as reference, gets increased inside the map \\
+\hline
+{\em id\+\_\+point} & -\/ running indexing for \mbox{\hyperlink{classPoint3D}{Point3D}} objects to be stored in the map as reference, gets increased inside the map \\
+\hline
+{\em feature\+\_\+extractor} & -\/ an instance of \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} class, used for extracting information from the video frames \\
+\hline
+{\em feature\+\_\+matcher} & -\/ an instance of \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} class, used for matching keypoints and features of two video frames \\
+\hline
+{\em camera\+Intrinsics\+Matrix} & -\/ stores camera parameters in matrix form \\
+\hline
+{\em Dist\+Coefficients} & -\/ stores camera distortion coefficients in vector form \\
+\hline
+{\em visualize} & -\/ flag to tell if should visualize the matching process with opencv \\
+\hline
+{\em verbose\+\_\+optimization} & -\/ flag to tell if we should print details of the motion only optimization \\
+\hline
+\end{DoxyParams}
+
+\end{DoxyItemize}\mbox{\Hypertarget{classMap_a78ee141b8ce63f36fb1ff3472bbfcda0}\label{classMap_a78ee141b8ce63f36fb1ff3472bbfcda0}} 
+\index{Map@{Map}!Store3DPoints@{Store3DPoints}}
+\index{Store3DPoints@{Store3DPoints}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{Store3DPoints()}{Store3DPoints()}}
+{\footnotesize\ttfamily void Map\+::\+Store3\+DPoints (\begin{DoxyParamCaption}\item[{std\+::map$<$ int, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classPoint3D}{Point3D}} $>$ $>$}]{points\+\_\+map }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Stores multiple \mbox{\hyperlink{classPoint3D}{Point3D}} objects in the map at once. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em points\+\_\+map} & std\+::map with point ids as keys, and \mbox{\hyperlink{classPoint3D}{Point3D}} objects as values \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_af38c232b55abfcb5ba62880ec8493232}\label{classMap_af38c232b55abfcb5ba62880ec8493232}} 
+\index{Map@{Map}!UpdatePoint3D@{UpdatePoint3D}}
+\index{UpdatePoint3D@{UpdatePoint3D}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{UpdatePoint3D()}{UpdatePoint3D()}}
+{\footnotesize\ttfamily void Map\+::\+Update\+Point3D (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{new\+\_\+point,  }\item[{int}]{point\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Updates the 3d location of the point. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id} & id of the point \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMap_a71543ae9f620bd29c5d450d5be9d587b}\label{classMap_a71543ae9f620bd29c5d450d5be9d587b}} 
+\index{Map@{Map}!UpdatePose@{UpdatePose}}
+\index{UpdatePose@{UpdatePose}!Map@{Map}}
+\doxysubsubsection{\texorpdfstring{UpdatePose()}{UpdatePose()}}
+{\footnotesize\ttfamily void Map\+::\+Update\+Pose (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{new\+\_\+pose,  }\item[{int}]{frame\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Updates the pose of the frame to new\+\_\+pose. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id} & id of the frame \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/jere/cpp\+\_\+visual\+\_\+slam/src/map.\+hpp\end{DoxyCompactItemize}

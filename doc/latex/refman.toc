@@ -1,0 +1,113 @@
+\@ifundefined {etoctocstyle}{\let \etoc@startlocaltoc \@gobble \let \etoc@settocdepth \@gobble \let \etoc@depthtag \@gobble \let \etoc@setlocaltop \@gobble }{}
+\contentsline {chapter}{\numberline {1}Source content}{1}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Hierarchical Index}{3}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Class Hierarchy}{3}{section.2.1}%
+\contentsline {chapter}{\numberline {3}Class Index}{5}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Class List}{5}{section.3.1}%
+\contentsline {chapter}{\numberline {4}File Index}{7}{chapter.4}%
+\contentsline {section}{\numberline {4.1}File List}{7}{section.4.1}%
+\contentsline {chapter}{\numberline {5}Class Documentation}{9}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Essential Class Reference}{9}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Feature\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}Extractor Class Reference}{10}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Feature\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}Matcher Class Reference}{10}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Frame Class Reference}{11}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Detailed Description}{12}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Constructor \& Destructor Documentation}{12}{subsection.5.4.2}%
+\contentsline {subsubsection}{\numberline {5.4.2.1}Frame()\hspace {0.1cm}{\footnotesize \ttfamily [1/3]}}{12}{subsubsection.5.4.2.1}%
+\contentsline {subsubsection}{\numberline {5.4.2.2}Frame()\hspace {0.1cm}{\footnotesize \ttfamily [2/3]}}{12}{subsubsection.5.4.2.2}%
+\contentsline {subsubsection}{\numberline {5.4.2.3}Frame()\hspace {0.1cm}{\footnotesize \ttfamily [3/3]}}{13}{subsubsection.5.4.2.3}%
+\contentsline {subsection}{\numberline {5.4.3}Member Function Documentation}{13}{subsection.5.4.3}%
+\contentsline {subsubsection}{\numberline {5.4.3.1}AddID()}{13}{subsubsection.5.4.3.1}%
+\contentsline {subsubsection}{\numberline {5.4.3.2}AddParent()}{13}{subsubsection.5.4.3.2}%
+\contentsline {subsubsection}{\numberline {5.4.3.3}AddPose()}{14}{subsubsection.5.4.3.3}%
+\contentsline {subsubsection}{\numberline {5.4.3.4}feature\_extract()}{14}{subsubsection.5.4.3.4}%
+\contentsline {subsubsection}{\numberline {5.4.3.5}GetFeatures()}{14}{subsubsection.5.4.3.5}%
+\contentsline {subsubsection}{\numberline {5.4.3.6}GetID()}{15}{subsubsection.5.4.3.6}%
+\contentsline {subsubsection}{\numberline {5.4.3.7}GetKeyPoints()}{15}{subsubsection.5.4.3.7}%
+\contentsline {subsubsection}{\numberline {5.4.3.8}GetKeyPointsAsVector()}{15}{subsubsection.5.4.3.8}%
+\contentsline {subsubsection}{\numberline {5.4.3.9}GetParentIDs()}{15}{subsubsection.5.4.3.9}%
+\contentsline {subsubsection}{\numberline {5.4.3.10}GetPose()}{16}{subsubsection.5.4.3.10}%
+\contentsline {subsubsection}{\numberline {5.4.3.11}GetRGB()}{16}{subsubsection.5.4.3.11}%
+\contentsline {subsubsection}{\numberline {5.4.3.12}GetTransitionWithParentID()}{16}{subsubsection.5.4.3.12}%
+\contentsline {subsubsection}{\numberline {5.4.3.13}IsKeyFrame()}{16}{subsubsection.5.4.3.13}%
+\contentsline {subsubsection}{\numberline {5.4.3.14}Match2Frames()}{16}{subsubsection.5.4.3.14}%
+\contentsline {subsubsection}{\numberline {5.4.3.15}process()}{17}{subsubsection.5.4.3.15}%
+\contentsline {subsubsection}{\numberline {5.4.3.16}process\_frame()}{17}{subsubsection.5.4.3.16}%
+\contentsline {subsubsection}{\numberline {5.4.3.17}SetFeatures()}{17}{subsubsection.5.4.3.17}%
+\contentsline {subsubsection}{\numberline {5.4.3.18}SetKeyPoints()}{18}{subsubsection.5.4.3.18}%
+\contentsline {subsubsection}{\numberline {5.4.3.19}SetRGB()}{18}{subsubsection.5.4.3.19}%
+\contentsline {subsubsection}{\numberline {5.4.3.20}UpdatePose()}{18}{subsubsection.5.4.3.20}%
+\contentsline {section}{\numberline {5.5}Isometry3d Class Reference}{19}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Map Class Reference}{19}{section.5.6}%
+\contentsline {subsection}{\numberline {5.6.1}Detailed Description}{21}{subsection.5.6.1}%
+\contentsline {subsection}{\numberline {5.6.2}Member Function Documentation}{21}{subsection.5.6.2}%
+\contentsline {subsubsection}{\numberline {5.6.2.1}AddFrame()}{21}{subsubsection.5.6.2.1}%
+\contentsline {subsubsection}{\numberline {5.6.2.2}AddParentAndPose()}{22}{subsubsection.5.6.2.2}%
+\contentsline {subsubsection}{\numberline {5.6.2.3}AddPoint3D()}{22}{subsubsection.5.6.2.3}%
+\contentsline {subsubsection}{\numberline {5.6.2.4}AddPoints3D()}{22}{subsubsection.5.6.2.4}%
+\contentsline {subsubsection}{\numberline {5.6.2.5}AddPointToFrameCorrespondances()}{23}{subsubsection.5.6.2.5}%
+\contentsline {subsubsection}{\numberline {5.6.2.6}AddPoseNode()}{23}{subsubsection.5.6.2.6}%
+\contentsline {subsubsection}{\numberline {5.6.2.7}BundleAdjustement()}{24}{subsubsection.5.6.2.7}%
+\contentsline {subsubsection}{\numberline {5.6.2.8}Get3DPointsWithIDs()}{24}{subsubsection.5.6.2.8}%
+\contentsline {subsubsection}{\numberline {5.6.2.9}GetAll3DPoints()}{25}{subsubsection.5.6.2.9}%
+\contentsline {subsubsection}{\numberline {5.6.2.10}GetAllCameraLocations()}{25}{subsubsection.5.6.2.10}%
+\contentsline {subsubsection}{\numberline {5.6.2.11}GetAllFrameIDs()}{25}{subsubsection.5.6.2.11}%
+\contentsline {subsubsection}{\numberline {5.6.2.12}GetAllPointIDs()}{25}{subsubsection.5.6.2.12}%
+\contentsline {subsubsection}{\numberline {5.6.2.13}GetAllPoses()}{26}{subsubsection.5.6.2.13}%
+\contentsline {subsubsection}{\numberline {5.6.2.14}GetFrame()}{26}{subsubsection.5.6.2.14}%
+\contentsline {subsubsection}{\numberline {5.6.2.15}GetImagePointsWithFrameID()}{26}{subsubsection.5.6.2.15}%
+\contentsline {subsubsection}{\numberline {5.6.2.16}GetPoint()}{26}{subsubsection.5.6.2.16}%
+\contentsline {subsubsection}{\numberline {5.6.2.17}GetPointsVisibleToFrame()}{27}{subsubsection.5.6.2.17}%
+\contentsline {subsubsection}{\numberline {5.6.2.18}GetPointsVisibleToFrames()}{27}{subsubsection.5.6.2.18}%
+\contentsline {subsubsection}{\numberline {5.6.2.19}InitializeMap()}{27}{subsubsection.5.6.2.19}%
+\contentsline {subsubsection}{\numberline {5.6.2.20}localMapping()}{28}{subsubsection.5.6.2.20}%
+\contentsline {subsubsection}{\numberline {5.6.2.21}localTracking()}{29}{subsubsection.5.6.2.21}%
+\contentsline {subsubsection}{\numberline {5.6.2.22}Store3DPoints()}{29}{subsubsection.5.6.2.22}%
+\contentsline {subsubsection}{\numberline {5.6.2.23}UpdatePoint3D()}{30}{subsubsection.5.6.2.23}%
+\contentsline {subsubsection}{\numberline {5.6.2.24}UpdatePose()}{30}{subsubsection.5.6.2.24}%
+\contentsline {section}{\numberline {5.7}PnP Class Reference}{30}{section.5.7}%
+\contentsline {section}{\numberline {5.8}Point3D Class Reference}{31}{section.5.8}%
+\contentsline {subsection}{\numberline {5.8.1}Detailed Description}{32}{subsection.5.8.1}%
+\contentsline {subsection}{\numberline {5.8.2}Constructor \& Destructor Documentation}{32}{subsection.5.8.2}%
+\contentsline {subsubsection}{\numberline {5.8.2.1}Point3D()}{32}{subsubsection.5.8.2.1}%
+\contentsline {subsection}{\numberline {5.8.3}Member Function Documentation}{33}{subsection.5.8.3}%
+\contentsline {subsubsection}{\numberline {5.8.3.1}AddFrame()}{33}{subsubsection.5.8.3.1}%
+\contentsline {subsubsection}{\numberline {5.8.3.2}Get3dPoint()}{33}{subsubsection.5.8.3.2}%
+\contentsline {subsubsection}{\numberline {5.8.3.3}GetFrame()}{33}{subsubsection.5.8.3.3}%
+\contentsline {subsubsection}{\numberline {5.8.3.4}GetFrames()}{34}{subsubsection.5.8.3.4}%
+\contentsline {subsubsection}{\numberline {5.8.3.5}GetID()}{34}{subsubsection.5.8.3.5}%
+\contentsline {subsubsection}{\numberline {5.8.3.6}GetImagePoint()}{34}{subsubsection.5.8.3.6}%
+\contentsline {subsubsection}{\numberline {5.8.3.7}GetImagePointAndFeature()}{35}{subsubsection.5.8.3.7}%
+\contentsline {subsubsection}{\numberline {5.8.3.8}GetNVisibleFrames()}{35}{subsubsection.5.8.3.8}%
+\contentsline {subsubsection}{\numberline {5.8.3.9}IsBad()}{35}{subsubsection.5.8.3.9}%
+\contentsline {subsubsection}{\numberline {5.8.3.10}IsVisibleTo()}{36}{subsubsection.5.8.3.10}%
+\contentsline {subsubsection}{\numberline {5.8.3.11}SetFrames()}{36}{subsubsection.5.8.3.11}%
+\contentsline {subsubsection}{\numberline {5.8.3.12}UpdatePoint()}{36}{subsubsection.5.8.3.12}%
+\contentsline {section}{\numberline {5.9}Point\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}Clouds Class Reference}{37}{section.5.9}%
+\contentsline {subsection}{\numberline {5.9.1}Detailed Description}{37}{subsection.5.9.1}%
+\contentsline {subsection}{\numberline {5.9.2}Member Function Documentation}{37}{subsection.5.9.2}%
+\contentsline {subsubsection}{\numberline {5.9.2.1}AddPoint()}{38}{subsubsection.5.9.2.1}%
+\contentsline {subsubsection}{\numberline {5.9.2.2}AddPointMat()}{38}{subsubsection.5.9.2.2}%
+\contentsline {subsubsection}{\numberline {5.9.2.3}AddPointsMatUpdate()}{38}{subsubsection.5.9.2.3}%
+\contentsline {subsubsection}{\numberline {5.9.2.4}AddPose()}{39}{subsubsection.5.9.2.4}%
+\contentsline {subsubsection}{\numberline {5.9.2.5}Clear()}{39}{subsubsection.5.9.2.5}%
+\contentsline {subsubsection}{\numberline {5.9.2.6}ClearAll()}{39}{subsubsection.5.9.2.6}%
+\contentsline {subsubsection}{\numberline {5.9.2.7}SetPointsMatUpdate()}{39}{subsubsection.5.9.2.7}%
+\contentsline {subsubsection}{\numberline {5.9.2.8}UpdateView()}{40}{subsubsection.5.9.2.8}%
+\contentsline {section}{\numberline {5.10}Screen Class Reference}{40}{section.5.10}%
+\contentsline {subsection}{\numberline {5.10.1}Detailed Description}{40}{subsection.5.10.1}%
+\contentsline {subsection}{\numberline {5.10.2}Constructor \& Destructor Documentation}{40}{subsection.5.10.2}%
+\contentsline {subsubsection}{\numberline {5.10.2.1}Screen()}{40}{subsubsection.5.10.2.1}%
+\contentsline {subsection}{\numberline {5.10.3}Member Function Documentation}{41}{subsection.5.10.3}%
+\contentsline {subsubsection}{\numberline {5.10.3.1}RegisterPointCloud()}{41}{subsubsection.5.10.3.1}%
+\contentsline {subsubsection}{\numberline {5.10.3.2}Run()}{41}{subsubsection.5.10.3.2}%
+\contentsline {section}{\numberline {5.11}Transformation Class Reference}{42}{section.5.11}%
+\contentsline {chapter}{\numberline {6}File Documentation}{43}{chapter.6}%
+\contentsline {section}{\numberline {6.1}frame.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}hpp}{43}{section.6.1}%
+\contentsline {section}{\numberline {6.2}helper\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}\_\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}functions.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}hpp}{46}{section.6.2}%
+\contentsline {section}{\numberline {6.3}isometry3d.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}hpp}{51}{section.6.3}%
+\contentsline {section}{\numberline {6.4}map.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}hpp}{51}{section.6.4}%
+\contentsline {section}{\numberline {6.5}point.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}hpp}{58}{section.6.5}%
+\contentsline {section}{\numberline {6.6}screen.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}hpp}{60}{section.6.6}%
+\contentsline {section}{\numberline {6.7}transformation.\discretionary {\mbox {\scriptsize $\hookleftarrow $}}{}{}hpp}{62}{section.6.7}%
+\contentsline {chapter}{Index}{65}{section*.33}%

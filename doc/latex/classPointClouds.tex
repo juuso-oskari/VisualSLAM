@@ -1,0 +1,183 @@
+\hypertarget{classPointClouds}{}\doxysection{Point\+Clouds Class Reference}
+\label{classPointClouds}\index{PointClouds@{PointClouds}}
+
+
+The \mbox{\hyperlink{classPointClouds}{Point\+Clouds}} class manages the contents of two Point\+Cloud objects, used to keep track of detected points and camera poses. This class can be interfaced to add and remove points from the clouds, as well as to request a screen refresh from the Easy3D viewer.  
+
+
+
+
+{\ttfamily \#include $<$screen.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPointClouds_a34fe455f6a3ea5655bbc37bdb37903af}\label{classPointClouds_a34fe455f6a3ea5655bbc37bdb37903af}} 
+{\bfseries Point\+Clouds} (easy3d\+::\+Point\+Cloud $\ast$points, easy3d\+::\+Point\+Cloud $\ast$poses)
+\item 
+void \mbox{\hyperlink{classPointClouds_ada6af2406cc9f5e9463e43bc748df938}{Add\+Point}} (double x, double y, double z, bool poses=false)
+\begin{DoxyCompactList}\small\item\em Adds a single point to either of the point clouds, using xyz coordinates. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPointClouds_aaaf001c4747587d25ae077736e6a0f65}{Add\+Point\+Mat}} (cv\+::\+Mat point, bool poses=false)
+\begin{DoxyCompactList}\small\item\em Adds a single point to either of the point clouds using cv\+::\+Mat format. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPointClouds_a1973a9464fc06cff3c6310aad85819b8}{Add\+Pose}} (double x, double y, double z)
+\begin{DoxyCompactList}\small\item\em Shorthand for Add\+Point(x, y, z, true);. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPointClouds_a672ca119e044eca3016027e21aa27049}{Update\+View}} ()
+\begin{DoxyCompactList}\small\item\em Manually refresh the viewer associated with the point clouds. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}{Clear}} (bool poses=false)
+\begin{DoxyCompactList}\small\item\em Remove all the points in the selected point cloud. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPointClouds_a9117d88aa1aeb7f0374e02a40c2e4a93}{Clear\+All}} ()
+\begin{DoxyCompactList}\small\item\em Clears all points in all point clouds. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPointClouds_a8aa7a0340a517d78682abfb8904742f8}{Set\+Points\+Mat\+Update}} (std\+::vector$<$ cv\+::\+Mat $>$ points, bool poses=false)
+\begin{DoxyCompactList}\small\item\em Similar to \mbox{\hyperlink{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}{Add\+Points\+Mat\+Update()}}, except this will clear points first. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}{Add\+Points\+Mat\+Update}} (std\+::vector$<$ cv\+::\+Mat $>$ points, bool poses=false)
+\begin{DoxyCompactList}\small\item\em Extends the selected point cloud with the contents of the vector. Signals for the viewer to refresh the screen. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classPointClouds_a3b2a81687fee483bc621412e180ed92d}\label{classPointClouds_a3b2a81687fee483bc621412e180ed92d}} 
+easy3d\+::\+Point\+Cloud $\ast$ {\bfseries points\+\_\+}
+\item 
+\mbox{\Hypertarget{classPointClouds_aa1c3ebf938bdfc59ec3014d0b60df482}\label{classPointClouds_aa1c3ebf938bdfc59ec3014d0b60df482}} 
+easy3d\+::\+Point\+Cloud $\ast$ {\bfseries poses\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+The \mbox{\hyperlink{classPointClouds}{Point\+Clouds}} class manages the contents of two Point\+Cloud objects, used to keep track of detected points and camera poses. This class can be interfaced to add and remove points from the clouds, as well as to request a screen refresh from the Easy3D viewer. 
+
+Example usage\+:
+
+\mbox{\hyperlink{classPointClouds}{Point\+Clouds}} clouds(points, poses); clouds.\+Add\+Point(0.\+0, 1.\+0, -\/0.\+5) // Adds to the {\ttfamily points} point cloud clouds.\+Add\+Point(2.\+0, -\/1.\+0, 0.\+0, true) // Adds to the {\ttfamily poses} point cloud clouds.\+Update\+View(); clouds.\+Add\+Poinst\+Mat\+Update($<$vector of cv\+::\+Mat objects$>$); clouds.\+Clear\+All(); 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classPointClouds_ada6af2406cc9f5e9463e43bc748df938}\label{classPointClouds_ada6af2406cc9f5e9463e43bc748df938}} 
+\index{PointClouds@{PointClouds}!AddPoint@{AddPoint}}
+\index{AddPoint@{AddPoint}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{AddPoint()}{AddPoint()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Add\+Point (\begin{DoxyParamCaption}\item[{double}]{x,  }\item[{double}]{y,  }\item[{double}]{z,  }\item[{bool}]{poses = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adds a single point to either of the point clouds, using xyz coordinates. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & \\
+\hline
+{\em y} & \\
+\hline
+{\em z} & \\
+\hline
+{\em poses} & If true, the point will be added to the poses point cloud. Otherwise, the points point cloud will be used. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPointClouds_aaaf001c4747587d25ae077736e6a0f65}\label{classPointClouds_aaaf001c4747587d25ae077736e6a0f65}} 
+\index{PointClouds@{PointClouds}!AddPointMat@{AddPointMat}}
+\index{AddPointMat@{AddPointMat}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{AddPointMat()}{AddPointMat()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Add\+Point\+Mat (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{point,  }\item[{bool}]{poses = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Adds a single point to either of the point clouds using cv\+::\+Mat format. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em point} & \\
+\hline
+{\em poses} & If true, the point will be added to the poses point cloud. Otherwise, the points point cloud will be used. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}\label{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}} 
+\index{PointClouds@{PointClouds}!AddPointsMatUpdate@{AddPointsMatUpdate}}
+\index{AddPointsMatUpdate@{AddPointsMatUpdate}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{AddPointsMatUpdate()}{AddPointsMatUpdate()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Add\+Points\+Mat\+Update (\begin{DoxyParamCaption}\item[{std\+::vector$<$ cv\+::\+Mat $>$}]{points,  }\item[{bool}]{poses = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Extends the selected point cloud with the contents of the vector. Signals for the viewer to refresh the screen. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em points} & Vector of points in cv\+::\+Mat form \\
+\hline
+{\em poses} & If true, add to the POSES point cloud instead of the POINTS one. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPointClouds_a1973a9464fc06cff3c6310aad85819b8}\label{classPointClouds_a1973a9464fc06cff3c6310aad85819b8}} 
+\index{PointClouds@{PointClouds}!AddPose@{AddPose}}
+\index{AddPose@{AddPose}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{AddPose()}{AddPose()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Add\+Pose (\begin{DoxyParamCaption}\item[{double}]{x,  }\item[{double}]{y,  }\item[{double}]{z }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Shorthand for Add\+Point(x, y, z, true);. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & \\
+\hline
+{\em y} & \\
+\hline
+{\em z} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}\label{classPointClouds_aab4a6df53ba4bf7faa2ea35a48c34523}} 
+\index{PointClouds@{PointClouds}!Clear@{Clear}}
+\index{Clear@{Clear}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{Clear()}{Clear()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Clear (\begin{DoxyParamCaption}\item[{bool}]{poses = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Remove all the points in the selected point cloud. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em poses} & If true, clear the POSES point cloud instead of the POINTS one. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPointClouds_a9117d88aa1aeb7f0374e02a40c2e4a93}\label{classPointClouds_a9117d88aa1aeb7f0374e02a40c2e4a93}} 
+\index{PointClouds@{PointClouds}!ClearAll@{ClearAll}}
+\index{ClearAll@{ClearAll}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{ClearAll()}{ClearAll()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Clear\+All (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Clears all points in all point clouds. 
+
+\mbox{\Hypertarget{classPointClouds_a8aa7a0340a517d78682abfb8904742f8}\label{classPointClouds_a8aa7a0340a517d78682abfb8904742f8}} 
+\index{PointClouds@{PointClouds}!SetPointsMatUpdate@{SetPointsMatUpdate}}
+\index{SetPointsMatUpdate@{SetPointsMatUpdate}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{SetPointsMatUpdate()}{SetPointsMatUpdate()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Set\+Points\+Mat\+Update (\begin{DoxyParamCaption}\item[{std\+::vector$<$ cv\+::\+Mat $>$}]{points,  }\item[{bool}]{poses = {\ttfamily false} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Similar to \mbox{\hyperlink{classPointClouds_a995ddbf47a3924aa3de00e1dacd5dd64}{Add\+Points\+Mat\+Update()}}, except this will clear points first. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em points} & points to replace current point cloud with \\
+\hline
+{\em poses} & FALSE if the points point cloud should be replaced, TRUE if the poses point cloud should be replaced \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classPointClouds_a672ca119e044eca3016027e21aa27049}\label{classPointClouds_a672ca119e044eca3016027e21aa27049}} 
+\index{PointClouds@{PointClouds}!UpdateView@{UpdateView}}
+\index{UpdateView@{UpdateView}!PointClouds@{PointClouds}}
+\doxysubsubsection{\texorpdfstring{UpdateView()}{UpdateView()}}
+{\footnotesize\ttfamily void Point\+Clouds\+::\+Update\+View (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Manually refresh the viewer associated with the point clouds. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/jere/cpp\+\_\+visual\+\_\+slam/src/screen.\+hpp\end{DoxyCompactItemize}

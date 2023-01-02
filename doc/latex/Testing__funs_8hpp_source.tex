@@ -1,0 +1,76 @@
+\hypertarget{Testing__funs_8hpp_source}{}\doxysection{Testing\+\_\+funs.\+hpp}
+\label{Testing__funs_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/Testing\_funs.hpp@{/home/jere/cpp\_visual\_slam/src/Testing\_funs.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 }
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#include "{}point.hpp"{}}}
+\DoxyCodeLine{3 \textcolor{preprocessor}{\#include <Eigen/Dense>} }
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include <tuple>}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include <opencv2/core/eigen.hpp>}}
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#include <opencv2/videoio.hpp>}}
+\DoxyCodeLine{10 }
+\DoxyCodeLine{11 }
+\DoxyCodeLine{12 }
+\DoxyCodeLine{13 \textcolor{keywordtype}{void} TestPointClass() \{}
+\DoxyCodeLine{14     \textcolor{keywordtype}{int} id\_point = 100;}
+\DoxyCodeLine{15     cv::Mat location\_3D = (cv::Mat1d(1,3) << 20.0, -\/10.0, 40.5); }
+\DoxyCodeLine{16     \textcolor{comment}{// Create point object with id and 3D location}}
+\DoxyCodeLine{17     \mbox{\hyperlink{classPoint3D}{Point3D}}* pt\_object = \textcolor{keyword}{new} \mbox{\hyperlink{classPoint3D}{Point3D}}(id\_point, location\_3D);}
+\DoxyCodeLine{18 }
+\DoxyCodeLine{19     \textcolor{keywordflow}{if} (pt\_object-\/>\mbox{\hyperlink{classPoint3D_ae4d0536b13bc48dcf64f649505c8de0c}{GetID}}() == id\_point) \{}
+\DoxyCodeLine{20         std::cout << \textcolor{stringliteral}{"{}ID point test succefully passed"{}} << std::endl;}
+\DoxyCodeLine{21     \}}
+\DoxyCodeLine{22 }
+\DoxyCodeLine{23     \textcolor{keywordflow}{if} (pt\_object-\/>\mbox{\hyperlink{classPoint3D_aef1a90d2a053161bc8660ee56dcbf2a3}{Get3dPoint}}().at<\textcolor{keywordtype}{double}>(1,1) == location\_3D.at<\textcolor{keywordtype}{double}>(1,1) \&\& pt\_object-\/>\mbox{\hyperlink{classPoint3D_aef1a90d2a053161bc8660ee56dcbf2a3}{Get3dPoint}}().at<\textcolor{keywordtype}{double}>(1,2) == location\_3D.at<\textcolor{keywordtype}{double}>(1,2) \&\& pt\_object-\/>\mbox{\hyperlink{classPoint3D_aef1a90d2a053161bc8660ee56dcbf2a3}{Get3dPoint}}().at<\textcolor{keywordtype}{double}>(1,3) == location\_3D.at<\textcolor{keywordtype}{double}>(1,3) ) \{}
+\DoxyCodeLine{24         std::cout << \textcolor{stringliteral}{"{}3D point test succefully passed"{}} << std::endl;}
+\DoxyCodeLine{25     \}}
+\DoxyCodeLine{26 }
+\DoxyCodeLine{27 }
+\DoxyCodeLine{28 \}}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{30 \textcolor{keywordtype}{int} TestFrameClass()\{}
+\DoxyCodeLine{31     \textcolor{comment}{// init helper classes}}
+\DoxyCodeLine{32     \mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}} feature\_extractor = \mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}}();}
+\DoxyCodeLine{33     \mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}} feature\_matcher = \mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}}();}
+\DoxyCodeLine{34     \textcolor{comment}{// start reading rgb images in data folder}}
+\DoxyCodeLine{35     std::string path = \textcolor{stringliteral}{"{}../data/rgbd\_dataset\_freiburg3\_long\_office\_household/rgb"{}};}
+\DoxyCodeLine{36     std::vector<std::filesystem::path> files\_in\_directory;}
+\DoxyCodeLine{37     std::copy(std::filesystem::directory\_iterator(path), std::filesystem::directory\_iterator(), std::back\_inserter(files\_in\_directory));}
+\DoxyCodeLine{38     std::sort(files\_in\_directory.begin(), files\_in\_directory.end());}
+\DoxyCodeLine{39     std::vector<std::filesystem::path>::iterator input\_video\_it = files\_in\_directory.begin();}
+\DoxyCodeLine{40     \textcolor{comment}{// create a Frame object from the first frame}}
+\DoxyCodeLine{41     cv::Mat image1, dispImg;}
+\DoxyCodeLine{42     image1 = cv::imread(*input\_video\_it);}
+\DoxyCodeLine{43     std::shared\_ptr<Frame> prev\_frame = std::make\_shared<Frame>(image1, 0);}
+\DoxyCodeLine{44     prev\_frame-\/>process(feature\_extractor);}
+\DoxyCodeLine{45     prev\_frame-\/>SetAsKeyFrame();}
+\DoxyCodeLine{46     prev\_frame-\/>AddPose(cv::Mat::eye(4,4,CV\_64F)); \textcolor{comment}{// add Identity as initial pose}}
+\DoxyCodeLine{47     \textcolor{comment}{// skip few frames and then read the next image (tests also the capabilities of the feature matcher)}}
+\DoxyCodeLine{48     \textcolor{keywordtype}{int} skip = 0;}
+\DoxyCodeLine{49     \textcolor{keywordflow}{while}(skip < 50)\{}
+\DoxyCodeLine{50         input\_video\_it++;}
+\DoxyCodeLine{51         skip++;}
+\DoxyCodeLine{52     \}}
+\DoxyCodeLine{53     cv::Mat image2;}
+\DoxyCodeLine{54     image2 = cv::imread(*input\_video\_it);}
+\DoxyCodeLine{55     std::shared\_ptr<Frame> cur\_frame = std::make\_shared<Frame>(image2, 1);}
+\DoxyCodeLine{56     cur\_frame-\/>process(feature\_extractor);}
+\DoxyCodeLine{57     std::vector<cv::DMatch> matches; cv::Mat preMatchedPoints; cv::Mat preMatchedFeatures; cv::Mat curMatchedPoints; cv::Mat curMatchedFeatures;}
+\DoxyCodeLine{58     std::tuple<std::vector<cv::DMatch>, cv::Mat , cv::Mat, cv::Mat , cv::Mat> match\_info}
+\DoxyCodeLine{59             = \mbox{\hyperlink{classFrame_ad98c4c5de25e7251579887a2c740b0e4}{Frame::Match2Frames}}(prev\_frame, cur\_frame, feature\_matcher);}
+\DoxyCodeLine{60     \textcolor{comment}{// parse tuple to objects}}
+\DoxyCodeLine{61     matches = std::get<0>(match\_info); preMatchedPoints = std::get<1>(match\_info); preMatchedFeatures = std::get<2>(match\_info);}
+\DoxyCodeLine{62     curMatchedPoints = std::get<3>(match\_info); curMatchedFeatures = std::get<4>(match\_info);}
+\DoxyCodeLine{63     \textcolor{comment}{// draw matches}}
+\DoxyCodeLine{64     cv::drawMatches(prev\_frame-\/>GetRGB(), prev\_frame-\/>GetKeyPointsAsVector(),}
+\DoxyCodeLine{65     cur\_frame-\/>GetRGB(), cur\_frame-\/>GetKeyPointsAsVector(), matches, dispImg);}
+\DoxyCodeLine{66     cv::imshow(\textcolor{stringliteral}{"{}Display Image"{}}, dispImg);}
+\DoxyCodeLine{67     cv::waitKey(0);}
+\DoxyCodeLine{68     std::cout << \textcolor{stringliteral}{"{}Frame class unit test passed succesfully (visual inspection)"{}} << std::endl;}
+\DoxyCodeLine{69     \textcolor{keywordflow}{return} 0;}
+\DoxyCodeLine{70 \}}
+
+\end{DoxyCode}

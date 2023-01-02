@@ -1,0 +1,418 @@
+\hypertarget{classFrame}{}\doxysection{Frame Class Reference}
+\label{classFrame}\index{Frame@{Frame}}
+
+
+\mbox{\hyperlink{classFrame}{Frame}} class is used to store extracted information about the video frames.  
+
+
+
+
+{\ttfamily \#include $<$frame.\+hpp$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classFrame_ad2e5946cf41d4817e750500acf05d02b}{Frame}} ()
+\item 
+\mbox{\hyperlink{classFrame_ab2f8b9cdd932c6689514779d3d5463d9}{Frame}} (cv\+::\+Mat rgb\+\_\+img, int id)
+\item 
+\mbox{\hyperlink{classFrame_a44192cc452462ba1ff1c36b4e91b32ba}{Frame}} (std\+::string rgb\+\_\+path, int id)
+\item 
+void \mbox{\hyperlink{classFrame_acc1394d4d917b7b92a95adc654feedf1}{Add\+Parent}} (int parent\+\_\+frame\+\_\+id, cv\+::\+Mat transition)
+\item 
+std\+::vector$<$ int $>$ \mbox{\hyperlink{classFrame_afe4a6df365156fdec4ff09b8f68a2548}{Get\+Parent\+IDs}} ()
+\item 
+cv\+::\+Mat \mbox{\hyperlink{classFrame_acd1bf0e32c9763bcf2a3cb26681e6c98}{Get\+Transition\+With\+Parent\+ID}} (int parent\+\_\+id)
+\item 
+std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat $>$ \mbox{\hyperlink{classFrame_a82a64ba50c60ffc40b139806ed32677a}{feature\+\_\+extract}} (cv\+::\+Mat rgb\+\_\+img, \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} feature\+\_\+extractor)
+\item 
+std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat $>$ \mbox{\hyperlink{classFrame_ab005b21f5e60dda160dcbaccec85e125}{process\+\_\+frame}} (\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} feature\+\_\+extractor)
+\item 
+void \mbox{\hyperlink{classFrame_a3ef433bd737c89ba2e797e1ddfaa7c4a}{process}} (\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} feature\+\_\+extractor)
+\begin{DoxyCompactList}\small\item\em method process extracts features and processes the frame \end{DoxyCompactList}\item 
+cv\+::\+Mat \mbox{\hyperlink{classFrame_a024370b646342ba7119f835eecab7418}{Get\+RGB}} () const
+\begin{DoxyCompactList}\small\item\em method Get\+RGB is getter for the RGB image \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classFrame_ae964bd51a99a7ccf4a83345ea1e8e352}{Set\+RGB}} (cv\+::\+Mat new\+\_\+rgb)
+\begin{DoxyCompactList}\small\item\em method Set\+RGB sets RGB image \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classFrame_ab7c26971dec0e68470d64fa40d57b9ea}{Add\+Pose}} (cv\+::\+Mat init\+\_\+pose)
+\begin{DoxyCompactList}\small\item\em method Add\+Pose adds initial pose \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classFrame_af2846ae31456b06f2178a622fda734ed}{Update\+Pose}} (cv\+::\+Mat new\+\_\+pose)
+\begin{DoxyCompactList}\small\item\em method Update\+Pose does the same as add pose, but for clarity different function name \end{DoxyCompactList}\item 
+cv\+::\+Mat \mbox{\hyperlink{classFrame_a346ed30a941d77945c3338bad8e08daa}{Get\+Pose}} () const
+\begin{DoxyCompactList}\small\item\em method Get\+Pose is getter for the 4x4 transformation matrix \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classFrame_a95bda86a031c9ae148bbcea36dca2a6f}{Is\+Key\+Frame}} () const
+\begin{DoxyCompactList}\small\item\em method Get\+Pose returns keyframe information \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_a03e71c523953d5ffbcd97617ffa8dc2b}\label{classFrame_a03e71c523953d5ffbcd97617ffa8dc2b}} 
+void {\bfseries Set\+As\+Key\+Frame} ()
+\begin{DoxyCompactList}\small\item\em method Set\+As\+Key\+Frame is setter for the keyframe, set boolean flag to true if the frame is a keyframe \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classFrame_a1a1f781f9f7c8a962e6a218185e0744d}{Set\+Key\+Points}} (cv\+::\+Mat new\+\_\+points)
+\begin{DoxyCompactList}\small\item\em method Set\+Key\+Points is setter for the image points \end{DoxyCompactList}\item 
+cv\+::\+Mat \mbox{\hyperlink{classFrame_a73f6772622bc6129e7bf8e928046ca99}{Get\+Key\+Points}} () const
+\begin{DoxyCompactList}\small\item\em method Get\+Po\+Get\+Key\+Pointse returns keypoints \end{DoxyCompactList}\item 
+std\+::vector$<$ cv\+::\+Key\+Point $>$ \mbox{\hyperlink{classFrame_ae3d9499ba6a8f087e99d8b7d9ca44889}{Get\+Key\+Points\+As\+Vector}} () const
+\begin{DoxyCompactList}\small\item\em method Get\+Key\+Points\+As\+Vector returns keypoints as a std\+::vector, Only visualization needs them in this form \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classFrame_af9f1c9b95528c787d4a0b455f2368aba}{Set\+Features}} (cv\+::\+Mat new\+\_\+features)
+\begin{DoxyCompactList}\small\item\em method Set\+Features is setter for the features \end{DoxyCompactList}\item 
+cv\+::\+Mat \mbox{\hyperlink{classFrame_a9332fe3821ea3206e340a812eec7854b}{Get\+Features}} () const
+\begin{DoxyCompactList}\small\item\em method Set\+Key\+Points Getter for the features \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{classFrame_a0d0208f88adff90d6939e9e631f4e571}{Get\+ID}} () const
+\begin{DoxyCompactList}\small\item\em method Get\+ID returns frame\+\_\+id \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classFrame_a5b58aee17e364c6acbcac6da0ab6622d}{Add\+ID}} (int new\+\_\+id)
+\begin{DoxyCompactList}\small\item\em method Set\+Features is setter for the frame\+\_\+id \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_ad1ca0a833f1f2bbfb09407372a95ea9a}\label{classFrame_ad1ca0a833f1f2bbfb09407372a95ea9a}} 
+cv\+::\+Mat {\bfseries Get\+Camera\+Center} ()
+\begin{DoxyCompactList}\small\item\em get camera center \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static std\+::tuple$<$ std\+::vector$<$ cv\+::\+DMatch $>$, cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat $>$ \mbox{\hyperlink{classFrame_ad98c4c5de25e7251579887a2c740b0e4}{Match2\+Frames}} (std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ prev\+\_\+frame, std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$ cur\+\_\+frame, \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} feature\+\_\+matcher)
+\item 
+\mbox{\Hypertarget{classFrame_aa59456ac81b17c40639122a6b0ebfa44}\label{classFrame_aa59456ac81b17c40639122a6b0ebfa44}} 
+static std\+::vector$<$ cv\+::\+Key\+Point $>$ {\bfseries Get\+Key\+Points\+As\+Vector} (cv\+::\+Mat mat\+\_\+keypoints)
+\end{DoxyCompactItemize}
+\doxysubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}\label{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}} 
+cv\+::\+Mat {\bfseries rgb}
+\begin{DoxyCompactList}\small\item\em rgb image stored in cv\+::\+Mat \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_afa68b031920bfee051b9c8aaccab300b}\label{classFrame_afa68b031920bfee051b9c8aaccab300b}} 
+cv\+::\+Mat {\bfseries keypoints}
+\begin{DoxyCompactList}\small\item\em extracted keypoints (=imagepoints) stored in Nx2 cv\+::\+Mat \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_ad0fcb4358c69fef57fab4e1163b33a64}\label{classFrame_ad0fcb4358c69fef57fab4e1163b33a64}} 
+cv\+::\+Mat {\bfseries features}
+\begin{DoxyCompactList}\small\item\em extracted descriptors for keypoints stored in Nxfeature\+\_\+length cv\+::\+Mat \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_ae2a34560009f9242ea60e58fe4e87a05}\label{classFrame_ae2a34560009f9242ea60e58fe4e87a05}} 
+cv\+::\+Mat {\bfseries pose}
+\begin{DoxyCompactList}\small\item\em estimated camera pose during the frame \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_a9a8d3de2300c27f2ab32341392c24416}\label{classFrame_a9a8d3de2300c27f2ab32341392c24416}} 
+int {\bfseries ID}
+\begin{DoxyCompactList}\small\item\em unique identifier for the frame when stored in map \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_a4e8a015b2ea0df3f419f2b84a9718d2c}\label{classFrame_a4e8a015b2ea0df3f419f2b84a9718d2c}} 
+std\+::map$<$ int, cv\+::\+Mat $>$ {\bfseries parents}
+\begin{DoxyCompactList}\small\item\em std\+::map storing parents of this frame (useful when building a graph) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classFrame_a7069d0561f25729dd8aa9b9d61f8cd8c}\label{classFrame_a7069d0561f25729dd8aa9b9d61f8cd8c}} 
+bool {\bfseries keyframe} = false
+\begin{DoxyCompactList}\small\item\em boolean flag indicating if the frame is considered keyframe \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\mbox{\hyperlink{classFrame}{Frame}} class is used to store extracted information about the video frames. 
+
+\begin{DoxyAuthor}{Author}
+Juuso Korhonen 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+December 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classFrame_ad2e5946cf41d4817e750500acf05d02b}\label{classFrame_ad2e5946cf41d4817e750500acf05d02b}} 
+\index{Frame@{Frame}!Frame@{Frame}}
+\index{Frame@{Frame}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{Frame()}{Frame()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily Frame\+::\+Frame (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Empty constructor. \mbox{\Hypertarget{classFrame_ab2f8b9cdd932c6689514779d3d5463d9}\label{classFrame_ab2f8b9cdd932c6689514779d3d5463d9}} 
+\index{Frame@{Frame}!Frame@{Frame}}
+\index{Frame@{Frame}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{Frame()}{Frame()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily Frame\+::\+Frame (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{rgb\+\_\+img,  }\item[{int}]{id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Constructor 
+\begin{DoxyParams}{Parameters}
+{\em rgb\+\_\+img} & -\/ video frame as cv\+::\+Mat, for example the output of cv\+::imread(\char`\"{}frame.\+png\char`\"{}) \\
+\hline
+{\em id} & -\/ unique identifier of the frame when added to map \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_a44192cc452462ba1ff1c36b4e91b32ba}\label{classFrame_a44192cc452462ba1ff1c36b4e91b32ba}} 
+\index{Frame@{Frame}!Frame@{Frame}}
+\index{Frame@{Frame}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{Frame()}{Frame()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily Frame\+::\+Frame (\begin{DoxyParamCaption}\item[{std\+::string}]{rgb\+\_\+path,  }\item[{int}]{id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Constructor 
+\begin{DoxyParams}{Parameters}
+{\em rgb\+\_\+path} & -\/ path to video frame file \\
+\hline
+{\em id} & -\/ unique identifier of the frame when added to map \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classFrame_a5b58aee17e364c6acbcac6da0ab6622d}\label{classFrame_a5b58aee17e364c6acbcac6da0ab6622d}} 
+\index{Frame@{Frame}!AddID@{AddID}}
+\index{AddID@{AddID}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{AddID()}{AddID()}}
+{\footnotesize\ttfamily void Frame\+::\+Add\+ID (\begin{DoxyParamCaption}\item[{int}]{new\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Set\+Features is setter for the frame\+\_\+id 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+id} & \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_acc1394d4d917b7b92a95adc654feedf1}\label{classFrame_acc1394d4d917b7b92a95adc654feedf1}} 
+\index{Frame@{Frame}!AddParent@{AddParent}}
+\index{AddParent@{AddParent}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{AddParent()}{AddParent()}}
+{\footnotesize\ttfamily void Frame\+::\+Add\+Parent (\begin{DoxyParamCaption}\item[{int}]{parent\+\_\+frame\+\_\+id,  }\item[{cv\+::\+Mat}]{transition }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+method Add\+Parent adds parent frame to the current frame 
+\begin{DoxyParams}{Parameters}
+{\em parent\+\_\+frame\+\_\+id} & int type frame id corresponding to the parent frame \\
+\hline
+{\em transition} & cv\+::\+Mat type 4x4 transformation matrix corresponding to the mapping between the frames \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_ab7c26971dec0e68470d64fa40d57b9ea}\label{classFrame_ab7c26971dec0e68470d64fa40d57b9ea}} 
+\index{Frame@{Frame}!AddPose@{AddPose}}
+\index{AddPose@{AddPose}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{AddPose()}{AddPose()}}
+{\footnotesize\ttfamily void Frame\+::\+Add\+Pose (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{init\+\_\+pose }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Add\+Pose adds initial pose 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+rgb} & type of cv\+::\+Mat corresponding to 4x4 transormation matrix in the world frame \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_a82a64ba50c60ffc40b139806ed32677a}\label{classFrame_a82a64ba50c60ffc40b139806ed32677a}} 
+\index{Frame@{Frame}!feature\_extract@{feature\_extract}}
+\index{feature\_extract@{feature\_extract}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{feature\_extract()}{feature\_extract()}}
+{\footnotesize\ttfamily std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat $>$ Frame\+::feature\+\_\+extract (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{rgb\+\_\+img,  }\item[{\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}}]{feature\+\_\+extractor }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+method feature\+\_\+extract extract features from rgb image with helper class \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} object \begin{DoxyReturn}{Returns}
+std\+::tuple$<$cv\+::\+Mat, cv\+::\+Mat$>$ type corresponding to image points and features 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_a9332fe3821ea3206e340a812eec7854b}\label{classFrame_a9332fe3821ea3206e340a812eec7854b}} 
+\index{Frame@{Frame}!GetFeatures@{GetFeatures}}
+\index{GetFeatures@{GetFeatures}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetFeatures()}{GetFeatures()}}
+{\footnotesize\ttfamily cv\+::\+Mat Frame\+::\+Get\+Features (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Set\+Key\+Points Getter for the features 
+
+\begin{DoxyReturn}{Returns}
+new\+\_\+features type of cv\+::mat corresponding to the new features 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_a0d0208f88adff90d6939e9e631f4e571}\label{classFrame_a0d0208f88adff90d6939e9e631f4e571}} 
+\index{Frame@{Frame}!GetID@{GetID}}
+\index{GetID@{GetID}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetID()}{GetID()}}
+{\footnotesize\ttfamily int Frame\+::\+Get\+ID (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Get\+ID returns frame\+\_\+id 
+
+\begin{DoxyReturn}{Returns}
+int type corresponding to frame\+\_\+id 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_a73f6772622bc6129e7bf8e928046ca99}\label{classFrame_a73f6772622bc6129e7bf8e928046ca99}} 
+\index{Frame@{Frame}!GetKeyPoints@{GetKeyPoints}}
+\index{GetKeyPoints@{GetKeyPoints}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetKeyPoints()}{GetKeyPoints()}}
+{\footnotesize\ttfamily cv\+::\+Mat Frame\+::\+Get\+Key\+Points (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Get\+Po\+Get\+Key\+Pointse returns keypoints 
+
+\begin{DoxyReturn}{Returns}
+cv\+::\+Mat type corresponding to image points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_ae3d9499ba6a8f087e99d8b7d9ca44889}\label{classFrame_ae3d9499ba6a8f087e99d8b7d9ca44889}} 
+\index{Frame@{Frame}!GetKeyPointsAsVector@{GetKeyPointsAsVector}}
+\index{GetKeyPointsAsVector@{GetKeyPointsAsVector}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetKeyPointsAsVector()}{GetKeyPointsAsVector()}}
+{\footnotesize\ttfamily std\+::vector$<$ cv\+::\+Key\+Point $>$ Frame\+::\+Get\+Key\+Points\+As\+Vector (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Get\+Key\+Points\+As\+Vector returns keypoints as a std\+::vector, Only visualization needs them in this form 
+
+\begin{DoxyReturn}{Returns}
+std\+::vector$<$cv\+::\+Key\+Point$>$ type corresponding to image points 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_afe4a6df365156fdec4ff09b8f68a2548}\label{classFrame_afe4a6df365156fdec4ff09b8f68a2548}} 
+\index{Frame@{Frame}!GetParentIDs@{GetParentIDs}}
+\index{GetParentIDs@{GetParentIDs}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetParentIDs()}{GetParentIDs()}}
+{\footnotesize\ttfamily std\+::vector$<$ int $>$ Frame\+::\+Get\+Parent\+IDs (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+method Get\+Parent\+IDs returns all the parent ids \begin{DoxyReturn}{Returns}
+return std\+::vector$<$int$>$ type array of frame ids 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_a346ed30a941d77945c3338bad8e08daa}\label{classFrame_a346ed30a941d77945c3338bad8e08daa}} 
+\index{Frame@{Frame}!GetPose@{GetPose}}
+\index{GetPose@{GetPose}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetPose()}{GetPose()}}
+{\footnotesize\ttfamily cv\+::\+Mat Frame\+::\+Get\+Pose (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Get\+Pose is getter for the 4x4 transformation matrix 
+
+\begin{DoxyReturn}{Returns}
+cv\+::\+Mat type corresponding to pose 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_a024370b646342ba7119f835eecab7418}\label{classFrame_a024370b646342ba7119f835eecab7418}} 
+\index{Frame@{Frame}!GetRGB@{GetRGB}}
+\index{GetRGB@{GetRGB}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetRGB()}{GetRGB()}}
+{\footnotesize\ttfamily cv\+::\+Mat Frame\+::\+Get\+RGB (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Get\+RGB is getter for the RGB image 
+
+\begin{DoxyReturn}{Returns}
+cv\+::\+Mat type corresponding to RGB image 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_acd1bf0e32c9763bcf2a3cb26681e6c98}\label{classFrame_acd1bf0e32c9763bcf2a3cb26681e6c98}} 
+\index{Frame@{Frame}!GetTransitionWithParentID@{GetTransitionWithParentID}}
+\index{GetTransitionWithParentID@{GetTransitionWithParentID}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{GetTransitionWithParentID()}{GetTransitionWithParentID()}}
+{\footnotesize\ttfamily cv\+::\+Mat Frame\+::\+Get\+Transition\+With\+Parent\+ID (\begin{DoxyParamCaption}\item[{int}]{parent\+\_\+id }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+method Get\+Transition\+With\+Parent\+ID returns 4x4 trasition matrix between the parent frame and the current frame \begin{DoxyReturn}{Returns}
+std\+::vector$<$int$>$ type array of frame ids 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_a95bda86a031c9ae148bbcea36dca2a6f}\label{classFrame_a95bda86a031c9ae148bbcea36dca2a6f}} 
+\index{Frame@{Frame}!IsKeyFrame@{IsKeyFrame}}
+\index{IsKeyFrame@{IsKeyFrame}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{IsKeyFrame()}{IsKeyFrame()}}
+{\footnotesize\ttfamily bool Frame\+::\+Is\+Key\+Frame (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Get\+Pose returns keyframe information 
+
+\begin{DoxyReturn}{Returns}
+bool type corresponding to if the frame is keyframae 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_ad98c4c5de25e7251579887a2c740b0e4}\label{classFrame_ad98c4c5de25e7251579887a2c740b0e4}} 
+\index{Frame@{Frame}!Match2Frames@{Match2Frames}}
+\index{Match2Frames@{Match2Frames}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{Match2Frames()}{Match2Frames()}}
+{\footnotesize\ttfamily static std\+::tuple$<$ std\+::vector$<$ cv\+::\+DMatch $>$, cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat $>$ Frame\+::\+Match2\+Frames (\begin{DoxyParamCaption}\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{prev\+\_\+frame,  }\item[{std\+::shared\+\_\+ptr$<$ \mbox{\hyperlink{classFrame}{Frame}} $>$}]{cur\+\_\+frame,  }\item[{\mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}}}]{feature\+\_\+matcher }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}
+
+matches 2 \mbox{\hyperlink{classFrame}{Frame}} objects 
+\begin{DoxyParams}{Parameters}
+{\em prev\+\_\+frame} & shared pointer to previous frame \\
+\hline
+{\em cur\+\_\+frame} & shared pointer to current frame \\
+\hline
+{\em feature\+\_\+matcher} & \mbox{\hyperlink{classFeatureMatcher}{Feature\+Matcher}} object to be used for feature matching \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+tuple containing matching indices (for keypoints and descriptors) for previous frame (in col(0)) and current frame (in col(1)), matching keypoints in previous frame, matching descriptors in previous frame, matching keypoints in current frame, matching descriptors in current frame 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_a3ef433bd737c89ba2e797e1ddfaa7c4a}\label{classFrame_a3ef433bd737c89ba2e797e1ddfaa7c4a}} 
+\index{Frame@{Frame}!process@{process}}
+\index{process@{process}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{process()}{process()}}
+{\footnotesize\ttfamily void Frame\+::process (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}}]{feature\+\_\+extractor }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method process extracts features and processes the frame 
+
+
+\begin{DoxyParams}{Parameters}
+{\em \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}} & intance of class \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_ab005b21f5e60dda160dcbaccec85e125}\label{classFrame_ab005b21f5e60dda160dcbaccec85e125}} 
+\index{Frame@{Frame}!process\_frame@{process\_frame}}
+\index{process\_frame@{process\_frame}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{process\_frame()}{process\_frame()}}
+{\footnotesize\ttfamily std\+::tuple$<$ cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat $>$ Frame\+::process\+\_\+frame (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}}]{feature\+\_\+extractor }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+method process frame and return keypoints, features and the rgb image from where they were found 
+\begin{DoxyParams}{Parameters}
+{\em \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}}} & intance of class \mbox{\hyperlink{classFeatureExtractor}{Feature\+Extractor}} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+std\+::tuple$<$cv\+::\+Mat, cv\+::\+Mat, cv\+::\+Mat$>$ type corresponding to keypoints, features and the rgb image 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classFrame_af9f1c9b95528c787d4a0b455f2368aba}\label{classFrame_af9f1c9b95528c787d4a0b455f2368aba}} 
+\index{Frame@{Frame}!SetFeatures@{SetFeatures}}
+\index{SetFeatures@{SetFeatures}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{SetFeatures()}{SetFeatures()}}
+{\footnotesize\ttfamily void Frame\+::\+Set\+Features (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{new\+\_\+features }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Set\+Features is setter for the features 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+features} & type of cv\+::mat corresponding to the new features \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_a1a1f781f9f7c8a962e6a218185e0744d}\label{classFrame_a1a1f781f9f7c8a962e6a218185e0744d}} 
+\index{Frame@{Frame}!SetKeyPoints@{SetKeyPoints}}
+\index{SetKeyPoints@{SetKeyPoints}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{SetKeyPoints()}{SetKeyPoints()}}
+{\footnotesize\ttfamily void Frame\+::\+Set\+Key\+Points (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{new\+\_\+points }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Set\+Key\+Points is setter for the image points 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+points} & type of cv\+::mat corresponding to the image points \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_ae964bd51a99a7ccf4a83345ea1e8e352}\label{classFrame_ae964bd51a99a7ccf4a83345ea1e8e352}} 
+\index{Frame@{Frame}!SetRGB@{SetRGB}}
+\index{SetRGB@{SetRGB}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{SetRGB()}{SetRGB()}}
+{\footnotesize\ttfamily void Frame\+::\+Set\+RGB (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{new\+\_\+rgb }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Set\+RGB sets RGB image 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+rgb} & type of cv\+::\+Mat \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classFrame_af2846ae31456b06f2178a622fda734ed}\label{classFrame_af2846ae31456b06f2178a622fda734ed}} 
+\index{Frame@{Frame}!UpdatePose@{UpdatePose}}
+\index{UpdatePose@{UpdatePose}!Frame@{Frame}}
+\doxysubsubsection{\texorpdfstring{UpdatePose()}{UpdatePose()}}
+{\footnotesize\ttfamily void Frame\+::\+Update\+Pose (\begin{DoxyParamCaption}\item[{cv\+::\+Mat}]{new\+\_\+pose }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+method Update\+Pose does the same as add pose, but for clarity different function name 
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+rgb} & type of cv\+::\+Mat corresponding to 4x4 transormation matrix in the world frame \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/jere/cpp\+\_\+visual\+\_\+slam/src/frame.\+hpp\end{DoxyCompactItemize}

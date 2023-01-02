@@ -1,0 +1,256 @@
+\hypertarget{frame_8hpp_source}{}\doxysection{frame.\+hpp}
+\label{frame_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/frame.hpp@{/home/jere/cpp\_visual\_slam/src/frame.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef VISUAL\_SLAM\_FRAME}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define VISUAL\_SLAM\_FRAME}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include "{}helper\_functions.hpp"{}}}
+\DoxyCodeLine{7 \textcolor{preprocessor}{\#include <opencv2/core/core.hpp>}}
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include <opencv2/features2d/features2d.hpp>}}
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#include <opencv2/highgui/highgui.hpp>}}
+\DoxyCodeLine{10 \textcolor{comment}{//\#include <opencv2/xfeatures2d.hpp>}}
+\DoxyCodeLine{11 }
+\DoxyCodeLine{12 \textcolor{keyword}{class }\mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}}\{}
+\DoxyCodeLine{13 \textcolor{keyword}{public}:}
+\DoxyCodeLine{14     \mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}}()\{\};}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16     \textcolor{comment}{// takes video frame as input, outputs vector with keypoints as first element and corresponding descriptors as second element}}
+\DoxyCodeLine{17     std::tuple<cv::Mat, cv::Mat> compute\_features(\textcolor{keyword}{const} cv::Mat\& img)\{ \textcolor{comment}{//std::tuple<cv::MatrixXd, cv::MatrixXd>}}
+\DoxyCodeLine{18         std::vector<cv::KeyPoint> keypoints;}
+\DoxyCodeLine{19         detector-\/>detect ( img,keypoints );}
+\DoxyCodeLine{20         cv::Mat descriptors;}
+\DoxyCodeLine{21         descriptor-\/>compute ( img, keypoints, descriptors);}
+\DoxyCodeLine{22         \textcolor{comment}{/*}}
+\DoxyCodeLine{23 \textcolor{comment}{        cv::Mat output;}}
+\DoxyCodeLine{24 \textcolor{comment}{        cv::drawKeypoints(img, keypoints, output);}}
+\DoxyCodeLine{25 \textcolor{comment}{        cv::imwrite("{}../ORB\_result.jpg"{}, output);}}
+\DoxyCodeLine{26 \textcolor{comment}{        */}}
+\DoxyCodeLine{27         \textcolor{keywordflow}{return} std::tuple(KeyPoint2Mat(keypoints), descriptors); }
+\DoxyCodeLine{28     \}}
+\DoxyCodeLine{29 }
+\DoxyCodeLine{30 \textcolor{keyword}{private}:}
+\DoxyCodeLine{31     cv::Ptr<cv::FeatureDetector> detector = cv::ORB::create(1500);}
+\DoxyCodeLine{32     \textcolor{comment}{//cv::Ptr<cv::SIFT> detector = cv::SIFT::create(1500);}}
+\DoxyCodeLine{33     cv::Ptr<cv::DescriptorExtractor> descriptor = cv::ORB::create(1500);}
+\DoxyCodeLine{34     \textcolor{comment}{//cv::Ptr<cv::SIFT> descriptor = cv::SIFT::create(1500);}}
+\DoxyCodeLine{35 \};}
+\DoxyCodeLine{36 }
+\DoxyCodeLine{37 \textcolor{keyword}{class }\mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}}\{}
+\DoxyCodeLine{38 \textcolor{keyword}{public}:}
+\DoxyCodeLine{39     \mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}}()\{}
+\DoxyCodeLine{40         matcher = cv::BFMatcher(cv::NORM\_L2, \textcolor{keyword}{false});}
+\DoxyCodeLine{41     \};}
+\DoxyCodeLine{42     std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat>}
+\DoxyCodeLine{43     match\_features(cv::Mat kp1, cv::Mat desc1, cv::Mat kp2, cv::Mat desc2, \textcolor{keywordtype}{float} ratio = 0.80)\{}
+\DoxyCodeLine{44         std::vector<std::vector< cv::DMatch > > rawMatches;}
+\DoxyCodeLine{45         \textcolor{comment}{//matcher.match(descriptors1, descriptors2, matches);}}
+\DoxyCodeLine{46         matcher.knnMatch(desc1, desc2, rawMatches, 2);}
+\DoxyCodeLine{47         \textcolor{comment}{// perform Lowe's ratio test to get actual matches}}
+\DoxyCodeLine{48         std::vector<cv::DMatch> matches;}
+\DoxyCodeLine{49         cv::Mat pts1;        }
+\DoxyCodeLine{50         cv::Mat pts2;}
+\DoxyCodeLine{51         cv::Mat ft1;}
+\DoxyCodeLine{52         cv::Mat ft2;}
+\DoxyCodeLine{53         \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = rawMatches.begin(); it != rawMatches.end(); it++)\{}
+\DoxyCodeLine{54             \textcolor{keywordflow}{if}( (*it)[0].distance < ratio * (*it)[1].distance )\{}
+\DoxyCodeLine{55                 pts1.push\_back( kp1.row((*it)[0].queryIdx) );}
+\DoxyCodeLine{56                 pts2.push\_back( kp2.row((*it)[0].trainIdx) );}
+\DoxyCodeLine{57                 ft1.push\_back( desc1.row((*it)[0].queryIdx) );}
+\DoxyCodeLine{58                 ft2.push\_back( desc2.row((*it)[0].trainIdx) );}
+\DoxyCodeLine{59                 matches.push\_back((*it)[0]);}
+\DoxyCodeLine{60             \}}
+\DoxyCodeLine{61         \}}
+\DoxyCodeLine{62         \textcolor{keywordflow}{return} std::tuple(matches, pts1, ft1, pts2, ft2);}
+\DoxyCodeLine{63     \}}
+\DoxyCodeLine{64 \textcolor{keyword}{private}:}
+\DoxyCodeLine{65     cv::BFMatcher matcher;}
+\DoxyCodeLine{66 }
+\DoxyCodeLine{67 \};}
+\DoxyCodeLine{68 }
+\DoxyCodeLine{76 \textcolor{keyword}{class }\mbox{\hyperlink{classFrame}{Frame}}\{}
+\DoxyCodeLine{77 \textcolor{keyword}{public}:}
+\DoxyCodeLine{80     \mbox{\hyperlink{classFrame_ad2e5946cf41d4817e750500acf05d02b}{Frame}}()\{\};}
+\DoxyCodeLine{85     \mbox{\hyperlink{classFrame_ab2f8b9cdd932c6689514779d3d5463d9}{Frame}}(cv::Mat rgb\_img, \textcolor{keywordtype}{int} \textcolor{keywordtype}{id})\{}
+\DoxyCodeLine{86         \textcolor{comment}{//std::cout << "{}Base constructor called "{} << std::endl;}}
+\DoxyCodeLine{87         \mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}} = rgb\_img;}
+\DoxyCodeLine{88         \mbox{\hyperlink{classFrame_a9a8d3de2300c27f2ab32341392c24416}{ID}} = id;}
+\DoxyCodeLine{89         \mbox{\hyperlink{classFrame_a7069d0561f25729dd8aa9b9d61f8cd8c}{keyframe}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{90 }
+\DoxyCodeLine{91     \}}
+\DoxyCodeLine{96     \mbox{\hyperlink{classFrame_a44192cc452462ba1ff1c36b4e91b32ba}{Frame}}(std::string rgb\_path, \textcolor{keywordtype}{int} \textcolor{keywordtype}{id})\{}
+\DoxyCodeLine{97         \textcolor{comment}{//std::cout << "{}Base constructor called "{} << std::endl;}}
+\DoxyCodeLine{98         \mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}} = cv::imread(rgb\_path);}
+\DoxyCodeLine{99         \mbox{\hyperlink{classFrame_a9a8d3de2300c27f2ab32341392c24416}{ID}} = id;}
+\DoxyCodeLine{100         \mbox{\hyperlink{classFrame_a7069d0561f25729dd8aa9b9d61f8cd8c}{keyframe}} = \textcolor{keyword}{false};}
+\DoxyCodeLine{101 }
+\DoxyCodeLine{102     \}}
+\DoxyCodeLine{103 }
+\DoxyCodeLine{104 }
+\DoxyCodeLine{105     }
+\DoxyCodeLine{106 \textcolor{comment}{//     /** Copy constructor }}
+\DoxyCodeLine{107 \textcolor{comment}{//         @param f std::shared\_ptr<Frame> smart shared pointer to Frame object}}
+\DoxyCodeLine{108 \textcolor{comment}{//         */}}
+\DoxyCodeLine{109 \textcolor{comment}{//     Frame(const std::shared\_ptr<Frame> f)\{}}
+\DoxyCodeLine{110 \textcolor{comment}{//         //std::cout << "{}Copy constructor called "{} << std::endl;}}
+\DoxyCodeLine{111 \textcolor{comment}{//         rgb = f-\/>rgb;}}
+\DoxyCodeLine{112 \textcolor{comment}{//         keypoints = f-\/>keypoints;}}
+\DoxyCodeLine{113 \textcolor{comment}{//         features = f-\/>features;}}
+\DoxyCodeLine{114 \textcolor{comment}{//         pose = f-\/>pose;}}
+\DoxyCodeLine{115 \textcolor{comment}{//         ID = f-\/>ID;}}
+\DoxyCodeLine{116 \textcolor{comment}{//         parents = f-\/>parents;}}
+\DoxyCodeLine{117 \textcolor{comment}{//         keyframe = f-\/>keyframe;}}
+\DoxyCodeLine{118 }
+\DoxyCodeLine{119 \textcolor{comment}{//     \}}}
+\DoxyCodeLine{120 }
+\DoxyCodeLine{121 }
+\DoxyCodeLine{122 \textcolor{comment}{//     /** method operator= performs copy assignment}}
+\DoxyCodeLine{123 \textcolor{comment}{//    * @param t constant reference to Frame object }}
+\DoxyCodeLine{124 \textcolor{comment}{//    * @returns reference to t}}
+\DoxyCodeLine{125 \textcolor{comment}{//    */}}
+\DoxyCodeLine{126 \textcolor{comment}{//     Frame\& operator=(const Frame\& t)}}
+\DoxyCodeLine{127 \textcolor{comment}{//     \{}}
+\DoxyCodeLine{128 \textcolor{comment}{//         //std::cout << "{}Assignment operator called "{} << std::endl;}}
+\DoxyCodeLine{129 \textcolor{comment}{//         return *this;}}
+\DoxyCodeLine{130 \textcolor{comment}{//     \}}}
+\DoxyCodeLine{131     }
+\DoxyCodeLine{132 }
+\DoxyCodeLine{141     \textcolor{keyword}{static} std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> \mbox{\hyperlink{classFrame_ad98c4c5de25e7251579887a2c740b0e4}{Match2Frames}}(std::shared\_ptr<Frame> prev\_frame, std::shared\_ptr<Frame> cur\_frame, \mbox{\hyperlink{classFeatureMatcher}{FeatureMatcher}} feature\_matcher)\{}
+\DoxyCodeLine{142         \textcolor{keywordflow}{return} feature\_matcher.match\_features(prev\_frame-\/>GetKeyPoints(), prev\_frame-\/>GetFeatures(), cur\_frame-\/>GetKeyPoints(), cur\_frame-\/>GetFeatures());}
+\DoxyCodeLine{143     \}}
+\DoxyCodeLine{144 }
+\DoxyCodeLine{145 }
+\DoxyCodeLine{150     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_acc1394d4d917b7b92a95adc654feedf1}{AddParent}}(\textcolor{keywordtype}{int} parent\_frame\_id, cv::Mat transition)\{}
+\DoxyCodeLine{151         \mbox{\hyperlink{classFrame_a4e8a015b2ea0df3f419f2b84a9718d2c}{parents}}.insert(\{parent\_frame\_id, transition\});}
+\DoxyCodeLine{152     \}}
+\DoxyCodeLine{153 }
+\DoxyCodeLine{154 }
+\DoxyCodeLine{155 }
+\DoxyCodeLine{156 }
+\DoxyCodeLine{157 }
+\DoxyCodeLine{161     std::vector<int> \mbox{\hyperlink{classFrame_afe4a6df365156fdec4ff09b8f68a2548}{GetParentIDs}}()\{}
+\DoxyCodeLine{162         std::vector<int> keys;}
+\DoxyCodeLine{163         \textcolor{keywordflow}{for}(\textcolor{keyword}{auto} it = \mbox{\hyperlink{classFrame_a4e8a015b2ea0df3f419f2b84a9718d2c}{parents}}.begin(); it != \mbox{\hyperlink{classFrame_a4e8a015b2ea0df3f419f2b84a9718d2c}{parents}}.end(); it++) \{}
+\DoxyCodeLine{164             keys.push\_back(it-\/>first);}
+\DoxyCodeLine{165             \textcolor{comment}{//std::cout << "{}Key: "{} << it-\/>first << std::endl();}}
+\DoxyCodeLine{166         \}}
+\DoxyCodeLine{167         \textcolor{keywordflow}{return} keys;}
+\DoxyCodeLine{168     \}}
+\DoxyCodeLine{169 }
+\DoxyCodeLine{173     cv::Mat \mbox{\hyperlink{classFrame_acd1bf0e32c9763bcf2a3cb26681e6c98}{GetTransitionWithParentID}}(\textcolor{keywordtype}{int} parent\_id)\{}
+\DoxyCodeLine{174         \textcolor{keywordflow}{return} \mbox{\hyperlink{classFrame_a4e8a015b2ea0df3f419f2b84a9718d2c}{parents}}[parent\_id];}
+\DoxyCodeLine{175     \}}
+\DoxyCodeLine{176 }
+\DoxyCodeLine{177 }
+\DoxyCodeLine{181     std::tuple<cv::Mat, cv::Mat>  \mbox{\hyperlink{classFrame_a82a64ba50c60ffc40b139806ed32677a}{feature\_extract}}(cv::Mat rgb\_img, \mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}} feature\_extractor)\{}
+\DoxyCodeLine{182         \textcolor{keywordflow}{return} feature\_extractor.compute\_features(rgb\_img);}
+\DoxyCodeLine{183     \}}
+\DoxyCodeLine{184 }
+\DoxyCodeLine{185 }
+\DoxyCodeLine{190     std::tuple<cv::Mat, cv::Mat, cv::Mat> \mbox{\hyperlink{classFrame_ab005b21f5e60dda160dcbaccec85e125}{process\_frame}}(\mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}} feature\_extractor)\{}
+\DoxyCodeLine{191         std::tuple<cv::Mat, cv::Mat> ft;}
+\DoxyCodeLine{192         ft = this-\/>\mbox{\hyperlink{classFrame_a82a64ba50c60ffc40b139806ed32677a}{feature\_extract}}(\mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}}, feature\_extractor);}
+\DoxyCodeLine{193         \mbox{\hyperlink{classFrame_a1a1f781f9f7c8a962e6a218185e0744d}{SetKeyPoints}}(std::get<0>(ft)); \textcolor{comment}{// set private vars with setter}}
+\DoxyCodeLine{194         \mbox{\hyperlink{classFrame_af9f1c9b95528c787d4a0b455f2368aba}{SetFeatures}}(std::get<1>(ft));}
+\DoxyCodeLine{195         \textcolor{keywordflow}{return} std::tuple(std::get<0>(ft), std::get<1>(ft), \mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}});}
+\DoxyCodeLine{196     \}}
+\DoxyCodeLine{197 }
+\DoxyCodeLine{202     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_a3ef433bd737c89ba2e797e1ddfaa7c4a}{process}}(\mbox{\hyperlink{classFeatureExtractor}{FeatureExtractor}} feature\_extractor)\{}
+\DoxyCodeLine{203         std::tuple<cv::Mat, cv::Mat> ft;}
+\DoxyCodeLine{204         ft = this-\/>\mbox{\hyperlink{classFrame_a82a64ba50c60ffc40b139806ed32677a}{feature\_extract}}(\mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}}, feature\_extractor);}
+\DoxyCodeLine{205         \mbox{\hyperlink{classFrame_a1a1f781f9f7c8a962e6a218185e0744d}{SetKeyPoints}}(std::get<0>(ft)); \textcolor{comment}{// set private vars with setter}}
+\DoxyCodeLine{206         \mbox{\hyperlink{classFrame_af9f1c9b95528c787d4a0b455f2368aba}{SetFeatures}}(std::get<1>(ft));}
+\DoxyCodeLine{207     \}}
+\DoxyCodeLine{208 }
+\DoxyCodeLine{209 }
+\DoxyCodeLine{210 }
+\DoxyCodeLine{215     cv::Mat \mbox{\hyperlink{classFrame_a024370b646342ba7119f835eecab7418}{GetRGB}}()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{216         \textcolor{keywordflow}{return} \mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}};}
+\DoxyCodeLine{217     \}}
+\DoxyCodeLine{222     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_ae964bd51a99a7ccf4a83345ea1e8e352}{SetRGB}}(cv::Mat new\_rgb)\{}
+\DoxyCodeLine{223         \mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}} = new\_rgb;}
+\DoxyCodeLine{224     \}}
+\DoxyCodeLine{225 }
+\DoxyCodeLine{230     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_ab7c26971dec0e68470d64fa40d57b9ea}{AddPose}}(cv::Mat init\_pose)\{}
+\DoxyCodeLine{231         \mbox{\hyperlink{classFrame_ae2a34560009f9242ea60e58fe4e87a05}{pose}} = init\_pose;}
+\DoxyCodeLine{232     \}}
+\DoxyCodeLine{233 }
+\DoxyCodeLine{238     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_af2846ae31456b06f2178a622fda734ed}{UpdatePose}}(cv::Mat new\_pose)\{}
+\DoxyCodeLine{239         \mbox{\hyperlink{classFrame_ae2a34560009f9242ea60e58fe4e87a05}{pose}} = new\_pose;}
+\DoxyCodeLine{240     \}}
+\DoxyCodeLine{241     }
+\DoxyCodeLine{246     cv::Mat \mbox{\hyperlink{classFrame_a346ed30a941d77945c3338bad8e08daa}{GetPose}}()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{247         \textcolor{keywordflow}{return} \mbox{\hyperlink{classFrame_ae2a34560009f9242ea60e58fe4e87a05}{pose}};}
+\DoxyCodeLine{248     \}}
+\DoxyCodeLine{253     \textcolor{keywordtype}{bool} \mbox{\hyperlink{classFrame_a95bda86a031c9ae148bbcea36dca2a6f}{IsKeyFrame}}()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{254         \textcolor{keywordflow}{return} \mbox{\hyperlink{classFrame_a7069d0561f25729dd8aa9b9d61f8cd8c}{keyframe}};}
+\DoxyCodeLine{255     \}}
+\DoxyCodeLine{256 }
+\DoxyCodeLine{260     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_a03e71c523953d5ffbcd97617ffa8dc2b}{SetAsKeyFrame}}()\{}
+\DoxyCodeLine{261         \mbox{\hyperlink{classFrame_a7069d0561f25729dd8aa9b9d61f8cd8c}{keyframe}} = \textcolor{keyword}{true};}
+\DoxyCodeLine{262     \}}
+\DoxyCodeLine{263 }
+\DoxyCodeLine{268     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_a1a1f781f9f7c8a962e6a218185e0744d}{SetKeyPoints}}(cv::Mat new\_points)\{}
+\DoxyCodeLine{269         \mbox{\hyperlink{classFrame_afa68b031920bfee051b9c8aaccab300b}{keypoints}} = new\_points;}
+\DoxyCodeLine{270     \}}
+\DoxyCodeLine{271 }
+\DoxyCodeLine{276     cv::Mat \mbox{\hyperlink{classFrame_a73f6772622bc6129e7bf8e928046ca99}{GetKeyPoints}}()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{277         \textcolor{keywordflow}{return} \mbox{\hyperlink{classFrame_afa68b031920bfee051b9c8aaccab300b}{keypoints}};}
+\DoxyCodeLine{278     \}}
+\DoxyCodeLine{279 }
+\DoxyCodeLine{284     std::vector<cv::KeyPoint> \mbox{\hyperlink{classFrame_ae3d9499ba6a8f087e99d8b7d9ca44889}{GetKeyPointsAsVector}}()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{285         std::vector<cv::KeyPoint> vector\_of\_kp;}
+\DoxyCodeLine{286         \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < \mbox{\hyperlink{classFrame_afa68b031920bfee051b9c8aaccab300b}{keypoints}}.rows; i++)\{}
+\DoxyCodeLine{287             cv::KeyPoint kp;}
+\DoxyCodeLine{288             kp.pt.x = \mbox{\hyperlink{classFrame_afa68b031920bfee051b9c8aaccab300b}{keypoints}}.at<\textcolor{keywordtype}{double}>(i,0);}
+\DoxyCodeLine{289             kp.pt.y = \mbox{\hyperlink{classFrame_afa68b031920bfee051b9c8aaccab300b}{keypoints}}.at<\textcolor{keywordtype}{double}>(i,1);}
+\DoxyCodeLine{290             vector\_of\_kp.push\_back(kp);}
+\DoxyCodeLine{291         \}}
+\DoxyCodeLine{292         \textcolor{keywordflow}{return} vector\_of\_kp;}
+\DoxyCodeLine{293     \}}
+\DoxyCodeLine{294 }
+\DoxyCodeLine{295     \textcolor{keyword}{static} std::vector<cv::KeyPoint> \mbox{\hyperlink{classFrame_ae3d9499ba6a8f087e99d8b7d9ca44889}{GetKeyPointsAsVector}}(cv::Mat mat\_keypoints)\{}
+\DoxyCodeLine{296         std::vector<cv::KeyPoint> vector\_of\_kp;}
+\DoxyCodeLine{297         \textcolor{keywordflow}{for}(\textcolor{keywordtype}{int} i = 0; i < mat\_keypoints.rows; i++)\{}
+\DoxyCodeLine{298             cv::KeyPoint kp;}
+\DoxyCodeLine{299             kp.pt.x = mat\_keypoints.at<\textcolor{keywordtype}{double}>(i,0);}
+\DoxyCodeLine{300             kp.pt.y = mat\_keypoints.at<\textcolor{keywordtype}{double}>(i,1);}
+\DoxyCodeLine{301             vector\_of\_kp.push\_back(kp);}
+\DoxyCodeLine{302         \}}
+\DoxyCodeLine{303         \textcolor{keywordflow}{return} vector\_of\_kp;}
+\DoxyCodeLine{304     \}}
+\DoxyCodeLine{305 }
+\DoxyCodeLine{310     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_af9f1c9b95528c787d4a0b455f2368aba}{SetFeatures}}(cv::Mat new\_features)\{}
+\DoxyCodeLine{311         \mbox{\hyperlink{classFrame_ad0fcb4358c69fef57fab4e1163b33a64}{features}} = new\_features;}
+\DoxyCodeLine{312     \}}
+\DoxyCodeLine{313 }
+\DoxyCodeLine{318     cv::Mat \mbox{\hyperlink{classFrame_a9332fe3821ea3206e340a812eec7854b}{GetFeatures}}()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{319         \textcolor{keywordflow}{return} \mbox{\hyperlink{classFrame_ad0fcb4358c69fef57fab4e1163b33a64}{features}};}
+\DoxyCodeLine{320     \}}
+\DoxyCodeLine{321 }
+\DoxyCodeLine{326     \textcolor{keywordtype}{int} \mbox{\hyperlink{classFrame_a0d0208f88adff90d6939e9e631f4e571}{GetID}}()\textcolor{keyword}{ const}\{}
+\DoxyCodeLine{327         \textcolor{keywordflow}{return} \mbox{\hyperlink{classFrame_a9a8d3de2300c27f2ab32341392c24416}{ID}};}
+\DoxyCodeLine{328     \}}
+\DoxyCodeLine{333     \textcolor{keywordtype}{void} \mbox{\hyperlink{classFrame_a5b58aee17e364c6acbcac6da0ab6622d}{AddID}}(\textcolor{keywordtype}{int} new\_id)\{}
+\DoxyCodeLine{334         \mbox{\hyperlink{classFrame_a9a8d3de2300c27f2ab32341392c24416}{ID}} = new\_id;}
+\DoxyCodeLine{335     \}}
+\DoxyCodeLine{336 }
+\DoxyCodeLine{341     cv::Mat \mbox{\hyperlink{classFrame_ad1ca0a833f1f2bbfb09407372a95ea9a}{GetCameraCenter}}()\{}
+\DoxyCodeLine{342         \textcolor{keywordflow}{return} GetTranslation(\mbox{\hyperlink{classFrame_ae2a34560009f9242ea60e58fe4e87a05}{pose}});}
+\DoxyCodeLine{343     \}}
+\DoxyCodeLine{344 }
+\DoxyCodeLine{345 \textcolor{keyword}{private}:}
+\DoxyCodeLine{346     cv::Mat \mbox{\hyperlink{classFrame_aeffd79698b453f1ddb4d2cdf59f4c8f4}{rgb}}; }
+\DoxyCodeLine{347     cv::Mat \mbox{\hyperlink{classFrame_afa68b031920bfee051b9c8aaccab300b}{keypoints}}; }
+\DoxyCodeLine{348     cv::Mat \mbox{\hyperlink{classFrame_ad0fcb4358c69fef57fab4e1163b33a64}{features}}; }
+\DoxyCodeLine{349     cv::Mat \mbox{\hyperlink{classFrame_ae2a34560009f9242ea60e58fe4e87a05}{pose}}; }
+\DoxyCodeLine{350     \textcolor{keywordtype}{int} \mbox{\hyperlink{classFrame_a9a8d3de2300c27f2ab32341392c24416}{ID}}; }
+\DoxyCodeLine{351     std::map<int, cv::Mat> \mbox{\hyperlink{classFrame_a4e8a015b2ea0df3f419f2b84a9718d2c}{parents}}; }
+\DoxyCodeLine{352     \textcolor{keywordtype}{bool} \mbox{\hyperlink{classFrame_a7069d0561f25729dd8aa9b9d61f8cd8c}{keyframe}} = \textcolor{keyword}{false}; }
+\DoxyCodeLine{353 \};}
+\DoxyCodeLine{354 }
+\DoxyCodeLine{355 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}

@@ -1,0 +1,47 @@
+\hypertarget{isometry3d_8hpp_source}{}\doxysection{isometry3d.\+hpp}
+\label{isometry3d_8hpp_source}\index{/home/jere/cpp\_visual\_slam/src/isometry3d.hpp@{/home/jere/cpp\_visual\_slam/src/isometry3d.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{1 \textcolor{preprocessor}{\#ifndef VISUAL\_SLAM\_ISOMETRY3D}}
+\DoxyCodeLine{2 \textcolor{preprocessor}{\#define VISUAL\_SLAM\_ISOMETRY3D}}
+\DoxyCodeLine{3 }
+\DoxyCodeLine{4 \textcolor{preprocessor}{\#include <iostream>}}
+\DoxyCodeLine{5 \textcolor{preprocessor}{\#include <vector>}}
+\DoxyCodeLine{6 \textcolor{preprocessor}{\#include <Eigen/Dense>} }
+\DoxyCodeLine{7 }
+\DoxyCodeLine{8 \textcolor{preprocessor}{\#include <tuple>}}
+\DoxyCodeLine{9 \textcolor{preprocessor}{\#include <map>}}
+\DoxyCodeLine{10 \textcolor{keyword}{using }Eigen::MatrixXd;}
+\DoxyCodeLine{11 }
+\DoxyCodeLine{12 \textcolor{keyword}{class }\mbox{\hyperlink{classIsometry3d}{Isometry3d}}\{}
+\DoxyCodeLine{13 \textcolor{keyword}{public}:}
+\DoxyCodeLine{14     \mbox{\hyperlink{classIsometry3d}{Isometry3d}}(Eigen::MatrixXd R, Eigen::VectorXd t) : R\_(R), t\_(t) \{\}}
+\DoxyCodeLine{15 }
+\DoxyCodeLine{16     Eigen::MatrixXd matrix() \{}
+\DoxyCodeLine{17         Eigen::MatrixXd mat = Eigen::Matrix<double, 4,4>::Identity();}
+\DoxyCodeLine{18         \textcolor{comment}{//Eigen::Matrix <double, 4, 4> mat;}}
+\DoxyCodeLine{19         mat.block<3,3>(0,0) = R\_;}
+\DoxyCodeLine{20         mat.block<3,1>(0,3) = t\_;}
+\DoxyCodeLine{21         \textcolor{keywordflow}{return} mat;}
+\DoxyCodeLine{22     \}}
+\DoxyCodeLine{23 }
+\DoxyCodeLine{24     \mbox{\hyperlink{classIsometry3d}{Isometry3d}} inverse() \{}
+\DoxyCodeLine{25         \textcolor{keywordflow}{return} \mbox{\hyperlink{classIsometry3d}{Isometry3d}}(this-\/>R\_.transpose(), -\/this-\/>R\_.transpose() * this-\/>t\_);}
+\DoxyCodeLine{26     \}}
+\DoxyCodeLine{27 }
+\DoxyCodeLine{28     Eigen::MatrixXd orientation() \{}
+\DoxyCodeLine{29         \textcolor{keywordflow}{return} R\_;}
+\DoxyCodeLine{30     \}}
+\DoxyCodeLine{31 }
+\DoxyCodeLine{32     Eigen::VectorXd position() \{}
+\DoxyCodeLine{33         \textcolor{keywordflow}{return} t\_;}
+\DoxyCodeLine{34     \}}
+\DoxyCodeLine{35 }
+\DoxyCodeLine{36 \textcolor{keyword}{private}:}
+\DoxyCodeLine{37     Eigen::MatrixXd R\_;}
+\DoxyCodeLine{38     Eigen::VectorXd t\_;}
+\DoxyCodeLine{39 \};}
+\DoxyCodeLine{40 }
+\DoxyCodeLine{41 \textcolor{preprocessor}{\#endif}}
+
+\end{DoxyCode}
