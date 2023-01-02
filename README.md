@@ -18,14 +18,14 @@ Requirements:
 
 Libraries (apart from Eigen3) can be installed from the links or just by building them from the /libs folder. It is recommended to make with sudo make install, as this installs them to /usr/local/include folder where the program looks for them by default.
 
-After installing the requirements, we recommend a so-called out of source build which can be achieved by the following command sequence:
+After installing the requirements, out of source build can be achieved by the following command sequence:
 - cd path-to-cmakelist
 - mkdir build
 - cd build
 - cmake ../
 - make
 
-This creates a run file named “run_slam”, which you can run using ./run_slam while in the build directory.
+This creates a run file named “run_slam”.
 
 # TODOs
 - Add filtering for bad poses and points
