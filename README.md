@@ -4,7 +4,8 @@ Visual Simulatenous Localization and Mapping (visual SLAM) is 3D map building pr
 
 Our SLAM implementation follows the ORB-SLAM paper (Mur-Artal et al., 2015), and implements map initialization (Map::initializeMap()), tracking (Map::localTracking()) and new point mapping (Map::localMapping()) using OpenCV algorithms. This is the so called frontend of SLAM. We also implement bundle adjustment to optimize the estimated map points and poses (Map::BundleAdjustement()) using g2o.
 
-![](readme_img.png)
+![](misc/modeling.gif)
+![](misc/modeling2.gif)
 
 # How to compile:
 
