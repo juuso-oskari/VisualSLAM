@@ -1,8 +1,6 @@
 # Visual Slam
 
-Visual Simulatenous Localization and Mapping (visual SLAM) is 3D map building process from video input. The aim is to estimate 3D locations for objects seen during the video and transformations for camera position between video frames. This is done using computer vision techniques. These estimates are then optimized using graph optimization. The map, which consists out of the 3D locations of objects and camera poses (only locations currently), is then visualized.
-
-Our SLAM implementation follows the ORB-SLAM paper (Mur-Artal et al., 2015), and implements map initialization (Map::initializeMap()), tracking (Map::localTracking()) and new point mapping (Map::localMapping()) using OpenCV algorithms. This is the so called frontend of SLAM. We also implement bundle adjustment to optimize the estimated map points and poses (Map::BundleAdjustement()) using g2o.
+This visual SLAM implementation follows the ORB-SLAM paper (Mur-Artal et al., 2015), and implements map initialization (Map::initializeMap()), tracking (Map::localTracking()) and new point mapping (Map::localMapping()) using OpenCV algorithms. Bundleadjustement is also implemented to optimize the estimated map points and poses (Map::BundleAdjustement()) using g2o.
 
 ![](misc/modeling.gif)
 ![](misc/modeling2.gif)
@@ -29,12 +27,5 @@ After installing the requirements, we recommend a so-called out of source build 
 
 This creates a run file named “run_slam”, which you can run using ./run_slam while in the build directory.
 
-
-# Group
-- Juuso Korhonen
-- Jere Knuutinen
-- Olivia Palmu
-
 # TODOs
-- Olivia: add better visualization for camera poses.
-- Juuso and Jere: add filtering for bad points and poses.
+- Add filtering for bad poses and points
