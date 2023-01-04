@@ -58,7 +58,7 @@ class Map {
         void InitializeMap(std::vector<std::filesystem::path>::iterator& input_video_it, int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, bool visualize = false){
             // store first frame as prev_frame
             cv::Mat img, dispImg;
-            img = cv::imread(*input_video_it);
+            img = readFrame(input_video_it);
             //std::shared_ptr<Frame> prev_frame(new Frame(img, id_frame)); // create frame object out of image
             std::shared_ptr<Frame> prev_frame = std::make_shared<Frame>(img, id_frame);
             prev_frame->process(feature_extractor);
@@ -67,13 +67,11 @@ class Map {
             (*this).AddFrame(id_frame, prev_frame); // add to map
             id_frame++;
             // read next image
-            input_video_it++;
-            cv::Mat image;
-            image = cv::imread(*input_video_it);
+            img = readFrame(input_video_it);
             while(!img.empty()){
                 //std::shared_ptr<Frame> cur_frame(new Frame(image, id_frame)); // create frame object out of image
-                std::shared_ptr<Frame> cur_frame = std::make_shared<Frame>(image, id_frame);
-                image = cv::imread(*input_video_it);
+                std::shared_ptr<Frame> cur_frame = std::make_shared<Frame>(img, id_frame);
+                img = cv::imread(*input_video_it);
                 input_video_it++;
                 cur_frame->process(feature_extractor);
                 std::vector<cv::DMatch> matches; cv::Mat preMatchedPoints; cv::Mat preMatchedFeatures; cv::Mat curMatchedPoints; cv::Mat curMatchedFeatures;
@@ -138,16 +136,14 @@ class Map {
             int lastkeyframe_idx = id_frame-1;
             std::tuple<cv::Mat, cv::Mat, cv::Mat, std::vector<int>> map_points = GetImagePointsWithFrameID(lastkeyframe_idx); // get information of the points the last keyframe sees
             // start tracking
-            input_video_it++;
             cv::Mat image;
-            image = cv::imread(*input_video_it);
+            image = readFrame(input_video_it);
             int trackFrameCount = 0;
             while(!image.empty()){
                 // create Frame object from video frame and increase videoframe iterator
                 //std::shared_ptr<Frame> cur_frame(new Frame(image, id_frame)); // create frame object out of image
                 std::shared_ptr<Frame> cur_frame = std::make_shared<Frame>(image, id_frame);
-                image = cv::imread(*input_video_it);
-                input_video_it++;
+                image = readFrame(input_video_it);
                 cur_frame->process(feature_extractor);
                 // pass imagepoints of map points (last keyframe), descriptors of map points (last keyframe), current frame imagepoints, and current frame for feature matching
                 std::vector<cv::DMatch> matches; cv::Mat preMatchedPoints; cv::Mat preMatchedFeatures; cv::Mat curMatchedPoints; cv::Mat curMatchedFeatures;

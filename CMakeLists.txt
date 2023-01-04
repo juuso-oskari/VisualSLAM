@@ -17,7 +17,6 @@ message(STATUS "SRC directory is ${CMAKE_SOURCE_DIR}")
 #message(STATUS "g2o directory is ${g2o_INCLUDE_DIRS}")
 #include_directories( ${g2o_INCLUDE_DIRS} )
 
-
 # Find opencv
 find_package( OpenCV REQUIRED)
 message(STATUS "OpenCV directory is ${OpenCV_INCLUDE_DIRS}")
@@ -48,6 +47,11 @@ FIND_PACKAGE( G2O )
 # SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator g2o_solver_slam2d_linear g2o_types_icp g2o_types_slam2d g2o_core g2o_interface g2o_solver_csparse g2o_solver_structure_only g2o_types_sba g2o_types_slam3d g2o_csparse_extension g2o_opengl_helper g2o_solver_dense g2o_stuff g2o_types_sclam2d g2o_viewer g2o_parser g2o_solver_pcg g2o_types_data g2o_types_sim3 cxsparse )
 SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator g2o_solver_slam2d_linear g2o_types_icp g2o_types_slam2d g2o_core g2o_interface g2o_solver_csparse g2o_solver_structure_only g2o_types_sba g2o_types_slam3d g2o_csparse_extension g2o_opengl_helper g2o_solver_dense g2o_stuff g2o_types_sclam2d g2o_parser g2o_solver_pcg g2o_types_data g2o_types_sim3 )
 
+# Find Pangolin (https://github.com/stevenlovegrove/Pangolin)
+find_package(Pangolin 0.5 REQUIRED)
+message(STATUS "Pangolin directory is ${Pangolin_INCLUDE_DIRS}")
+include_directories(${Pangolin_INCLUDE_DIRS})
+
 
 # Add all .c, - files under src/ directory
 file(GLOB SOURCES_C "src/*.c")
@@ -69,7 +73,10 @@ target_link_libraries(run_slam Eigen3::Eigen)
 target_link_libraries(run_slam easy3d::viewer)
 target_link_libraries(run_slam ${OpenCV_LIBS} )
 target_link_libraries(run_slam ${G2O_LIBS})
+target_link_libraries(run_slam ${Pangolin_LIBS})
 target_sources(run_slam PUBLIC ${SOURCES})
 target_include_directories(run_slam PUBLIC .)
 target_include_directories(run_slam PUBLIC src)
+
+
 

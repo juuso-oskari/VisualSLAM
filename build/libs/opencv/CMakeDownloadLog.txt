@@ -1,3 +1,0 @@
-#use_cache "/home/juuso/cpp_course_visual_slam/libs/opencv/.cache"
-#match_hash_in_cmake_cache "OCV_DOWNLOAD_IPPICV_HASH_libs_opencv_3rdparty_ippicv_ippicv_2020_lnx_intel64_20191018_general_tgz"
-#match_hash_in_cmake_cache "OCV_DOWNLOAD_ADE_HASH_libs_opencv_3rdparty_ade_v0_1_2a_zip"

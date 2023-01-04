@@ -46,7 +46,8 @@ int main(int argc, char** argv )
     SpawnWorkerThread([&]() {
         bool do_scale_depth = true;
         // camera intrinsics matrix
-        double fx = 535.4; double fy = 539.2; double cx = 320.1; double cy = 247.6;
+        // double fx = 535.4; double fy = 539.2; double cx = 320.1; double cy = 247.6; // 
+        double fx = 501.4757919305817; double fy = 501.4757919305817; double cx = 421.7953735163109; double cy = 167.65799492501083; // 
         // Define camera intrinsics matrix
         cv::Mat K  = (cv::Mat1d(3,3) << fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0);
         cv::Mat I = (cv::Mat1d(3,3) << 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);

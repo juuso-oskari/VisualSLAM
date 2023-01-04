@@ -32,7 +32,14 @@
 #include "g2o/core/sparse_optimizer.h"
 #include "g2o/solvers/dense/linear_solver_dense.h"
 
-
+cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator){
+    cv::Mat img;
+    img = cv::imread(*fp_iterator);
+    fp_iterator++;
+    cv::Rect roi(0, 0, 800, 300);
+    img = img(roi);
+    return img;
+}
 
 /** @brief MakeHomogeneous make points homogenious, adds vector of ones
         * @param x - type cv::Mat corresponding to point
