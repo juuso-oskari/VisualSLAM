@@ -22,8 +22,7 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
-  "/home/juuso/pangolin/include"
-  "/home/juuso/pangolin/build/src/include"
+  "/usr/lib/x86_64-linux-gnu/cmake/yaml-cpp/../../../../../include"
   "../."
   "../src"
   "/usr/local/include/opencv4"

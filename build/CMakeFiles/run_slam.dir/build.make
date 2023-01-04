@@ -79,6 +79,9 @@ run_slam_EXTERNAL_OBJECTS =
 
 run_slam: CMakeFiles/run_slam.dir/src/main.cpp.o
 run_slam: CMakeFiles/run_slam.dir/build.make
+run_slam: /usr/lib/x86_64-linux-gnu/libOpenGL.so
+run_slam: /usr/lib/x86_64-linux-gnu/libGLX.so
+run_slam: /usr/lib/x86_64-linux-gnu/libGLU.so
 run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_viewer.so.2.5.2
 run_slam: /usr/local/lib/libopencv_gapi.so.4.6.0
 run_slam: /usr/local/lib/libopencv_stitching.so.4.6.0
@@ -115,11 +118,12 @@ run_slam: /usr/local/lib/libopencv_wechat_qrcode.so.4.6.0
 run_slam: /usr/local/lib/libopencv_xfeatures2d.so.4.6.0
 run_slam: /usr/local/lib/libopencv_xobjdetect.so.4.6.0
 run_slam: /usr/local/lib/libopencv_xphoto.so.4.6.0
+run_slam: /usr/lib/x86_64-linux-gnu/libyaml-cpp.so.0.6.2
 run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_renderer.so.2.5.2
-run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_algo.so.2.5.2
-run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_kdtree.so.2.5.2
 run_slam: /usr/lib/x86_64-linux-gnu/libOpenGL.so
 run_slam: /usr/lib/x86_64-linux-gnu/libGLX.so
+run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_algo.so.2.5.2
+run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_kdtree.so.2.5.2
 run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_fileio.so.2.5.2
 run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_core.so.2.5.2
 run_slam: /usr/local/easy3d-2.5.2/lib/libeasy3d_util.so.2.5.2

@@ -483,5 +483,28 @@ cv::Mat Points2Homogeneous(cv::Mat points3D){
 }
 
 
+std::vector<Eigen::Vector3d> CvMatToEigenVector(const std::vector<cv::Mat>& cv_points) {
+  std::vector<Eigen::Vector3d> eigen_points;
+  eigen_points.reserve(cv_points.size());
+  for (const cv::Mat& cv_point : cv_points) {
+    eigen_points.emplace_back(cv_point.at<double>(0), cv_point.at<double>(1), cv_point.at<double>(2));
+  }
+  return eigen_points;
+}
+
+
+std::vector<Eigen::Isometry3d, Eigen::aligned_allocator<Eigen::Isometry3d>> CvMatToEigenIsometry(const std::vector<cv::Mat>& cv_poses) {
+  std::vector<Eigen::Isometry3d, Eigen::aligned_allocator<Eigen::Isometry3d>> eigen_poses;
+  eigen_poses.reserve(cv_poses.size());
+  for (const cv::Mat& cv_pose : cv_poses) {
+    Eigen::Isometry3d eigen_pose;
+    eigen_pose.matrix() << cv_pose.at<double>(0,0), cv_pose.at<double>(0,1), cv_pose.at<double>(0,2), cv_pose.at<double>(0,3),
+                           cv_pose.at<double>(1,0), cv_pose.at<double>(1,1), cv_pose.at<double>(1,2), cv_pose.at<double>(1,3),
+                           cv_pose.at<double>(2,0), cv_pose.at<double>(2,1), cv_pose.at<double>(2,2), cv_pose.at<double>(2,3),
+                           cv_pose.at<double>(3,0), cv_pose.at<double>(3,1), cv_pose.at<double>(3,2), cv_pose.at<double>(3,3);
+    eigen_poses.emplace_back(eigen_pose);
+  }
+  return eigen_poses;
+}
 
 #endif

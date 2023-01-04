@@ -131,7 +131,7 @@ class Map {
         @param verbose_optimization - flag to tell if we should print details of the motion only optimization
         */
 
-        void localTracking(std::vector<std::filesystem::path>::iterator& input_video_it, int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients, PointClouds& clouds, bool visualize = true, bool verbose_optimization = false){
+        void localTracking(std::vector<std::filesystem::path>::iterator& input_video_it, int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients, bool visualize = true, bool verbose_optimization = false){
             //Get the map points that the last keyframe sees
             int lastkeyframe_idx = id_frame-1;
             std::tuple<cv::Mat, cv::Mat, cv::Mat, std::vector<int>> map_points = GetImagePointsWithFrameID(lastkeyframe_idx); // get information of the points the last keyframe sees
@@ -190,11 +190,9 @@ class Map {
                 }
                 trackFrameCount++;
                 // visualize all points
-                std::vector<cv::Mat> created_points = GetAll3DPoints();
-                std::vector<cv::Mat> camera_locs = GetAllCameraLocations();
-                clouds.Clear();
-                clouds.AddPointsMatUpdate(created_points, false);
-                clouds.AddPointsMatUpdate(camera_locs, true);
+                //std::vector<cv::Mat> created_points = GetAll3DPoints();
+                //std::vector<cv::Mat> camera_locs = GetAllCameraLocations();
+                
             }
             
         }

@@ -47,11 +47,25 @@ FIND_PACKAGE( G2O )
 # SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator g2o_solver_slam2d_linear g2o_types_icp g2o_types_slam2d g2o_core g2o_interface g2o_solver_csparse g2o_solver_structure_only g2o_types_sba g2o_types_slam3d g2o_csparse_extension g2o_opengl_helper g2o_solver_dense g2o_stuff g2o_types_sclam2d g2o_viewer g2o_parser g2o_solver_pcg g2o_types_data g2o_types_sim3 cxsparse )
 SET(G2O_LIBS g2o_cli g2o_ext_freeglut_minimal g2o_simulator g2o_solver_slam2d_linear g2o_types_icp g2o_types_slam2d g2o_core g2o_interface g2o_solver_csparse g2o_solver_structure_only g2o_types_sba g2o_types_slam3d g2o_csparse_extension g2o_opengl_helper g2o_solver_dense g2o_stuff g2o_types_sclam2d g2o_parser g2o_solver_pcg g2o_types_data g2o_types_sim3 )
 
+
+# Include the FindOpenGL module
+find_package(OpenGL REQUIRED)
+
+# Add the include directories for the OpenGL headers
+include_directories(${OPENGL_INCLUDE_DIR})
+message(STATUS "OpenGL directory is ${OPENGL_INCLUDE_DIR}")
+
+
+
+
 # Find Pangolin (https://github.com/stevenlovegrove/Pangolin)
-find_package(Pangolin 0.5 REQUIRED)
-message(STATUS "Pangolin directory is ${Pangolin_INCLUDE_DIRS}")
+find_package(Pangolin REQUIRED)
 include_directories(${Pangolin_INCLUDE_DIRS})
 
+# Find YAML-CPP
+
+find_package(YAML-CPP REQUIRED)
+include_directories(${YAML_CPP_INCLUDE_DIR})
 
 # Add all .c, - files under src/ directory
 file(GLOB SOURCES_C "src/*.c")
@@ -61,19 +75,24 @@ file(GLOB SOURCES_CPP "src/*.cpp")
 file(GLOB SOURCES_HPP "src/*.hpp")
 # Add all .h, - files under src/ directory
 file(GLOB SOURCES_H "src/*.h")
-
+# Add all .yaml, - files under src/ directory
+file(GLOB SOURCES_YAML "src/*.yaml")
 #file(GLOB TEST_SOURCES_CPP "tests/*.cpp")
 
 
-set(SOURCES ${SOURCES_C} ${SOURCES_CPP} ${SOURCES_H} ${SOURCES_HPP} ${TEST_SOURCES_CPP})
+set(SOURCES ${SOURCES_C} ${SOURCES_CPP} ${SOURCES_H} ${SOURCES_HPP} ${TEST_SOURCES_CPP} ${SOURCES_YAML})
 message(STATUS "SRC directory source code files: \n\t-- HEADERS: ${SOURCES_H}${SOURCES_HPP}\n\t-- C SOURCES: ${SOURCES_C}\n\t-- CPP SOURCE:${SOURCES_CPP}\n\t-- ALL:${SOURCES}")
 # add the executable target
 add_executable(run_slam)
+# Add the OpenGL libraries to the target link libraries
+target_link_libraries(run_slam pango_display)
+target_link_libraries(run_slam ${OPENGL_LIBRARIES})
 target_link_libraries(run_slam Eigen3::Eigen)
 target_link_libraries(run_slam easy3d::viewer)
 target_link_libraries(run_slam ${OpenCV_LIBS} )
 target_link_libraries(run_slam ${G2O_LIBS})
-target_link_libraries(run_slam ${Pangolin_LIBS})
+
+target_link_libraries(run_slam ${YAML_CPP_LIBRARIES})
 target_sources(run_slam PUBLIC ${SOURCES})
 target_include_directories(run_slam PUBLIC .)
 target_include_directories(run_slam PUBLIC src)
