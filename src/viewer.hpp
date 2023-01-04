@@ -1,3 +1,4 @@
+
 #include <pangolin/display/display.h>
 #include <pangolin/display/view.h>
 #include <pangolin/handler/handler.h>
@@ -23,7 +24,7 @@ public:
             .SetBounds(0.0, 1.0, pangolin::Attach::Pix(175), 1.0, -1024.0f/768.0f)
             .SetHandler(new pangolin::Handler3D(s_cam_));
     }
-    ~Viewer();
+    
     void Run() {
     while(!pangolin::ShouldQuit()) {
 

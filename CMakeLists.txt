@@ -59,9 +59,7 @@ message(STATUS "OpenGL directory is ${OPENGL_INCLUDE_DIR}")
 
 
 # Find Pangolin (https://github.com/stevenlovegrove/Pangolin)
-set(Pangolin_INCLUDE_DIRS "/usr/local/include")
-find_package(Pangolin REQUIRED PATHS "/usr/local/include/pangolin")
-message(STATUS "Pangolin directory is ${Pangolin_INCLUDE_DIRS}")
+find_package(Pangolin REQUIRED)
 include_directories(${Pangolin_INCLUDE_DIRS})
 
 # Find YAML-CPP
@@ -87,12 +85,13 @@ message(STATUS "SRC directory source code files: \n\t-- HEADERS: ${SOURCES_H}${S
 # add the executable target
 add_executable(run_slam)
 # Add the OpenGL libraries to the target link libraries
+target_link_libraries(run_slam pango_display)
 target_link_libraries(run_slam ${OPENGL_LIBRARIES})
 target_link_libraries(run_slam Eigen3::Eigen)
 target_link_libraries(run_slam easy3d::viewer)
 target_link_libraries(run_slam ${OpenCV_LIBS} )
 target_link_libraries(run_slam ${G2O_LIBS})
-target_link_libraries(run_slam ${Pangolin_LIBS})
+
 target_link_libraries(run_slam ${YAML_CPP_LIBRARIES})
 target_sources(run_slam PUBLIC ${SOURCES})
 target_include_directories(run_slam PUBLIC .)

@@ -253,13 +253,7 @@ opencv2/videoio.hpp
 -
 
 /home/juuso/VisualSLAM/src/viewer.hpp
-pangolin/display/display.h
--
-pangolin/display/view.h
--
-pangolin/handler/handler.h
--
-pangolin/gl/gldraw.h
+pangolin/pangolin.h
 -
 Eigen/Core
 -

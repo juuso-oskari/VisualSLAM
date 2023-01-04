@@ -70,6 +70,7 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "core": "cpp"
+        "core": "cpp",
+        "geometry": "cpp"
     }
 }
