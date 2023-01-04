@@ -1,4 +1,7 @@
-#include <pangolin/pangolin.h>
+#include <pangolin/display/display.h>
+#include <pangolin/display/view.h>
+#include <pangolin/handler/handler.h>
+#include <pangolin/gl/gldraw.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <mutex>
@@ -8,6 +11,8 @@ public:
     Viewer() {
         pangolin::CreateWindowAndBind("Map Viewer",1024,768);
         glEnable(GL_DEPTH_TEST);
+
+        
 
         s_cam_ = pangolin::OpenGlRenderState(
             pangolin::ProjectionMatrix(1024,768,500,500,512,389,0.1,1000),
@@ -21,6 +26,7 @@ public:
     ~Viewer();
     void Run() {
     while(!pangolin::ShouldQuit()) {
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         d_cam_->Activate(s_cam_);
         AddPoints(points_);

@@ -9,6 +9,7 @@ CMakeFiles/run_slam.dir/src/main.cpp.o: ../src/map.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: ../src/point.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: ../src/screen.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: ../src/transformation.hpp
+CMakeFiles/run_slam.dir/src/main.cpp.o: ../src/viewer.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/include/eigen3/Eigen/Cholesky
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/include/eigen3/Eigen/Core
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/include/eigen3/Eigen/Dense
