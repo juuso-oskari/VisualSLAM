@@ -430,6 +430,10 @@ CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/imgpr
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/ml.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/ml/ml.inl.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/objdetect.hpp
+CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/objdetect/aruco_board.hpp
+CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/objdetect/aruco_detector.hpp
+CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/objdetect/aruco_dictionary.hpp
+CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/objdetect/charuco_detector.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/objdetect/face.hpp
 CMakeFiles/run_slam.dir/src/main.cpp.o: /usr/local/include/opencv4/opencv2/opencv.hpp

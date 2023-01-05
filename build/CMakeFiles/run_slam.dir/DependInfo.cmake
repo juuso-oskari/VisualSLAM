@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/juuso/VisualSLAM/src/main.cpp" "/home/juuso/VisualSLAM/build/CMakeFiles/run_slam.dir/src/main.cpp.o"
+  "/home/jere/VisualSLAM/src/main.cpp" "/home/jere/VisualSLAM/build/CMakeFiles/run_slam.dir/src/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -18,6 +18,10 @@ set(CMAKE_TARGET_DEFINITIONS_CXX
   "ELPP_THREAD_SAFE"
   "Easy3D_RESOURCE_DIR=\"/usr/local/easy3d-2.5.2/resources\""
   "GLEW_NO_GLU"
+  "HAVE_EIGEN"
+  "HAVE_GLEW"
+  "PANGO_DEFAULT_WIN_URI=\"wayland\""
+  "_LINUX_"
   )
 
 # The include file search paths:

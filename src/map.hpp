@@ -153,7 +153,7 @@ class Map {
                 // get 3d locations of matching imagepoints and corresponding point ids
                 // matched_3d are 3d point locations of those map points that we are able to match in the current frame
                 cv::Mat matched_3d = GetQueryMatches(std::get<2>(map_points), matches); 
-                std::cout << "TRACKING " << matched_3d.rows << " POINTS" << std::endl;
+                //std::cout << "TRACKING " << matched_3d.rows << " POINTS" << std::endl;
                 // corresponding_point_ids are point ids of those map points that we are able to match in the current frame
                 std::vector<int> corresponding_point_ids = GetQueryMatches(std::get<3>(map_points), matches);
                 cv::Mat rvec, tvec;
@@ -182,7 +182,7 @@ class Map {
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
                 // 2. The map points tracked are fewer than 90% of the map points seen by the last key frame
-                std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
+                //std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
                 if( (trackFrameCount > 20 || inliers.rows < 80) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
                 //if( (trackFrameCount > 15 && inliers.rows < 120)  ){
                     std::cout<<"New keyframe found" << std::endl;
