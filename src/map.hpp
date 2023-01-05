@@ -139,6 +139,7 @@ class Map {
             cv::Mat image;
             image = readFrame(input_video_it);
             int trackFrameCount = 0;
+            cv::Mat rvec, tvec;
             while(!image.empty()){
                 // create Frame object from video frame and increase videoframe iterator
                 //std::shared_ptr<Frame> cur_frame(new Frame(image, id_frame)); // create frame object out of image
@@ -156,13 +157,24 @@ class Map {
                 //std::cout << "TRACKING " << matched_3d.rows << " POINTS" << std::endl;
                 // corresponding_point_ids are point ids of those map points that we are able to match in the current frame
                 std::vector<int> corresponding_point_ids = GetQueryMatches(std::get<3>(map_points), matches);
-                cv::Mat rvec, tvec;
+                
                 cv::Mat inliers;
-                cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, false, 200, 3.0F, 0.95, inliers);
+                // Get last keyframe rotation vec and translation vec as initial guesses for solvepnp
+                cv::Mat last_kf_pose = (GetFrame(id_frame-1)->GetPose());
+                cv::Mat tvec = GetTranslation(last_kf_pose);
+                cv::Mat rvec;
+                cv::Rodrigues(GetRotation((last_kf_pose)), rvec);
+
+                std::cout << "Initial guess for tvec: " << tvec << std::endl;
+                //cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, false, 200, 3.0F, 0.95, inliers);
+                cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, true, 300, 4.0F, 0.99, inliers);
+
+                std::cout << "Optimized tvec: " << tvec << std::endl;
+
                 if(inliers.rows<10){
                     continue;
                 }
-                //std::cout << "Inliers passing solvePnPRansack: " << inliers.rows << "/" << curMatchedPoints.rows << std::endl;
+                std::cout << "Inliers passing solvePnPRansack: " << inliers.rows << "/" << curMatchedPoints.rows << std::endl;
                 cv::Mat T = transformMatrix(rvec,tvec);
                 cv::Mat W_T_curr = T.inv(); // From w to curr frame W_T_curr
                 //PnP transformation = PnP();
@@ -182,8 +194,9 @@ class Map {
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
                 // 2. The map points tracked are fewer than 90% of the map points seen by the last key frame
-                //std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
-                if( (trackFrameCount > 20 || inliers.rows < 80) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
+                std::cout << "Inliers / map points seen by last kf: "<< ((double)inliers.rows) << "/" << ((double)std::get<0>(map_points).rows) << std::endl;
+                std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
+                if( (trackFrameCount > 15 ||  inliers.rows < 200) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
                 //if( (trackFrameCount > 15 && inliers.rows < 120)  ){
                     std::cout<<"New keyframe found" << std::endl;
                     break;

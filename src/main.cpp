@@ -43,7 +43,7 @@ int main(int argc, char** argv )
     cv::Mat D = (cv::Mat1d(4,1) << 0.0, 0.0, 0.0, 0.0); // no distortion
     double essTh = 3.0/K.at<double>(0,0);
     // start reading rgb images in data folder
-    std::string path = "../data/rgbd_dataset_freiburg3_long_office_household/rgb";
+    std::string path = config["dataset"].as<std::string>();
     std::vector<std::filesystem::path> files_in_directory;
     std::copy(std::filesystem::directory_iterator(path), std::filesystem::directory_iterator(), std::back_inserter(files_in_directory));
     std::sort(files_in_directory.begin(), files_in_directory.end());
@@ -55,6 +55,10 @@ int main(int argc, char** argv )
     FeatureMatcher feature_matcher = FeatureMatcher();
     Map global_map;
     std::vector<std::filesystem::path>::iterator image_file_iterator = files_in_directory.begin();
+    // skip few initial frames where car stays still
+    for(int i=0; i<50; i++){
+        image_file_iterator++;
+    }
     // initialize map with first two good frames called keyframes, i.e. estimation of pose transform and point locations succeeds  
     std::cout << "INITIALIZING MAP" << std::endl;
     global_map.InitializeMap(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K);
@@ -67,13 +71,13 @@ int main(int argc, char** argv )
     int last_kf_idx = id_frame-1;
     int iterations_count = 0;
     int temppi = 0;
-    while(iterations_count < 50 && image_file_iterator != files_in_directory.end()){
+    while(image_file_iterator != files_in_directory.end()){
         std::cout << "TRACKING" << std::endl;
-        global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, false);
+        global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true);
         std::cout << "MAPPING" << std::endl;
         global_map.localMapping(id_frame, id_point, feature_extractor, feature_matcher, K, D, last_kf_idx);
         std::cout << "DOING BUNDLE ADJUSTEMENT" << std::endl;
-        global_map.BundleAdjustement(false, false, false);
+        //global_map.BundleAdjustement(false, false, false);
         // visualize all points
         std::vector<cv::Mat> created_points = global_map.GetAll3DPoints();
         std::vector<cv::Mat> camera_locs = global_map.GetAllCameraLocations();

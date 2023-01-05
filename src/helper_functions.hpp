@@ -35,9 +35,11 @@
 cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator){
     cv::Mat img;
     img = cv::imread(*fp_iterator);
-    fp_iterator++;
-    //cv::Rect roi(0, 0, 800, 300);
-    //img = img(roi);
+    for(int i=0; i<1; i++){
+        fp_iterator++;
+    }
+    cv::Rect roi(0, 0, 800, 300);
+    img = img(roi);
     return img;
 }
 

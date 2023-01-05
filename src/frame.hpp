@@ -29,9 +29,9 @@ public:
 
 private:
     //cv::Ptr<cv::FeatureDetector> detector = cv::ORB::create(1500);
-    cv::Ptr<cv::SIFT> detector = cv::SIFT::create(1500);
+    cv::Ptr<cv::SIFT> detector = cv::SIFT::create();
     //cv::Ptr<cv::DescriptorExtractor> descriptor = cv::ORB::create(1500);
-    cv::Ptr<cv::SIFT> descriptor = cv::SIFT::create(1500);
+    cv::Ptr<cv::SIFT> descriptor = cv::SIFT::create();
 };
 
 class FeatureMatcher{
