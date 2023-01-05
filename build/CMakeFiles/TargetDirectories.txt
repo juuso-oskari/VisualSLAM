@@ -1,3 +1,0 @@
-/home/juuso/VisualSLAM/build/CMakeFiles/rebuild_cache.dir
-/home/juuso/VisualSLAM/build/CMakeFiles/edit_cache.dir
-/home/juuso/VisualSLAM/build/CMakeFiles/run_slam.dir

@@ -71,6 +71,12 @@
         "valarray": "cpp",
         "variant": "cpp",
         "core": "cpp",
-        "geometry": "cpp"
+        "geometry": "cpp",
+        "any": "cpp",
+        "hash_set": "cpp",
+        "strstream": "cpp",
+        "filesystem": "cpp",
+        "numericaldiff": "cpp",
+        "specialfunctions": "cpp"
     }
 }

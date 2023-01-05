@@ -43,7 +43,7 @@ int main(int argc, char** argv )
     cv::Mat D = (cv::Mat1d(4,1) << 0.0, 0.0, 0.0, 0.0); // no distortion
     double essTh = 3.0/K.at<double>(0,0);
     // start reading rgb images in data folder
-    std::string path = "../data/recording_2020-03-26_13-32-55/undistorted_images/cam0";
+    std::string path = "../data/rgbd_dataset_freiburg3_long_office_household/rgb";
     std::vector<std::filesystem::path> files_in_directory;
     std::copy(std::filesystem::directory_iterator(path), std::filesystem::directory_iterator(), std::back_inserter(files_in_directory));
     std::sort(files_in_directory.begin(), files_in_directory.end());
@@ -66,7 +66,8 @@ int main(int argc, char** argv )
     //     clouds.AddPointsMatUpdate(camera_locs, true);
     int last_kf_idx = id_frame-1;
     int iterations_count = 0;
-    while(iterations_count < 10 && image_file_iterator != files_in_directory.end()){
+    int temppi = 0;
+    while(iterations_count < 50 && image_file_iterator != files_in_directory.end()){
         std::cout << "TRACKING" << std::endl;
         global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, false);
         std::cout << "MAPPING" << std::endl;
@@ -78,11 +79,13 @@ int main(int argc, char** argv )
         std::vector<cv::Mat> camera_locs = global_map.GetAllCameraLocations();
         std::vector<cv::Mat> camera_poses = global_map.GetAllPoses();
         // update viewer
-        viewer.AddPoints(CvMatToEigenVector(created_points));
-        viewer.AddPoses(CvMatToEigenIsometry(camera_poses));
+        viewer.SetPoints(CvMatToEigenVector(created_points));
+        viewer.SetPoses(CvMatToEigenIsometry(camera_poses));
         last_kf_idx = id_frame - 1 ; // update last keyframe index
         std::cout << "Passing points to viewer" << std::endl;
         iterations_count++;
+        temppi = temppi +1;
+        std::cout << temppi << std::endl;
     }
     return 0;
 }
