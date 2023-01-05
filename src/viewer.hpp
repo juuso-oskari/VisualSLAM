@@ -41,20 +41,13 @@ public:
             .SetHandler(new pangolin::Handler3D(s_cam_));
         std::cout << "Viewer thread running" << std::endl;
         while(!pangolin::ShouldQuit()) {
-            std::cout << "Ruljahtaa" << std::endl;
-            pangolin::glDrawColouredCube();
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // Set background color to white
             glClear(GL_COLOR_BUFFER_BIT);
             glClear(GL_DEPTH_BUFFER_BIT);
-            std::cout << "Ruljahtaa1" << std::endl;
             d_cam_->Activate(s_cam_);
-            std::cout << "Ruljahtaa2" << std::endl;
             //glClearColor(1.0f,1.0f,1.0f,1.0f);
-            std::cout << "Ruljahtaa3" << std::endl;
             AddPoints(points_);
-            std::cout << "Ruljahtaa4" << std::endl;
             AddPoses(poses_);
-            std::cout << "Ruljahtaa5" << std::endl;
             pangolin::FinishFrame();
         }
         std::cout << "Viewer thread stop" << std::endl;
@@ -72,18 +65,18 @@ public:
     void AddPoses(const std::vector<Eigen::Isometry3d, Eigen::aligned_allocator<Eigen::Isometry3d>>& poses) {
         for (size_t i = 0; i < poses.size(); i++) {
             // Convert the pose to a 4x4 matrix
-            Eigen::Matrix4d m = poses[i].matrix().transpose();
+            Eigen::Matrix4d m = poses[i].matrix().inverse();
             // Draw the coordinate axes
             glBegin(GL_LINES);
             glColor3f(1.0,0.0,0.0);
             glVertex3d(m(0,3), m(1,3), m(2,3));
-            glVertex3d(m(0,3) + m(0,0), m(1,3) + m(1,0), m(2,3) + m(2,0));
+            glVertex3d(m(0,3) + 0.1 * m(0,0), m(1,3) + 0.1 * m(1,0), m(2,3) + 0.1 * m(2,0));
             glColor3f(0,1,0);
             glVertex3d(m(0,3), m(1,3), m(2,3));
-            glVertex3d(m(0,3) + m(0,1), m(1,3) + m(1,1), m(2,3) + m(2,1));
+            glVertex3d(m(0,3) + 0.1 * m(0,1), m(1,3) + 0.1 * m(1,1), m(2,3) + 0.1 * m(2,1));
             glColor3f(0,0,1);
             glVertex3d(m(0,3), m(1,3), m(2,3));
-            glVertex3d(m(0,3) + m(0,2), m(1,3) + m(1,2), m(2,3) + m(2,2));
+            glVertex3d(m(0,3) + 0.1* m(0,2), m(1,3) + 0.1 * m(1,2), m(2,3) + 0.1 * m(2,2));
             glEnd();
         }
         }
