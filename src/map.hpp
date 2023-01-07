@@ -164,12 +164,28 @@ class Map {
                 cv::Mat tvec = GetTranslation(last_kf_pose);
                 cv::Mat rvec;
                 cv::Rodrigues(GetRotation((last_kf_pose)), rvec);
+                //cv::Mat tvec;
+                //cv::Mat rvec;
                 //cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, false, 200, 3.0F, 0.95, inliers);
                 cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, true, 300, 4.0F, 0.99, inliers);
                 if(inliers.rows<10){
                     continue;
                 }
-                cv::Mat T = transformMatrix(rvec,tvec);
+                //cv::Mat T = transformMatrix(rvec,tvec);
+
+                cv::Mat R;
+                cv::Rodrigues(rvec, R); // R is 3x3
+
+                R = R.t();  // rotation of inverse
+                tvec = -R * tvec; // translation of inverse
+
+                cv::Mat T = cv::Mat::eye(4, 4, R.type()); // T is 4x4
+                T( cv::Range(0,3), cv::Range(0,3) ) = R * 1; // copies R into T
+                T( cv::Range(0,3), cv::Range(3,4) ) = tvec * 1; // copies tvec into T
+
+                if (cv::determinant(T) < 0.01) {
+                    std::cout << "WARNING, Det(T) ILL CONDITIONED" << std::endl;
+                }
                 cv::Mat W_T_curr = T.inv(); // From w to curr frame W_T_curr
                 //PnP transformation = PnP();
                 //transformation.Estimate(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients);
@@ -178,7 +194,7 @@ class Map {
                 AddParentAndPose(id_frame-1, id_frame, cur_frame, Relative_pose_trans, W_T_curr);
                 id_frame++;
                 AddPointToFrameCorrespondances(corresponding_point_ids, curMatchedPoints, curMatchedFeatures, cur_frame, inliers);
-                //BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
+                BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
                 if(visualize){
                     cv::Mat dispImg;
                     cv::drawMatches(GetFrame(lastkeyframe_idx)->GetRGB(), Frame::GetKeyPointsAsVector(std::get<0>(map_points)), cur_frame->GetRGB(), cur_frame->GetKeyPointsAsVector(), matches, dispImg);
@@ -191,7 +207,7 @@ class Map {
                 std::cout << "Managed to match " << curMatchedPoints.rows << " between last kf and current tracking frame" << std::endl;
                 std::cout << "Inliers / map points seen by last kf: "<< ((double)inliers.rows) << "/" << ((double)std::get<0>(map_points).rows) << std::endl;
                 std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
-                if( (trackFrameCount > 20 ||  inliers.rows < 80) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
+                if( (trackFrameCount > 20 ||  inliers.rows < 200) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
                 //if( (trackFrameCount > 15 && inliers.rows < 120)  ){
                     std::cout<<"New keyframe found" << std::endl;
                     break;
