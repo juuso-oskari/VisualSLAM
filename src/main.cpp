@@ -61,8 +61,8 @@ int main(int argc, char** argv )
     }
     // initialize map with first two good frames called keyframes, i.e. estimation of pose transform and point locations succeeds  
     std::cout << "INITIALIZING MAP" << std::endl;
-    global_map.InitializeMap(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K);
-    global_map.BundleAdjustement(false, do_scale_depth);
+    global_map.InitializeMap(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, true);
+    global_map.BundleAdjustement(false, K, do_scale_depth);
     // Whenever the map gets a new frame, it should send it to 
     // the point clouds using the methods in `clouds`.
     // Example:
@@ -73,11 +73,10 @@ int main(int argc, char** argv )
     int temppi = 0;
     while(image_file_iterator != files_in_directory.end()){
         std::cout << "TRACKING" << std::endl;
-        global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true);
+        global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true, true);
         std::cout << "MAPPING" << std::endl;
         global_map.localMapping(id_frame, id_point, feature_extractor, feature_matcher, K, D, last_kf_idx);
-        std::cout << "DOING BUNDLE ADJUSTEMENT" << std::endl;
-        //global_map.BundleAdjustement(false, false, false);
+        //global_map.BundleAdjustement(false, K, false, false, 10);
         // visualize all points
         std::vector<cv::Mat> created_points = global_map.GetAll3DPoints();
         std::vector<cv::Mat> camera_locs = global_map.GetAllCameraLocations();

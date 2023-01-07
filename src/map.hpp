@@ -84,11 +84,12 @@ class Map {
                 if(visualize){
                     cv::drawMatches(prev_frame->GetRGB(), prev_frame->GetKeyPointsAsVector(),
                     cur_frame->GetRGB(), cur_frame->GetKeyPointsAsVector(), matches, dispImg);
+                    std::cout << "Found " << matches.size() << " matches" << std::endl;
                     cv::imshow("Display Image", dispImg);
                     cv::waitKey(1);
                 }
                 if(matches.size() < 100){
-                    ////std::cout << "Too few matches for map initialization, continuing to next frame" << std::endl;
+                    //std::cout << "Too few matches for map initialization, continuing to next frame" << std::endl;
                     continue;
                 }
                 //Essential transformation = Essential();               
@@ -157,24 +158,17 @@ class Map {
                 //std::cout << "TRACKING " << matched_3d.rows << " POINTS" << std::endl;
                 // corresponding_point_ids are point ids of those map points that we are able to match in the current frame
                 std::vector<int> corresponding_point_ids = GetQueryMatches(std::get<3>(map_points), matches);
-                
                 cv::Mat inliers;
                 // Get last keyframe rotation vec and translation vec as initial guesses for solvepnp
                 cv::Mat last_kf_pose = (GetFrame(id_frame-1)->GetPose());
                 cv::Mat tvec = GetTranslation(last_kf_pose);
                 cv::Mat rvec;
                 cv::Rodrigues(GetRotation((last_kf_pose)), rvec);
-
-                std::cout << "Initial guess for tvec: " << tvec << std::endl;
                 //cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, false, 200, 3.0F, 0.95, inliers);
                 cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, true, 300, 4.0F, 0.99, inliers);
-
-                std::cout << "Optimized tvec: " << tvec << std::endl;
-
                 if(inliers.rows<10){
                     continue;
                 }
-                std::cout << "Inliers passing solvePnPRansack: " << inliers.rows << "/" << curMatchedPoints.rows << std::endl;
                 cv::Mat T = transformMatrix(rvec,tvec);
                 cv::Mat W_T_curr = T.inv(); // From w to curr frame W_T_curr
                 //PnP transformation = PnP();
@@ -184,7 +178,7 @@ class Map {
                 AddParentAndPose(id_frame-1, id_frame, cur_frame, Relative_pose_trans, W_T_curr);
                 id_frame++;
                 AddPointToFrameCorrespondances(corresponding_point_ids, curMatchedPoints, curMatchedFeatures, cur_frame, inliers);
-                BundleAdjustement(true, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
+                //BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
                 if(visualize){
                     cv::Mat dispImg;
                     cv::drawMatches(GetFrame(lastkeyframe_idx)->GetRGB(), Frame::GetKeyPointsAsVector(std::get<0>(map_points)), cur_frame->GetRGB(), cur_frame->GetKeyPointsAsVector(), matches, dispImg);
@@ -194,9 +188,10 @@ class Map {
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
                 // 2. The map points tracked are fewer than 90% of the map points seen by the last key frame
+                std::cout << "Managed to match " << curMatchedPoints.rows << " between last kf and current tracking frame" << std::endl;
                 std::cout << "Inliers / map points seen by last kf: "<< ((double)inliers.rows) << "/" << ((double)std::get<0>(map_points).rows) << std::endl;
                 std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
-                if( (trackFrameCount > 15 ||  inliers.rows < 200) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
+                if( (trackFrameCount > 20 ||  inliers.rows < 80) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
                 //if( (trackFrameCount > 15 && inliers.rows < 120)  ){
                     std::cout<<"New keyframe found" << std::endl;
                     break;
@@ -252,6 +247,7 @@ class Map {
             cv::Mat new_triagulated_points = triangulate(GetFrame(last_key_frame_id)->GetPose(), GetFrame(id_frame-1)->GetPose(), last_keyframe_points, cur_keyframe_points, cameraIntrinsicsMatrix, inlierMask);
             
             ////std::cout << "New triangulated points: " << new_triagulated_points.rows << "x" <<  new_triagulated_points.cols << std::endl;
+            std::cout << cv::sum(inlierMask)[0] << " points pass the triangulation out of " << cur_keyframe_points.size() << std::endl;
             std::cout << "ADDING " << cv::sum(inlierMask)[0] << " NEW MAP POINTS" << std::endl;
             // cleanup bad points from map (seen by less than 3 frames)
             CleanUpBadPoints();
@@ -558,8 +554,9 @@ class Map {
         @param verbose should we print information about the optimization process
         @param n_iterations how many iterations to run the optimization algorithm
         */
-        void BundleAdjustement(bool tracking, bool scale=false, bool verbose = false, int n_iterations = 10){
-            double fx = 535.4; double fy = 539.2; double cx = 320.1; double cy = 247.6;
+        void BundleAdjustement(bool tracking, cv::Mat K, bool scale=false, bool verbose = false, int n_iterations = 10){
+            double fx = K.at<double>(0,0); double fy = K.at<double>(1,1); double cx = K.at<double>(0,2); double cy = K.at<double>(1,2);
+            std::cout << "Doing Bundle Adjustement with camera parameters: fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
             // set up BA solver
             typedef g2o::BlockSolver< g2o::BlockSolverTraits<6,3> > Block; 
             std::unique_ptr<Block::LinearSolverType> linearSolver (new g2o::LinearSolverEigen<Block::PoseMatrixType>()); 
@@ -581,6 +578,30 @@ class Map {
                     vSE3->setId((*it)*2);
                     vSE3->setFixed(*it==0);
                     optimizer.addVertex(vSE3);
+                    /*
+                    // add edge between parent pose and child pose
+                    // Create an EdgeSE3 edge to constrain the relative transformation between two poses
+                    g2o::EdgeSE3* edge = new g2o::EdgeSE3();
+
+                    // Set the measurement for the edge (the relative transformation between the poses)
+                    Eigen::Isometry3d measurement;
+                    edge->setMeasurement(measurement);
+
+                    // Set the vertices for the edge (pointers to the pose vertex objects)
+                    edge->vertices()[0] = this->GetFrame(frame_id)->;
+                    edge->vertices()[1] = poseVertex2;
+
+                    // Set the information matrix for the edge (inverse of the covariance matrix for the measurement)
+                    Eigen::Matrix<double,6,6> information = Eigen::Matrix<double,6,6>::Identity();
+                    edge->setInformation(information);
+
+                    // Add the edge to the optimization problem
+                    optimizer.addEdge(
+                    */
+
+
+
+
                     //std::cout << "Adding to graph pose: " << frame_id << std::endl;
                 }else if(tracking){
                     cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();

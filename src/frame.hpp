@@ -7,6 +7,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
 //#include <opencv2/xfeatures2d.hpp>
 
 class FeatureExtractor{
@@ -16,9 +17,45 @@ public:
     // takes video frame as input, outputs vector with keypoints as first element and corresponding descriptors as second element
     std::tuple<cv::Mat, cv::Mat> compute_features(const cv::Mat& img){ //std::tuple<cv::MatrixXd, cv::MatrixXd>
         std::vector<cv::KeyPoint> keypoints;
-        detector->detect ( img,keypoints );
+
+        cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
+        // set the ROI region of mat to 1
+        cv::Mat roi = mask(cv::Rect(0, 0, 800, 300));
+        roi.setTo(1);
+
+        detector->detect ( img,keypoints, mask);
         cv::Mat descriptors;
         descriptor->compute ( img, keypoints, descriptors);
+        /*
+        std::cout << "Computing features" << std::endl;
+        // Or use faster goodfeaturestotrack
+        std::vector<cv::Point2f> corners;
+        // Set the maximum number of corners to detect
+        int maxCorners = 1000;
+        // Set the quality level for the corners
+        double qualityLevel = 0.01;
+        // Set the minimum distance between corners
+        double minDistance = 10;
+
+        cv::Mat gray;
+        cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
+
+        cv::goodFeaturesToTrack(gray, corners, maxCorners, qualityLevel, minDistance);
+        if (corners.empty()) {
+            // Handle the case where no corners were detected
+            std::cout << "No corners detected" << std::endl;
+        } 
+        std::cout << corners.size() << std::endl;
+
+        // Convert the vector of points to a vector of keypoints
+        std::vector<cv::KeyPoint> keypoints;
+        for (const auto& point : corners) {
+            keypoints.emplace_back(point, 7);  // The size argument is 7 in this example
+        }
+        cv::Mat descriptors;
+        descriptor->compute ( img, keypoints, descriptors);
+
+        std::cout << "Done computing features" << std::endl;
         /*
         cv::Mat output;
         cv::drawKeypoints(img, keypoints, output);
@@ -37,7 +74,7 @@ private:
 class FeatureMatcher{
 public:
     FeatureMatcher(){
-        matcher = cv::BFMatcher(cv::NORM_L2, false);
+        matcher = cv::BFMatcher();
     };
     std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat>
     match_features(cv::Mat kp1, cv::Mat desc1, cv::Mat kp2, cv::Mat desc2, float ratio = 0.80){

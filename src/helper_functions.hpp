@@ -32,14 +32,26 @@
 #include "g2o/core/sparse_optimizer.h"
 #include "g2o/solvers/dense/linear_solver_dense.h"
 
-cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator){
+
+
+/** @brief Function to read and modify frames
+        * @param fp_iterator iterator that goes through png file paths
+        * @returns img - the read image as cv::Mat
+*/
+cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator, bool convert2gray = false){
     cv::Mat img;
     img = cv::imread(*fp_iterator);
     for(int i=0; i<1; i++){
         fp_iterator++;
     }
-    cv::Rect roi(0, 0, 800, 300);
-    img = img(roi);
+    //cv::Rect roi(0, 0, 800, 300);
+    //img = img(roi);
+    if(convert2gray){
+        cv::Mat gray;
+        cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
+        return gray;
+    }
+
     return img;
 }
 
@@ -110,7 +122,10 @@ cv::Mat triangulate(cv::Mat pose1, cv::Mat pose2,cv::Mat pts1,cv::Mat pts2, cv::
     Rcw2.copyTo(Tcw2.colRange(0,3));
     tcw2.copyTo(Tcw2.col(3));
     
-    double fx = 535.4; double fy = 539.2; double cx = 320.1; double cy = 247.6; double invfx = 1.0/fx; double invfy = 1.0/fy;
+    double fx = K.at<double>(0,0); double fy = K.at<double>(1,1); double cx = K.at<double>(0,2); double cy = K.at<double>(1,2);
+    double invfx = 1.0/fx; double invfy = 1.0/fy;
+
+    double reproj_error = 0;
     for(int i = 0; i < pts1.rows; i++) { 
         cv::Mat xn1 = (cv::Mat_<double>(3,1) << (pts1.at<double>(i, 0)-cx)*invfx, (pts1.at<double>(i, 1)-cy)*invfy, 1.0);
         cv::Mat xn2 = (cv::Mat_<double>(3,1) << (pts2.at<double>(i, 0)-cx)*invfx, (pts2.at<double>(i, 1)-cy)*invfy, 1.0);
@@ -145,25 +160,27 @@ cv::Mat triangulate(cv::Mat pose1, cv::Mat pose2,cv::Mat pts1,cv::Mat pts2, cv::
         if(z2<=0){
             inlierMask.push_back((uchar)0);continue;
         }
-            
+        
         //Check reprojection error in first keyframe
-        const double &sigmaSquare1 = 1;//mpCurrentKeyFrame->mvLevelSigma2[kp1.octave];
+        const double &sigmaSquare1 = 20;//mpCurrentKeyFrame->mvLevelSigma2[kp1.octave];
         const double x1 = Rcw1.row(0).dot(x3Dt)+tcw1.at<double>(0);
         const double y1 = Rcw1.row(1).dot(x3Dt)+tcw1.at<double>(1);
         const double invz1 = 1.0/z1;
 
-        
         double u1 = fx*x1*invz1+cx;
         double v1 = fy*y1*invz1+cy;
         double errX1 = u1 - pts1.at<double>(i, 0);
         double errY1 = v1 - pts1.at<double>(i, 1);
+
+        //std::cout << "error : " << (errX1*errX1+errY1*errY1) << " threshold: " << 5.991*sigmaSquare1 << std::endl;
+        reproj_error = reproj_error + (errX1*errX1+errY1*errY1);
         if((errX1*errX1+errY1*errY1)>5.991*sigmaSquare1){
             inlierMask.push_back((uchar)0);continue;
         }
             
 
         //Check reprojection error in second keyframe
-        const double sigmaSquare2 = 1; //pKF2->mvLevelSigma2[kp2.octave];
+        const double sigmaSquare2 = 20; //pKF2->mvLevelSigma2[kp2.octave];
         const double x2 = Rcw2.row(0).dot(x3Dt)+tcw2.at<double>(0);
         const double y2 = Rcw2.row(1).dot(x3Dt)+tcw2.at<double>(1);
         const double invz2 = 1.0/z2;
@@ -201,6 +218,12 @@ cv::Mat triangulate(cv::Mat pose1, cv::Mat pose2,cv::Mat pts1,cv::Mat pts2, cv::
         // */
         inlierMask.push_back((uchar)1);
     }
+
+    if((reproj_error / inlierMask.rows) > 1000){
+        cv::waitKey(0);
+    }
+
+
     return ret;
 }
 
