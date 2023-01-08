@@ -168,20 +168,26 @@ class Map {
                 if(inliers.rows<10){
                     continue;
                 }
+                /*
                 // project map points to current frame to search for more and better feature correspondences
-                cv::Mat points2d;
+                cv::Mat points2d_;
                 cv::Mat mapPoints = std::get<2>(map_points);
-                cv::projectPoints(mapPoints, rvec, tvec, cameraIntrinsicsMatrix, cv::Mat(), points2d);
+                cv::projectPoints(mapPoints, rvec, tvec, cameraIntrinsicsMatrix, cv::Mat(), points2d_);
+                // convert projected points to single-channel
+                cv::Mat points2d;
+                points2d_.reshape(1, points2d_.rows * points2d_.cols).convertTo(points2d, CV_64FC1);
+                std::cout << "Points projected back " << points2d.size() << std::endl << points2d << std::endl;
                 std::vector<cv::DMatch> radiusMatches;
+                std::cout << "Doing radius matching" << std::endl;
                 match_info = matchFeaturesInRadius(std::get<0>(map_points), std::get<1>(map_points), cur_frame->GetKeyPoints(), cur_frame->GetFeatures(), points2d);
                 // parse tuple to objects
                 matches = std::get<0>(match_info); preMatchedPoints = std::get<1>(match_info); preMatchedFeatures = std::get<2>(match_info); curMatchedPoints = std::get<3>(match_info); curMatchedFeatures = std::get<4>(match_info);
                 // corresponding_point_ids are point ids of those map points that we are able to match in the current frame
+                std::cout << "Found " << matches.size() << " matches in radius matching" << std::endl;
+                */
                 std::vector<int> corresponding_point_ids = GetQueryMatches(std::get<3>(map_points), matches);
-
-                cv::Mat T = transformMatrix(rvec,tvec);
-                //cv::Mat T = transformMatrix(rvec,tvec);
-
+                
+                // Take the inverse of the point transformation (OpenCV gives), which equals pose transformation
                 cv::Mat R;
                 cv::Rodrigues(rvec, R); // R is 3x3
 
@@ -195,10 +201,10 @@ class Map {
                 if (cv::determinant(T) < 0.01) {
                     std::cout << "WARNING, Det(T) ILL CONDITIONED" << std::endl;
                 }
-                cv::Mat W_T_curr = T.inv(); // From w to curr frame W_T_curr
+                cv::Mat W_T_curr = T; // From w to curr frame W_T_curr
                 //PnP transformation = PnP();
                 //transformation.Estimate(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients);
-                cv::Mat prev_T_W = (GetFrame(id_frame-1)->GetPose()).inv(); // From prev to world frame W_T_curr
+                cv::Mat prev_T_W = (GetFrame(id_frame-1)->GetPose()).inv(); // From prev to world frame
                 cv::Mat Relative_pose_trans = prev_T_W * W_T_curr;
                 AddParentAndPose(id_frame-1, id_frame, cur_frame, Relative_pose_trans, W_T_curr);
                 id_frame++;
@@ -567,10 +573,16 @@ class Map {
         @param frame_ptr pointer to Frame object
         @param inliers vector of inlier indices to be used
         */
-        void AddPointToFrameCorrespondances(std::vector<int> point_ids, cv::Mat image_points, cv::Mat descriptors, std::shared_ptr<Frame> frame_ptr, cv::Mat inliers){
+        void AddPointToFrameCorrespondances(std::vector<int> point_ids, cv::Mat image_points, cv::Mat descriptors, std::shared_ptr<Frame> frame_ptr, cv::Mat inliers = cv::Mat()){
+            if(inliers.empty()){ // use all
+                for(int i = 0; i < image_points.rows; i++){
+                    GetPoint(point_ids[i])->AddFrame(frame_ptr, image_points.row(i), descriptors.row(i));
+                }
+            }else{ // use only inlier indices
             for(int i = 0; i < inliers.rows; i++){
                 int inlier_idx = inliers.at<int>(i,0);
                 GetPoint(point_ids[inlier_idx])->AddFrame(frame_ptr, image_points.row(inlier_idx), descriptors.row(inlier_idx));
+            }
             }
         }
         /** @brief Optimizes poses and 3D locations of points in the map, Leverberg-Marquadt used to minimize the reprojection error. Updates points and poses to the optimized values.
@@ -579,7 +591,7 @@ class Map {
         @param verbose should we print information about the optimization process
         @param n_iterations how many iterations to run the optimization algorithm
         */
-        void BundleAdjustement(bool tracking, cv::Mat K, bool scale=false, bool verbose = false, int n_iterations = 10){
+        void BundleAdjustement(bool tracking, cv::Mat K, bool scale=false, bool verbose = false, int n_iterations = 10, int window = -1){
             double fx = K.at<double>(0,0); double fy = K.at<double>(1,1); double cx = K.at<double>(0,2); double cy = K.at<double>(1,2);
             std::cout << "Doing Bundle Adjustement with camera parameters: fx: " << fx << ", fy: " << fy << ", cx: " << cx << ", cy: " << cy << std::endl;
             // set up BA solver
@@ -591,6 +603,37 @@ class Map {
             optimizer.setAlgorithm ( solver );
             
             std::vector<int> frame_id_list = this->GetAllFrameIDs();
+            // if we have windowed BA:
+            // 1. We are not at tracking and we optimize last <window> keyframes
+            // 2. We are at tracking so we optimize all the tracking frames until last keyframe
+            
+            /*
+            if(window > 0 && frame_id_list.size() > window && !tracking){
+                int kf_counter = 0; // count the collected kfs
+                std::vector<int> window_keyframes;
+                while(!frame_id_list.empty() && kf_counter < window){
+                    if(this->GetFrame(frame_id_list.back())->IsKeyFrame()){
+                        window_keyframes.push_back(frame_id_list.back());
+                        kf_counter++;
+                    }
+                    frame_id_list.pop_back();
+                }
+                frame_id_list = window_keyframes;
+            }
+            if(tracking){
+                std::vector<int> tracked_frames;
+                while (!frame_id_list.empty() && !this->GetFrame(frame_id_list.back())->IsKeyFrame()) {
+                    tracked_frames.push_back(frame_id_list.back());
+                    frame_id_list.pop_back();
+                }
+                tracked_frames.push_back(frame_id_list.back()); // also put the last keyframe back in
+                frame_id_list = tracked_frames;
+            }
+            std::cout << "Doing bundle with frame ids: " << std::endl;
+            for(auto frame : frame_id_list){
+                std::cout << frame << std::endl;
+            }
+            */
             std::vector<int> point_id_list = this->GetAllPointIDs();
 
             // loop trough all the frames
@@ -623,10 +666,6 @@ class Map {
                     // Add the edge to the optimization problem
                     optimizer.addEdge(
                     */
-
-
-
-
                     //std::cout << "Adding to graph pose: " << frame_id << std::endl;
                 }else if(tracking){
                     cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();
@@ -647,17 +686,19 @@ class Map {
                 vPoint->setEstimate(toVector3d((this->GetPoint(point_id)->Get3dPoint()).t()));
                 vPoint->setId(point_id*2+1);
                 vPoint->setMarginalized(true);
-                vPoint->setFixed(tracking);
+                vPoint->setFixed(tracking); // TODO: also set fixed if no correspondences found to frames or rather remove then
                 optimizer.addVertex(vPoint);
                 // GetFrames() returns std::map<int, std::tuple<std::shared_ptr<Frame>, cv::Mat, cv::Mat>> frames_; // map of frames that see this  particular point object
                 auto it2_start = this->GetPoint(point_id)->GetFrames().begin();
                 auto it2_end = this->GetPoint(point_id)->GetFrames().end();
+                int correspondences_found = 0;
                 for(auto it2 = it2_start; it2 != it2_end; it2++){
 
                     if(optimizer.vertex((it2->first)*2) == NULL){
                         continue;
                     }
-
+                    // else
+                    correspondences_found++;
                     Eigen::MatrixXd uv;
                     cv::cv2eigen(std::get<1>(it2->second).t(), uv);
                     ////std::cout << "Image projection on frame " << (it2->first)*2 << ": " << uv << std::endl;
@@ -676,6 +717,7 @@ class Map {
                     e->cy = cy;
                     optimizer.addEdge(e);
                 }
+                //if(correspondences_found==0){vPoint->setFixed(true);}
             }
             //optimizer.save("beforeopt.g2o");
             optimizer.initializeOptimization();

@@ -220,7 +220,7 @@ cv::Mat triangulate(cv::Mat pose1, cv::Mat pose2,cv::Mat pts1,cv::Mat pts2, cv::
     }
 
     if((reproj_error / inlierMask.rows) > 1000){
-        cv::waitKey(0);
+        //cv::waitKey(0);
     }
 
 
@@ -544,7 +544,9 @@ std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> matchFea
     cv::Mat ft1;
     cv::Mat ft2;
     for(auto it = rawMatches.begin(); it != rawMatches.end(); it++){
-        float distance = cv::norm(projected2d.row((*it)[0].trainIdx), kp2.row((*it)[0].trainIdx), cv::NORM_L2);
+        std::cout << "Projected: " << projected2d.row((*it)[0].queryIdx) << std::endl;
+        std::cout << "Matched kp: " << kp2.row((*it)[0].trainIdx) << std::endl;
+        float distance = cv::norm(projected2d.row((*it)[0].queryIdx), kp2.row((*it)[0].trainIdx), cv::NORM_L2);
         // if match is found close enough to the estimated projected point
         if( distance < radius ){
             pts1.push_back( kp1.row((*it)[0].queryIdx) );
@@ -556,6 +558,17 @@ std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> matchFea
     }
     return std::tuple(matches, pts1, ft1, pts2, ft2);
 }
+
+std::vector<int> CreateIndexVec(int start, int stop){
+    std::vector<int> vec;
+    // Create a vector from start to stop (inclusive)
+    for (int i = 0; i <= stop && i>=start; i++) {
+        vec.push_back(i);
+    }
+    return vec;
+}
+
+
 
 
 

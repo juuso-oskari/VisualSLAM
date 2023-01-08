@@ -73,10 +73,14 @@ int main(int argc, char** argv )
     int temppi = 0;
     while(image_file_iterator != files_in_directory.end()){
         std::cout << "TRACKING" << std::endl;
-        global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true, true);
+        global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true, false);
         std::cout << "MAPPING" << std::endl;
         global_map.localMapping(id_frame, id_point, feature_extractor, feature_matcher, K, D, last_kf_idx);
-        global_map.BundleAdjustement(false, K, false, false, 10);
+        //if(temppi % 5 ==0){
+            std::cout << "Doing windowed BA: " << std::endl;
+            global_map.BundleAdjustement(false, K, false, true, 10, 10);
+        //}
+        
         // visualize all points
         std::vector<cv::Mat> created_points = global_map.GetAll3DPoints();
         std::vector<cv::Mat> camera_locs = global_map.GetAllCameraLocations();
