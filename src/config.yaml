@@ -3,3 +3,4 @@ fy: 501.4757919305817 #539.2 #
 cx: 421.7953735163109 #320.1 #
 cy: 167.65799492501083 #247.6 #
 dataset: "../data/KITTI/undistorted_images/cam0/"
+#dataset: "../data/Real_KITTI/KITTI/image_00/data/"
