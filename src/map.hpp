@@ -155,9 +155,6 @@ class Map {
                 // get 3d locations of matching imagepoints and corresponding point ids
                 // matched_3d are 3d point locations of those map points that we are able to match in the current frame
                 cv::Mat matched_3d = GetQueryMatches(std::get<2>(map_points), matches); 
-                //std::cout << "TRACKING " << matched_3d.rows << " POINTS" << std::endl;
-                // corresponding_point_ids are point ids of those map points that we are able to match in the current frame
-                std::vector<int> corresponding_point_ids = GetQueryMatches(std::get<3>(map_points), matches);
                 cv::Mat inliers;
                 // Get last keyframe rotation vec and translation vec as initial guesses for solvepnp
                 cv::Mat last_kf_pose = (GetFrame(id_frame-1)->GetPose());
@@ -169,6 +166,17 @@ class Map {
                 if(inliers.rows<10){
                     continue;
                 }
+                // project map points to current frame to search for more and better feature correspondences
+                cv::Mat points2d;
+                cv::Mat mapPoints = std::get<2>(map_points);
+                cv::projectPoints(mapPoints, rvec, tvec, cameraIntrinsicsMatrix, cv::Mat(), points2d);
+                std::vector<cv::DMatch> radiusMatches;
+                match_info = matchFeaturesInRadius(std::get<0>(map_points), std::get<1>(map_points), cur_frame->GetKeyPoints(), cur_frame->GetFeatures(), points2d);
+                // parse tuple to objects
+                matches = std::get<0>(match_info); preMatchedPoints = std::get<1>(match_info); preMatchedFeatures = std::get<2>(match_info); curMatchedPoints = std::get<3>(match_info); curMatchedFeatures = std::get<4>(match_info);
+                // corresponding_point_ids are point ids of those map points that we are able to match in the current frame
+                std::vector<int> corresponding_point_ids = GetQueryMatches(std::get<3>(map_points), matches);
+
                 cv::Mat T = transformMatrix(rvec,tvec);
                 cv::Mat W_T_curr = T.inv(); // From w to curr frame W_T_curr
                 //PnP transformation = PnP();

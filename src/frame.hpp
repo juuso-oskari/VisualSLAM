@@ -188,10 +188,6 @@ public:
         parents.insert({parent_frame_id, transition});
     }
 
-
-
-
-
     /** method GetParentIDs returns all the parent ids
    * @return return std::vector<int> type array of frame ids
    */

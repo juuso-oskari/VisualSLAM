@@ -532,4 +532,33 @@ std::vector<Eigen::Isometry3d, Eigen::aligned_allocator<Eigen::Isometry3d>> CvMa
   return eigen_poses;
 }
 
+std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> matchFeaturesInRadius(cv::Mat kp1, cv::Mat desc1, cv::Mat kp2, cv::Mat desc2, cv::Mat projected2d, float radius = 5){
+    std::vector<std::vector< cv::DMatch > > rawMatches;
+    //matcher.match(descriptors1, descriptors2, matches);
+    cv::BFMatcher matcher(cv::NORM_L2, false);
+    matcher.knnMatch(desc1, desc2, rawMatches, 2);
+    // perform radius filtering to get actual matches
+    std::vector<cv::DMatch> matches;
+    cv::Mat pts1;        
+    cv::Mat pts2;
+    cv::Mat ft1;
+    cv::Mat ft2;
+    for(auto it = rawMatches.begin(); it != rawMatches.end(); it++){
+        float distance = cv::norm(projected2d.row((*it)[0].trainIdx), kp2.row((*it)[0].trainIdx), cv::NORM_L2);
+        // if match is found close enough to the estimated projected point
+        if( distance < radius ){
+            pts1.push_back( kp1.row((*it)[0].queryIdx) );
+            pts2.push_back( kp2.row((*it)[0].trainIdx) );
+            ft1.push_back( desc1.row((*it)[0].queryIdx) );
+            ft2.push_back( desc2.row((*it)[0].trainIdx) );
+            matches.push_back((*it)[0]);
+        }
+    }
+    return std::tuple(matches, pts1, ft1, pts2, ft2);
+}
+
+
+
+
+
 #endif
