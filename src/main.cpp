@@ -15,7 +15,6 @@
 #include "isometry3d.hpp"
 #include "map.hpp"
 #include "point.hpp"
-#include "screen.hpp"
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/videoio.hpp>
 #include <iostream>

@@ -18,12 +18,12 @@ public:
     std::tuple<cv::Mat, cv::Mat> compute_features(const cv::Mat& img){ //std::tuple<cv::MatrixXd, cv::MatrixXd>
         std::vector<cv::KeyPoint> keypoints;
 
-        cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
-        // set the ROI region of mat to 1
-        cv::Mat roi = mask(cv::Rect(0, 0, 800, 300));
-        roi.setTo(1);
+        // cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
+        // // set the ROI region of mat to 1
+        // cv::Mat roi = mask(cv::Rect(0, 0, 800, 300));
+        // roi.setTo(1);
 
-        detector->detect ( img,keypoints, mask);
+        detector->detect ( img,keypoints);
         cv::Mat descriptors;
         descriptor->compute ( img, keypoints, descriptors);
         /*
