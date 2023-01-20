@@ -62,10 +62,15 @@ message(STATUS "OpenGL directory is ${OPENGL_INCLUDE_DIR}")
 find_package(Pangolin REQUIRED)
 include_directories(${Pangolin_INCLUDE_DIRS})
 
+
 # Find YAML-CPP
 
 find_package(YAML-CPP REQUIRED)
 include_directories(${YAML_CPP_INCLUDE_DIR})
+
+find_package(Boost REQUIRED filesystem)
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+
 
 # Add all .c, - files under src/ directory
 file(GLOB SOURCES_C "src/*.c")
@@ -85,17 +90,18 @@ message(STATUS "SRC directory source code files: \n\t-- HEADERS: ${SOURCES_H}${S
 # add the executable target
 add_executable(run_slam)
 # Add the OpenGL libraries to the target link libraries
+target_link_libraries(run_slam ${TORCH_LIBRARIES})
 target_link_libraries(run_slam pango_display)
 target_link_libraries(run_slam ${OPENGL_LIBRARIES})
 target_link_libraries(run_slam Eigen3::Eigen)
 target_link_libraries(run_slam easy3d::viewer)
 target_link_libraries(run_slam ${OpenCV_LIBS} )
 target_link_libraries(run_slam ${G2O_LIBS})
+target_link_libraries(run_slam Boost::filesystem)
 
 target_link_libraries(run_slam ${YAML_CPP_LIBRARIES})
 target_sources(run_slam PUBLIC ${SOURCES})
 target_include_directories(run_slam PUBLIC .)
 target_include_directories(run_slam PUBLIC src)
-
 
 

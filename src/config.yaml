@@ -1,6 +1,30 @@
-fx: 501.4757919305817 #535.4 #
-fy: 501.4757919305817 #539.2 #
-cx: 421.7953735163109 #320.1 #
-cy: 167.65799492501083 #247.6 #
-dataset: "../data/KITTI/undistorted_images/cam0/"
-#dataset: "../data/Real_KITTI/KITTI/image_00/data/"
+# office
+K: "535.4 0 320.1 0 539.2 247.6 0 0 1.0"
+D: "0 0 0 0 0" 
+do_undistort: 0
+fx: 535.4  
+fy: 539.2 
+cx: 320.1 
+cy: 247.6
+use_roi: 0
+dataset: "../data/office/rgb/"
+max_iterations: 50
+min_inliers: 150
+# # four seasons
+# fx: 501.4757919305817 
+# fy: 501.4757919305817 
+# cx: 421.7953735163109 
+# cy: 167.65799492501083 
+# use_roi: 1
+# dataset: "../data/TUMFourSeasons/cam0/"
+# max_iterations: 20
+# min_inliers: 150
+
+# # KITTI
+# K: "9.037596e+02 0.000000e+00 6.957519e+02 0.000000e+00 9.019653e+02 2.242509e+02 0.000000e+00 0.000000e+00 1.000000e+00"
+# D: "-3.639558e-01 1.788651e-01 6.029694e-04 -3.922424e-04 -5.382460e-02" 
+# do_undistort: 1 # if to do undistortion for images when reading them
+# use_roi: 0 # it to use only ROI region (set to 1 only for four seasons!!)
+# dataset: "../data/KITTI/rgb/"
+# max_iterations: 20
+# min_inliers: 150

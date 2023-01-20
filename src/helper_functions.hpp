@@ -8,6 +8,7 @@
 #include <Eigen/Dense> 
 
 
+
 #include <tuple>
 #include <map>
 #include <opencv2/calib3d.hpp>
@@ -34,26 +35,68 @@
 
 
 
+
+
+int appendToFile(std::string filename, cv::Mat m) {
+    std::ofstream out(filename, std::ios::app);
+    //out << m << std::endl;
+    for (int i = 0; i < m.rows; i++) {
+        for (int j = 0; j < m.cols; j++) {
+            out << m.at<double>(i,j);
+            if( (i+1)*(j+1) < (m.cols*m.rows)){
+                out << " ";
+            }
+            
+        }
+    }
+    out << std::endl;
+    out.close();
+    return 0;
+}
+
+
+cv::Mat parseDistortionCoefficients(std::string data_string){
+    cv::Mat distortion_coefficients(5, 1, CV_64F);
+    std::stringstream stream(data_string);
+    for (int i = 0; i < 5; i++) {
+        stream >> distortion_coefficients.at<double>(i);
+    }
+    return distortion_coefficients;
+}
+
+cv::Mat parseCameraIntrinsics(std::string data_string){
+    cv::Mat distortion_coefficients(3, 3, CV_64F);
+    std::stringstream stream(data_string);
+    for (int i = 0; i < 9; i++) {
+        stream >> distortion_coefficients.at<double>(i);
+    }
+    return distortion_coefficients;
+}
+    
+
+
 /** @brief Function to read and modify frames
         * @param fp_iterator iterator that goes through png file paths
         * @returns img - the read image as cv::Mat
 */
-cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator, bool convert2gray = false){
+cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator, bool undistort = false){
     cv::Mat img;
     img = cv::imread(*fp_iterator);
     for(int i=0; i<1; i++){
         fp_iterator++;
     }
-    //cv::Rect roi(0, 0, 800, 300);
-    //img = img(roi);
-    if(convert2gray){
-        cv::Mat gray;
-        cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
-        return gray;
+    if(config["do_undistort"].as<int>()==1){
+        std::cout << "Do undistortion for image" << std::endl;
+        cv::Mat undistorted_image;
+        cv::Mat camera_matrix = parseCameraIntrinsics(config["K"].as<std::string>());
+        cv::Mat distortion_coefficients = parseDistortionCoefficients(config["D"].as<std::string>());
+        cv::undistort(img, undistorted_image, camera_matrix, distortion_coefficients);
+        return undistorted_image;
     }
 
     return img;
 }
+
 
 /** @brief MakeHomogeneous make points homogenious, adds vector of ones
         * @param x - type cv::Mat corresponding to point
@@ -63,6 +106,13 @@ cv::Mat MakeHomogeneous(cv::Mat x) {
     cv::Mat col_of_ones = cv::Mat::ones(x.rows, 1, CV_64F);
     cv::Mat ret;
     cv::hconcat(x, col_of_ones, ret);
+    return ret;
+}
+
+cv::Mat AddRowOfOnes(cv::Mat x) {
+    cv::Mat row_of_ones = cv::Mat::ones(1, x.cols, CV_64F);
+    cv::Mat ret;
+    cv::vconcat(x, row_of_ones, ret);
     return ret;
 }
 
@@ -532,46 +582,63 @@ std::vector<Eigen::Isometry3d, Eigen::aligned_allocator<Eigen::Isometry3d>> CvMa
   return eigen_poses;
 }
 
-std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> matchFeaturesInRadius(cv::Mat kp1, cv::Mat desc1, cv::Mat kp2, cv::Mat desc2, cv::Mat projected2d, float radius = 5){
-    std::vector<std::vector< cv::DMatch > > rawMatches;
-    //matcher.match(descriptors1, descriptors2, matches);
-    cv::BFMatcher matcher(cv::NORM_L2, false);
-    matcher.knnMatch(desc1, desc2, rawMatches, 2);
-    // perform radius filtering to get actual matches
-    std::vector<cv::DMatch> matches;
-    cv::Mat pts1;        
-    cv::Mat pts2;
-    cv::Mat ft1;
-    cv::Mat ft2;
-    for(auto it = rawMatches.begin(); it != rawMatches.end(); it++){
-        std::cout << "Projected: " << projected2d.row((*it)[0].queryIdx) << std::endl;
-        std::cout << "Matched kp: " << kp2.row((*it)[0].trainIdx) << std::endl;
-        float distance = cv::norm(projected2d.row((*it)[0].queryIdx), kp2.row((*it)[0].trainIdx), cv::NORM_L2);
-        // if match is found close enough to the estimated projected point
-        if( distance < radius ){
-            pts1.push_back( kp1.row((*it)[0].queryIdx) );
-            pts2.push_back( kp2.row((*it)[0].trainIdx) );
-            ft1.push_back( desc1.row((*it)[0].queryIdx) );
-            ft2.push_back( desc2.row((*it)[0].trainIdx) );
-            matches.push_back((*it)[0]);
+
+
+/** @brief Convers points to homogenious
+     * @param pose1 - 4x4 transformation matrix representing first pose
+     * @param pose2 - 4x4 transformation matrix representing second pose
+     * @returns pose error as double 
+*/ 
+double CalculatePoseDifference(cv::Mat pose1, cv::Mat pose2){
+    // Extract translation and rotation from transformation matrices
+    cv::Vec3d t1, t2;
+    cv::Mat R1, R2;
+    std::cout << "Piippii" << std::endl;
+    cv::decomposeProjectionMatrix(pose1, R1, t1, cv::noArray(), cv::noArray(), cv::noArray(), cv::noArray());
+    cv::decomposeProjectionMatrix(pose2, R2, t2, cv::noArray(), cv::noArray(), cv::noArray(), cv::noArray());
+    std::cout << "Juu" << std::endl;
+    // Calculate translation error as Euclidean distance between translations
+    double trans_error = cv::norm(t1, t2, cv::NORM_L2);
+
+    // Calculate rotation error using angle between rotations
+    cv::Mat R_error;
+    cv::Rodrigues(R1.t() * R2, R_error);
+    double rot_error = cv::norm(R_error, cv::NORM_L2);
+
+    // Calculate overall pose error as weighted sum of translation and rotation errors
+    double alpha = 0.5;  // Weight for translation error
+    double beta = 1.0 - alpha;  // Weight for rotation error
+    double pose_error = alpha * trans_error + beta * rot_error;
+    return pose_error;
+}
+
+
+cv::Mat get3DPoints(const cv::Mat& depth_map, const cv::Mat& intrinsics) {
+    // Get the dimensions of the depth map
+    int rows = depth_map.rows;
+    int cols = depth_map.cols;
+
+    // Create a vector to store the 3D points
+    cv::Mat points3D;
+
+    // Iterate over all the pixels in the depth map
+    for (int y = 0; y < rows; y++) {
+        for (int x = 0; x < cols; x++) {
+            // Get the depth value for this pixel
+            double depth = depth_map.at<double>(y, x);
+
+            // Calculate the 3D point using the formula:
+            // 3D location = depth * (inverse of intrinsic matrix) * (pixel location in 2D)
+            cv::Mat homogeneous_pixel_loc = (cv::Mat_<double>(3,1) << x, y, 1);
+            cv::Mat point3D = depth * (intrinsics.inv()) * homogeneous_pixel_loc;
+
+            // Add the 3D point to the vector
+            points3D.push_back(point3D.t());
         }
     }
-    return std::tuple(matches, pts1, ft1, pts2, ft2);
+
+    // Return the vector of 3D points
+    return points3D;
 }
-
-std::vector<int> CreateIndexVec(int start, int stop){
-    std::vector<int> vec;
-    // Create a vector from start to stop (inclusive)
-    for (int i = 0; i <= stop && i>=start; i++) {
-        vec.push_back(i);
-    }
-    return vec;
-}
-
-
-
-
-
-
 
 #endif
