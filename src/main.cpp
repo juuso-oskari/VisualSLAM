@@ -90,5 +90,6 @@ int main(int argc, char** argv )
         std::cout << temppi << std::endl;
     }
     return 0;
+    std::cout << "prööttikäinen" << std::endl;
 }
 #endif
