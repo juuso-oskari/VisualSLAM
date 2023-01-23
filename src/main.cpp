@@ -92,6 +92,7 @@ int main(int argc, char** argv )
         last_kf_idx = id_frame - 1 ; // update last keyframe index
         iterations_count++;
     }
+
     
     // Save map into folder: images into folder/images, poses into folder/poses.txt, K into folder/K.txt
     global_map.saveMap(K);
@@ -99,6 +100,6 @@ int main(int argc, char** argv )
 
 
     return 0;
-    std::cout << "prööttikäinen" << std::endl;
+    std::cout << "prööttikäinen1" << std::endl;
 }
 #endif

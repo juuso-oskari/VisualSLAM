@@ -24,6 +24,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 # Find Eigen3
 find_package(Eigen3 REQUIRED NO_MODULE)
 # set(Easy3D_DIR "/usr/local/Cellar/easy3d/2.5.2/lib/CMake/Easy3D")
+
 #include_directories(${CERES_INCLUDE_DIRS})
 
 #set(G2O_USE_VENDORED_CERES ON CACHE BOOL "Use vendored Ceres from g2o/EXTERNAL/ceres")
@@ -92,6 +93,7 @@ target_link_libraries(run_slam ${TORCH_LIBRARIES})
 target_link_libraries(run_slam pango_display)
 target_link_libraries(run_slam ${OPENGL_LIBRARIES})
 target_link_libraries(run_slam Eigen3::Eigen)
+
 target_link_libraries(run_slam ${OpenCV_LIBS} )
 target_link_libraries(run_slam ${G2O_LIBS})
 target_link_libraries(run_slam Boost::filesystem)

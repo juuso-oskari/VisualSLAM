@@ -34,8 +34,11 @@
 #include "g2o/core/solver.h"
 #include "g2o/core/sparse_optimizer.h"
 #include "g2o/solvers/dense/linear_solver_dense.h"
-#include <yaml-cpp/yaml.h>
+
 #include <boost/filesystem.hpp>
+#include <sys/stat.h>
+//#include "helper_functions.hpp"
+
 
 /** @brief Map class is used to store Frame and Point3D objects.
     
