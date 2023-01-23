@@ -9,6 +9,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 //#include <opencv2/xfeatures2d.hpp>
+#include <yaml-cpp/yaml.h>
+
+
 
 class FeatureExtractor{
 public:
@@ -18,49 +21,18 @@ public:
     std::tuple<cv::Mat, cv::Mat> compute_features(const cv::Mat& img){ //std::tuple<cv::MatrixXd, cv::MatrixXd>
         std::vector<cv::KeyPoint> keypoints;
 
-        // cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
-        // // set the ROI region of mat to 1
-        // cv::Mat roi = mask(cv::Rect(0, 0, 800, 300));
-        // roi.setTo(1);
-
-        detector->detect ( img,keypoints);
-        cv::Mat descriptors;
-        descriptor->compute ( img, keypoints, descriptors);
-        /*
-        std::cout << "Computing features" << std::endl;
-        // Or use faster goodfeaturestotrack
-        std::vector<cv::Point2f> corners;
-        // Set the maximum number of corners to detect
-        int maxCorners = 1000;
-        // Set the quality level for the corners
-        double qualityLevel = 0.01;
-        // Set the minimum distance between corners
-        double minDistance = 10;
-
-        cv::Mat gray;
-        cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
-
-        cv::goodFeaturesToTrack(gray, corners, maxCorners, qualityLevel, minDistance);
-        if (corners.empty()) {
-            // Handle the case where no corners were detected
-            std::cout << "No corners detected" << std::endl;
-        } 
-        std::cout << corners.size() << std::endl;
-
-        // Convert the vector of points to a vector of keypoints
-        std::vector<cv::KeyPoint> keypoints;
-        for (const auto& point : corners) {
-            keypoints.emplace_back(point, 7);  // The size argument is 7 in this example
+        cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
+        bool use_roi = config["use_roi"].as<int>();
+        if(use_roi==1){
+            // set the ROI region of mat to 1
+            cv::Mat roi = mask(cv::Rect(0, 0, 800, 300));
+            roi.setTo(1);
+            detector->detect ( img,keypoints, mask);
+        }else{
+            detector->detect ( img,keypoints);
         }
         cv::Mat descriptors;
         descriptor->compute ( img, keypoints, descriptors);
-
-        std::cout << "Done computing features" << std::endl;
-        /*
-        cv::Mat output;
-        cv::drawKeypoints(img, keypoints, output);
-        cv::imwrite("../ORB_result.jpg", output);
-        */
         return std::tuple(KeyPoint2Mat(keypoints), descriptors); 
     }
 
@@ -260,6 +232,22 @@ public:
         rgb = new_rgb;
     }
 
+     /**
+   * @brief method GetRGB is getter for the RGB image
+   * @return cv::Mat type corresponding to RGB image
+   */
+    cv::Mat GetDepthMap() const{
+        return depth_map;
+    }
+    /**
+   * @brief method SetRGB sets RGB image
+   * @param new_rgb type of cv::Mat
+   */
+    void SetDepthMap(cv::Mat dm){
+        depth_map = dm;
+    }
+
+
     /**
    * @brief method AddPose adds initial pose
    * @param new_rgb type of cv::Mat corresponding to 4x4 transormation matrix in the world frame
@@ -381,6 +369,7 @@ public:
 
 private:
     cv::Mat rgb; //!< rgb image stored in cv::Mat
+    cv::Mat depth_map; //!< depth map stored in cv::Mat
     cv::Mat keypoints; //!< extracted keypoints (=imagepoints) stored in Nx2 cv::Mat
     cv::Mat features; //!< extracted descriptors for keypoints stored in Nxfeature_length cv::Mat
     cv::Mat pose; //!<  estimated camera pose during the frame
