@@ -269,9 +269,11 @@ cv::Mat triangulate(cv::Mat pose1, cv::Mat pose2,cv::Mat pts1,cv::Mat pts2, cv::
         inlierMask.push_back((uchar)1);
     }
 
-    if((reproj_error / inlierMask.rows) > 1000){
-        //cv::waitKey(0);
-    }
+
+    //if((reproj_error / inlierMask.rows) > 1000){
+      //  cv::waitKey(0);
+    //}
+
 
 
     return ret;

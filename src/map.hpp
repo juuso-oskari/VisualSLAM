@@ -1,7 +1,7 @@
 #ifndef VISUAL_SLAM_MAP
 #define VISUAL_SLAM_MAP
 
-#include "screen.hpp"
+
 #include "isometry3d.hpp"
 #include "frame.hpp"
 #include "point.hpp"
@@ -211,12 +211,12 @@ class Map {
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
                 // 2. The map points tracked are fewer than 90% of the map points seen by the last key frame
-                if(verbose){
-                    std::cout << "Managed to match " << curMatchedPoints.rows << " between last kf and current tracking frame" << std::endl;
-                    std::cout << "Inliers / map points seen by last kf: "<< ((double)inliers.rows) << "/" << ((double)std::get<0>(map_points).rows) << std::endl;
-                    std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
-                }
-                if( (trackFrameCount > 20 ||  inliers.rows < config["min_inliers"].as<int>()) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
+
+                std::cout << "Managed to match " << curMatchedPoints.rows << " between last kf and current tracking frame" << std::endl;
+                std::cout << "Inliers / map points seen by last kf: "<< ((double)inliers.rows) << "/" << ((double)std::get<0>(map_points).rows) << std::endl;
+                std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
+                if( (trackFrameCount > 20 ||  inliers.rows < 80) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
+
                 //if( (trackFrameCount > 15 && inliers.rows < 120)  ){
                     std::cout<<"New keyframe found" << std::endl;
                     break;
@@ -264,7 +264,7 @@ class Map {
                 cv::Mat dispImg;
                 cv::drawMatches(GetFrame(last_key_frame_id)->GetRGB(), Frame::GetKeyPointsAsVector(unmatched_kp1), GetFrame(id_frame-1)->GetRGB(), GetFrame(id_frame-1)->GetKeyPointsAsVector(), matches, dispImg);
                 cv::imshow("Display Image", dispImg);
-                cv::waitKey(1);
+                //cv::waitKey(0);
             }
             cv::Mat Proj1 = CameraProjectionMatrix2(GetFrame(last_key_frame_id)->GetPose(), cameraIntrinsicsMatrix);
             cv::Mat Proj2 = CameraProjectionMatrix2(GetFrame(id_frame-1)->GetPose(), cameraIntrinsicsMatrix);

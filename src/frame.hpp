@@ -20,6 +20,7 @@ public:
     // takes video frame as input, outputs vector with keypoints as first element and corresponding descriptors as second element
     std::tuple<cv::Mat, cv::Mat> compute_features(const cv::Mat& img){ //std::tuple<cv::MatrixXd, cv::MatrixXd>
         std::vector<cv::KeyPoint> keypoints;
+
         cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
         bool use_roi = config["use_roi"].as<int>();
         if(use_roi==1){

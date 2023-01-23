@@ -20,7 +20,6 @@ YAML::Node config = YAML::LoadFile("../src/config.yaml");
 #include "isometry3d.hpp"
 #include "map.hpp"
 #include "point.hpp"
-#include "screen.hpp"
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/videoio.hpp>
 #include <iostream>
@@ -100,5 +99,6 @@ int main(int argc, char** argv )
 
 
     return 0;
+    std::cout << "prööttikäinen" << std::endl;
 }
 #endif
