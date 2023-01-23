@@ -89,6 +89,7 @@ int main(int argc, char** argv )
         temppi = temppi +1;
         std::cout << temppi << std::endl;
     }
+    global_map.saveMap(K);
     return 0;
     std::cout << "prööttikäinen" << std::endl;
 }

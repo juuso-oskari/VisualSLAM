@@ -34,7 +34,8 @@
 #include "g2o/core/solver.h"
 #include "g2o/core/sparse_optimizer.h"
 #include "g2o/solvers/dense/linear_solver_dense.h"
-
+#include <boost/filesystem.hpp>
+#include <sys/stat.h>
 //#include "helper_functions.hpp"
 
 /** @brief Map class is used to store Frame and Point3D objects.
@@ -705,6 +706,28 @@ class Map {
             }    
         }
 
+        void saveMap(cv::Mat K){
+        //remove the (old) folder
+        boost::filesystem::path dir_path("../data/depth_estimation/office");
+        boost::filesystem::remove_all(dir_path);
+        const char* root_folder = "../data/depth_estimation/office";
+        //create the folder
+        mkdir(root_folder, 0777);
+        const char* image_folder = "../data/depth_estimation/office/images";
+        mkdir(image_folder, 0777);
+        std::string folderPath = "../data/depth_estimation/office";
+        appendToFile(folderPath + "/K.txt", K);
+        for(auto it: GetAllFrameIDs()){
+            // Image
+            std::stringstream ss;
+            ss << std::setw(4) << std::setfill('0') << it;
+            std::string fileName = ss.str();
+            fileName = folderPath + "/images/" + fileName + ".png";
+            cv::imwrite(fileName, GetFrame(it)->GetRGB());
+            appendToFile(folderPath + "/poses.txt", GetFrame(it)->GetPose().inv());
+        }
+
+        }
         
 
     private:

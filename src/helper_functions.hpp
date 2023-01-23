@@ -32,7 +32,22 @@
 #include "g2o/core/sparse_optimizer.h"
 #include "g2o/solvers/dense/linear_solver_dense.h"
 
-
+int appendToFile(std::string filename, cv::Mat m) {
+    std::ofstream out(filename, std::ios::app);
+    //out << m << std::endl;
+    for (int i = 0; i < m.rows; i++) {
+        for (int j = 0; j < m.cols; j++) {
+            out << m.at<double>(i,j);
+            if( (i+1)*(j+1) < (m.cols*m.rows)){
+                out << " ";
+            }
+            
+        }
+    }
+    out << std::endl;
+    out.close();
+    return 0;
+}
 
 /** @brief Function to read and modify frames
         * @param fp_iterator iterator that goes through png file paths
