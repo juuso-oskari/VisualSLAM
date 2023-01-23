@@ -91,6 +91,6 @@ int main(int argc, char** argv )
     }
     global_map.saveMap(K);
     return 0;
-    std::cout << "prööttikäinen" << std::endl;
+    std::cout << "prööttikäinen1" << std::endl;
 }
 #endif
