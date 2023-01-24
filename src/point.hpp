@@ -191,6 +191,17 @@ public:
     std::map<int, std::tuple<std::shared_ptr<Frame>, cv::Mat, cv::Mat>>& GetFrames(){
         return frames_;
     }
+
+    std::vector<int> GetAllFrameIDs(){
+        std::vector<int> frame_ids;
+        for(auto it : frames_){
+            frame_ids.push_back(it.first);
+        }
+        
+        return frame_ids;
+    }
+
+
     /** Method IsBad for determining if point should be used
    * @returns bool if point is seen with less than 3 frames return true, else false
    */

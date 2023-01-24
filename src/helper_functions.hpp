@@ -50,26 +50,6 @@ int appendToFile(std::string filename, cv::Mat m) {
     return 0;
 }
 
-
-
-int appendToFile(std::string filename, cv::Mat m) {
-    std::ofstream out(filename, std::ios::app);
-    //out << m << std::endl;
-    for (int i = 0; i < m.rows; i++) {
-        for (int j = 0; j < m.cols; j++) {
-            out << m.at<double>(i,j);
-            if( (i+1)*(j+1) < (m.cols*m.rows)){
-                out << " ";
-            }
-            
-        }
-    }
-    out << std::endl;
-    out.close();
-    return 0;
-}
-
-
 cv::Mat parseDistortionCoefficients(std::string data_string){
     cv::Mat distortion_coefficients(5, 1, CV_64F);
     std::stringstream stream(data_string);
@@ -130,6 +110,43 @@ cv::Mat AddRowOfOnes(cv::Mat x) {
     cv::vconcat(x, row_of_ones, ret);
     return ret;
 }
+
+std::vector<cv::DMatch> MatchInRadius(cv::Mat map_features, cv::Mat estimated_image_points, cv::Mat image_points, cv::Mat image_features, double radius=10) {
+    std::vector<cv::DMatch> matches;
+    cv::BFMatcher matcher(cv::NORM_HAMMING);
+
+    for (int i = 0; i < estimated_image_points.rows; i++) {
+        cv::Point2f current_point_2f = estimated_image_points.at<cv::Point2f>(i);
+        cv::Mat current_point(current_point_2f);
+        current_point = current_point.reshape(1);
+        current_point.convertTo(current_point,CV_32F);
+        cv::Mat indices;
+        cv::Mat distances;
+        cv::Mat_<float> image_points_32f;
+        image_points.convertTo(image_points_32f, CV_32F);
+        cv::flann::Index flannIndex(image_points_32f, cv::flann::KDTreeIndexParams());
+        flannIndex.radiusSearch(current_point, indices, distances, radius, 10);
+        std::cout << "Tekköö radiuksen" << std::endl;
+        double best_distance = cv::NORM_INF;
+        cv::DMatch match;
+        for (int j = 0; j < indices.rows; j++) {
+            int index = indices.at<uchar>(j);
+            std::cout << index << std::endl;
+            double distance = cv::norm(map_features.row(i), image_features.row(index), cv::NORM_HAMMING);
+            if(distance < best_distance){
+                best_distance = distance;
+                match = cv::DMatch(i, index, distance);
+            }
+        }
+        if(best_distance != cv::NORM_INF){
+            matches.push_back(match);
+        }
+        std::cout << "Tekköö radiuksen2" << std::endl;
+    }
+    return matches;
+    // matches now contains the best matches
+}
+
 
 
 /** @brief CameraProjectionMatrix2 creates camera projection matrix
@@ -293,6 +310,8 @@ cv::Mat triangulate(cv::Mat pose1, cv::Mat pose2,cv::Mat pts1,cv::Mat pts2, cv::
 
     return ret;
 }
+
+
 
 
 /** @brief Returns indexes of kp1 rows that are not in kp2

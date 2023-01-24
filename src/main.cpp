@@ -66,8 +66,8 @@ int main(int argc, char** argv )
     FeatureExtractor feature_extractor = FeatureExtractor();
     FeatureMatcher feature_matcher = FeatureMatcher();
     Map global_map;
-    // skip few initial frames where car stays still
-    for(int i=0; i<5; i++){
+    // skip few initial frames
+    for(int i=0; i<500; i++){
         image_file_iterator++;
     }
     // initialize map with first two good frames called keyframes, i.e. estimation of pose transform and point locations succeeds  
@@ -81,25 +81,20 @@ int main(int argc, char** argv )
         global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true, false);
         std::cout << "MAPPING" << std::endl;
         global_map.localMapping(id_frame, id_point, feature_extractor, feature_matcher, K, D, last_kf_idx);
-        global_map.BundleAdjustement(false, K, false, false, 10);
+        global_map.LocalBundleAdjustement(false, K, false, false, 10);
         // visualize all points
         std::vector<cv::Mat> created_points = global_map.GetAll3DPoints();
         std::vector<cv::Mat> camera_locs = global_map.GetAllCameraLocations();
-        std::vector<cv::Mat> camera_poses = global_map.GetAllPoses();
+        std::vector<cv::Mat> camera_poses = global_map.GetAllPoses(true);
         // update viewer
         viewer.SetPoints(CvMatToEigenVector(created_points));
         viewer.SetPoses(CvMatToEigenIsometry(camera_poses));
         last_kf_idx = id_frame - 1 ; // update last keyframe index
         iterations_count++;
+        std::cout << "ITERATION: " << iterations_count << std::endl;
     }
-
-    
     // Save map into folder: images into folder/images, poses into folder/poses.txt, K into folder/K.txt
     global_map.saveMap(K);
-
-
-
     return 0;
-    std::cout << "prööttikäinen1" << std::endl;
 }
 #endif

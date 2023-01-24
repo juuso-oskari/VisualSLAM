@@ -2,23 +2,23 @@
 K: "535.4 0 320.1 0 539.2 247.6 0 0 1.0"
 D: "0 0 0 0 0" 
 do_undistort: 0
-fx: 535.4  
-fy: 539.2 
-cx: 320.1 
-cy: 247.6
 use_roi: 0
 dataset: "../data/office/rgb/"
-max_iterations: 50
-min_inliers: 150
+max_iterations: 1000
+# for tracking
+min_inliers_tracking: 80
+max_translation_tracking: 0.1
+
+
 # # four seasons
-# fx: 501.4757919305817 
-# fy: 501.4757919305817 
-# cx: 421.7953735163109 
-# cy: 167.65799492501083 
+# K: "501.4757919305817 0 421.7953735163109  0 501.4757919305817  167.65799492501083 0 0 1.0"
+# D: "0 0 0 0 0" 
 # use_roi: 1
-# dataset: "../data/TUMFourSeasons/cam0/"
-# max_iterations: 20
-# min_inliers: 150
+# dataset: "../data/TUMFourSeasons/undistorted_images/cam0/"
+# do_undistort: 0
+# max_iterations: 100
+# min_inliers_tracking: 200
+# max_translation_tracking: 1.0
 
 # # KITTI
 # K: "9.037596e+02 0.000000e+00 6.957519e+02 0.000000e+00 9.019653e+02 2.242509e+02 0.000000e+00 0.000000e+00 1.000000e+00"
@@ -28,3 +28,26 @@ min_inliers: 150
 # dataset: "../data/KITTI/rgb/"
 # max_iterations: 20
 # min_inliers: 150
+
+# # ICL TUIM
+# K: "481.20 0 319.5 0 480.0 239.5 0 0 1.0" # 481.20, 480.0, 319.5, 239.5
+# D: "0 0 0 0 0" 
+# do_undistort: 0
+# use_roi: 0
+# dataset: "../data/ICL_NUIM/rgb/"
+# max_iterations: 100
+# # for tracking
+# min_inliers_tracking: 80
+# max_translation_tracking: 0.1
+
+# hololens
+
+# K: 4.955677570093457689e+02 0.000000000000000000e+00 2.695028971962616424e+02 0.000000000000000000e+00 4.954819626168223863e+02 1.691941121495327138e+02 0.000000000000000000e+00 0.000000000000000000e+00 1.000000000000000000e+00
+# D: "0 0 0 0 0" 
+# do_undistort: 0
+# use_roi: 0
+# dataset: "../data/hololens-dataset/000/images"
+# max_iterations: 100
+# # for tracking
+# min_inliers_tracking: 80
+# max_translation_tracking: 1.0

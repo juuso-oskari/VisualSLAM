@@ -58,7 +58,7 @@ class Map {
         @param cameraIntrinsicsMatrix - stores camera parameters in matrix form
         @param visualize - flag to tell if should visualize the matching process with opencv
         */
-        void InitializeMap(std::vector<std::filesystem::path>::iterator& input_video_it,  int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, bool visualize = false){
+        void InitializeMap(std::vector<std::filesystem::path>::iterator& input_video_it,  int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, bool visualize = true){
             // store first frame as prev_frame
             cv::Mat img, dispImg, depthMap;
             img = readFrame(input_video_it);
@@ -71,6 +71,7 @@ class Map {
             // read next image
             img = readFrame(input_video_it);
             while(!img.empty()){
+                std::cout << *input_video_it << std::endl;
                 std::shared_ptr<Frame> cur_frame = std::make_shared<Frame>(img, id_frame);
                 // increase iterators for next frame
                 img = readFrame(input_video_it);
@@ -165,13 +166,24 @@ class Map {
                 cv::Mat tvec = GetTranslation(last_kf_pose);
                 cv::Mat rvec;
                 cv::Rodrigues(GetRotation((last_kf_pose)), rvec);
-                //cv::Mat tvec;
-                //cv::Mat rvec;
-                //cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, false, 200, 3.0F, 0.95, inliers);
                 cv::solvePnPRansac(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients, rvec, tvec, true, 300, 4.0F, 0.99, inliers);
                 if(inliers.rows<10){
                     continue;
                 }
+
+                // Given the camera pose, project the map points observed by the last key frame into the current frame and search for feature correspondences at certain radius.
+                cv::Mat known3d = std::get<2>(map_points); // 3d locations of the map points seen by the last keyframe as Nx3
+                cv::Mat imagePoints;
+                cv::projectPoints(known3d, rvec, tvec, cameraIntrinsicsMatrix, cv::Mat(), imagePoints);
+                matches = MatchInRadius(std::get<1>(map_points), imagePoints, cur_frame->GetKeyPoints(), cur_frame->GetFeatures());
+
+                if(visualize){
+                    cv::Mat dispImg;
+                    cv::drawMatches(GetFrame(lastkeyframe_idx)->GetRGB(), Frame::GetKeyPointsAsVector(std::get<0>(map_points)), cur_frame->GetRGB(), cur_frame->GetKeyPointsAsVector(), matches, dispImg);
+                    cv::imshow("Display Image", dispImg);
+                    cv::waitKey(1);
+                }   
+
                 cv::Mat R;
                 cv::Rodrigues(rvec, R); // R is 3x3
                 R = R.t();  // rotation of inverse
@@ -184,33 +196,22 @@ class Map {
                     std::cout << "WARNING, Det(T) ILL CONDITIONED" << std::endl;
                 }
                 cv::Mat W_T_curr = T.inv(); // From w to curr frame W_T_curr
-                // calculate pose difference between parent and child (current)
-                // if too large, we have lost tracking and skip frame
-                /*
-                std::cout << W_T_curr;
-                std::cout << (GetFrame(id_frame-1)->GetPose()) << std::endl;
-                std::cout << "Pose difference to previous frame " << CalculatePoseDifference(W_T_curr, (GetFrame(id_frame-1)->GetPose())) << std::endl;
-                
-                if( CalculatePoseDifference(W_T_curr, (GetFrame(id_frame-1)->GetPose())) > 10){
-                    cv::waitKey(0);
-                    continue;
-                }
-                */
-
-                //PnP transformation = PnP();
-                //transformation.Estimate(matched_3d, curMatchedPoints, cameraIntrinsicsMatrix, DistCoefficients);
                 cv::Mat prev_T_W = (GetFrame(id_frame-1)->GetPose()).inv(); // From prev to world frame W_T_curr
                 cv::Mat Relative_pose_trans = prev_T_W * W_T_curr;
+                // Calculate relative translation between consecutive frames
+                // if too much -> continue to next frame
+                cv::Mat relative_translation = GetTranslation(Relative_pose_trans);
+                double l2norm = cv::norm(relative_translation, cv::NORM_L2);
+                std::cout << "L2 norm: " << l2norm << std::endl;
+                if(l2norm > config["max_translation_tracking"].as<double>()){
+                    std::cout << "Lost tracking" << std::endl;
+                    continue;
+                }
                 AddParentAndPose(id_frame-1, id_frame, cur_frame, Relative_pose_trans, W_T_curr);
                 id_frame++;
                 AddPointToFrameCorrespondances(corresponding_point_ids, curMatchedPoints, curMatchedFeatures, cur_frame, inliers);
-                BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
-                if(visualize){
-                    cv::Mat dispImg;
-                    cv::drawMatches(GetFrame(lastkeyframe_idx)->GetRGB(), Frame::GetKeyPointsAsVector(std::get<0>(map_points)), cur_frame->GetRGB(), cur_frame->GetKeyPointsAsVector(), matches, dispImg);
-                    cv::imshow("Display Image", dispImg);
-                    //cv::waitKey(1);
-                }
+                LocalBundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
+                         
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
                 // 2. The map points tracked are fewer than 90% of the map points seen by the last key frame
@@ -218,7 +219,7 @@ class Map {
                 std::cout << "Managed to match " << curMatchedPoints.rows << " between last kf and current tracking frame" << std::endl;
                 std::cout << "Inliers / map points seen by last kf: "<< ((double)inliers.rows) << "/" << ((double)std::get<0>(map_points).rows) << std::endl;
                 std::cout << ((double)inliers.rows) / ((double)std::get<0>(map_points).rows) << std::endl;
-                if( (trackFrameCount > 20 ||  inliers.rows < 80) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
+                if( (trackFrameCount > 20 ||  inliers.rows < config["min_inliers_tracking"].as<int>()) && ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ){ // || ( (((double)inliers.rows) / ((double)std::get<0>(map_points).rows)) < 0.9) ) { //|| (inliers.rows / std::get<0>(map_points).rows < 0.9)){
 
                 //if( (trackFrameCount > 15 && inliers.rows < 120)  ){
                     std::cout<<"New keyframe found" << std::endl;
@@ -245,41 +246,56 @@ class Map {
         @param verbose_optimization - flag to tell if we should print details of the motion only optimization
         */
 
-        void localMapping(int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients,int& last_key_frame_id, bool visualize = false, bool verbose = false){
+        void localMapping(int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients,int& last_key_frame_id, bool visualize = true, bool verbose = false){
+            // cleanup bad points from map (seen by less than 3 frames)
+            CleanUpBadPoints();
             GetFrame(id_frame-1)->SetAsKeyFrame(); // Set lastly added frame to be a new keyframe
-            //# Get last keyframe pose from global map (from world to previous keyframe)
-            cv::Mat W_T_prev_key = GetFrame(last_key_frame_id)->GetPose();
-            cv::Mat prev_key_T_W = W_T_prev_key.inv(); // Get pose from previous keyframe to world
-            cv::Mat W_T_cur_key = GetFrame(id_frame-1)->GetPose(); // Get pose from W to curr keyframe
-            // (int parent_frame_id, cv::Mat transition)
-            GetFrame(id_frame-1)->AddParent(last_key_frame_id, prev_key_T_W*W_T_cur_key);
-            cv::Mat image_points_already_in_map = std::get<0>(GetImagePointsWithFrameID(last_key_frame_id));
-            cv::Mat kp1 = GetFrame(last_key_frame_id)->GetKeyPoints(); // this contains all the image points (matched and unmatched)
-            cv::Mat desc1 = GetFrame(last_key_frame_id)->GetFeatures(); 
-            std::vector<int> idx_list = GetListDiff(kp1, image_points_already_in_map); // THIS DOES NOT WORK PERFECTLY CORREC; BUT SUFFICIENT FOR NOW
+            // Get unmatched points for the new keyframe
+            cv::Mat image_points_already_in_map = std::get<0>(GetImagePointsWithFrameID(id_frame-1));
+            cv::Mat kp1 = GetFrame(id_frame-1)->GetKeyPoints(); // this contains all the image points (matched and unmatched)
+            cv::Mat desc1 = GetFrame(id_frame-1)->GetFeatures(); 
+            std::vector<int> idx_list = GetListDiff(kp1, image_points_already_in_map); // Bit error prone for numerical instabilities
             // GetImagePointsWithIdxList
             cv::Mat unmatched_kp1 = GetImagePointsWithIdxList(idx_list, kp1);
             cv::Mat unmatched_desc1 = GetImageDescWithIdxList(idx_list, desc1);
-            std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> match_info = feature_matcher.match_features(unmatched_kp1, unmatched_desc1, GetFrame(id_frame-1)->GetKeyPoints(), GetFrame(id_frame-1)->GetFeatures());
-            std::vector<cv::DMatch> matches; cv::Mat last_keyframe_points; cv::Mat last_keyframe_features; cv::Mat cur_keyframe_points; cv::Mat cur_keyframe_features;
-            matches = std::get<0>(match_info); last_keyframe_points = std::get<1>(match_info); last_keyframe_features = std::get<2>(match_info); cur_keyframe_points = std::get<3>(match_info); cur_keyframe_features = std::get<4>(match_info);
-            if(visualize){
-                cv::Mat dispImg;
-                cv::drawMatches(GetFrame(last_key_frame_id)->GetRGB(), Frame::GetKeyPointsAsVector(unmatched_kp1), GetFrame(id_frame-1)->GetRGB(), GetFrame(id_frame-1)->GetKeyPointsAsVector(), matches, dispImg);
-                cv::imshow("Display Image", dispImg);
-                //cv::waitKey(0);
+
+            // Get covisible keyframes: keyframes that see over 15 of those points that the new keyframe also sees
+            std::vector<int> covisible_keyframes = GetCovisibleFrames(id_frame-1, 15);
+            for(auto keyframe_id: covisible_keyframes){
+                // Creation of covisibility graph
+                // Add relative pose transformation information between connected keyframe and new keyframe
+                //# Get last keyframe pose from global map (from world to previous keyframe)
+                cv::Mat W_T_prev_key = GetFrame(keyframe_id)->GetPose();
+                cv::Mat prev_key_T_W = W_T_prev_key.inv(); // Get pose from previous keyframe to world
+                cv::Mat W_T_cur_key = GetFrame(id_frame-1)->GetPose(); // Get pose from W to curr keyframe
+                // (int parent_frame_id, cv::Mat transition)
+                GetFrame(id_frame-1)->AddParent(keyframe_id, prev_key_T_W*W_T_cur_key);
+                std::tuple<std::vector<cv::DMatch>, cv::Mat, cv::Mat, cv::Mat, cv::Mat> match_info = feature_matcher.match_features(GetFrame(keyframe_id)->GetKeyPoints(), GetFrame(keyframe_id)->GetFeatures(), unmatched_kp1, unmatched_desc1, 0.70);
+                std::vector<cv::DMatch> matches; cv::Mat last_keyframe_points; cv::Mat last_keyframe_features; cv::Mat cur_keyframe_points; cv::Mat cur_keyframe_features;
+                matches = std::get<0>(match_info); last_keyframe_points = std::get<1>(match_info); last_keyframe_features = std::get<2>(match_info); cur_keyframe_points = std::get<3>(match_info); cur_keyframe_features = std::get<4>(match_info);
+                if(visualize){
+                    cv::Mat dispImg;
+                    cv::drawMatches(GetFrame(keyframe_id)->GetRGB(), GetFrame(keyframe_id)->GetKeyPointsAsVector(),GetFrame(id_frame-1)->GetRGB(), Frame::GetKeyPointsAsVector(unmatched_kp1), matches, dispImg);
+                    cv::imshow("Display Image", dispImg);
+                    cv::waitKey(100);
+                }
+                cv::Mat inlierMask;
+                cv::Mat new_triagulated_points = triangulate(GetFrame(keyframe_id)->GetPose(), GetFrame(id_frame-1)->GetPose(), last_keyframe_points, cur_keyframe_points, cameraIntrinsicsMatrix, inlierMask);
+                if(verbose){
+                    std::cout << cv::sum(inlierMask)[0] << " points pass the triangulation out of " << cur_keyframe_points.size() << std::endl;
+                    std::cout << "ADDING " << cv::sum(inlierMask)[0] << " NEW MAP POINTS" << std::endl;
+                }
+                
+                AddPoints3D(id_point, new_triagulated_points, GetFrame(keyframe_id), last_keyframe_points, last_keyframe_features, GetFrame(id_frame-1), cur_keyframe_points, cur_keyframe_features, inlierMask);
+                // remove the matched from the unmatched and move to the next covisible keyframe for further matching
+                idx_list = GetListDiff(unmatched_kp1, cur_keyframe_points); // Bit error prone for numerical instabilities
+                unmatched_kp1 = GetImagePointsWithIdxList(idx_list, unmatched_kp1);
+                unmatched_desc1 = GetImageDescWithIdxList(idx_list, unmatched_desc1);
+
             }
-            cv::Mat Proj1 = CameraProjectionMatrix2(GetFrame(last_key_frame_id)->GetPose(), cameraIntrinsicsMatrix);
-            cv::Mat Proj2 = CameraProjectionMatrix2(GetFrame(id_frame-1)->GetPose(), cameraIntrinsicsMatrix);
-            cv::Mat inlierMask;
-            cv::Mat new_triagulated_points = triangulate(GetFrame(last_key_frame_id)->GetPose(), GetFrame(id_frame-1)->GetPose(), last_keyframe_points, cur_keyframe_points, cameraIntrinsicsMatrix, inlierMask);
-            if(verbose){
-                std::cout << cv::sum(inlierMask)[0] << " points pass the triangulation out of " << cur_keyframe_points.size() << std::endl;
-                std::cout << "ADDING " << cv::sum(inlierMask)[0] << " NEW MAP POINTS" << std::endl;
-            }
-            // cleanup bad points from map (seen by less than 3 frames)
-            CleanUpBadPoints();
-            AddPoints3D(id_point, new_triagulated_points, GetFrame(last_key_frame_id), last_keyframe_points, last_keyframe_features, GetFrame(id_frame-1), cur_keyframe_points, cur_keyframe_features, inlierMask);
+            
+            
+            
         }
 
         void CleanUpBadPoints(){
@@ -296,6 +312,8 @@ class Map {
             } 
 
         }
+
+
 
 
         /** @brief Adds frame to map
@@ -403,6 +421,43 @@ class Map {
 
         }
 
+        
+
+
+        std::vector<int> GetCovisibleFrames(int cur_frame_id, int threshold){
+            std::vector<int> all_keyframe_ids; // container for all keyframes that are listed for the points that the cur_frame_id sees, can contain the same frame multiple times (from multiple points)
+            // this loop goes through all points stored in the map
+            for(auto ptr_point_obj = point_3d_.begin(); ptr_point_obj != point_3d_.end(); ++ptr_point_obj) {
+                // this loop checks if point is visible to frame with frame_id
+                if(ptr_point_obj->second->IsVisibleTo(cur_frame_id)){
+                    std::vector<int> frame_ids = ptr_point_obj->second->GetAllFrameIDs(); // Gets all frames listed to see the point
+                    //append only keyframes
+                    for(auto frame_id: frame_ids){
+                        if(cur_frame_id != frame_id && GetFrame(frame_id)->IsKeyFrame()){
+                            all_keyframe_ids.push_back(frame_id);
+                        }
+                        
+                    }
+                }
+            }
+            // calculates the frequency of frames in all_frames_ids
+            std::unordered_map<int, int> count;
+            for (auto& x : all_keyframe_ids) {
+                count[x]++;
+            }
+            // remove frames that have count of less than threshold and return the frame_ids (keys) as covisible frames (std::vector<int>) 
+            std::vector<int> covisible_frames;
+            for(auto& x : count){
+                if(x.second >= threshold){
+                    covisible_frames.push_back(x.first);
+                }
+            }
+            return covisible_frames;
+        }
+
+
+        
+
 
         /** @brief Gets 3d locations of points with a vector of ids
 
@@ -432,11 +487,14 @@ class Map {
        /** @brief Gets all poses of Frame objects stored in the map
         @return vector of poses
         */
-        std::vector<cv::Mat> GetAllPoses() {
+        std::vector<cv::Mat> GetAllPoses(bool onlyKeyframes = false) {
             std::vector<cv::Mat> allposes;
             for(auto it = frames_.begin(); it != frames_.end(); ++it) {
                 cv::Mat temp = it->second->GetPose();
-                allposes.push_back(temp);
+                if(!onlyKeyframes || it->second->IsKeyFrame()){
+                    allposes.push_back(temp);
+                }
+                
             }
             return allposes;
         }
@@ -743,6 +801,138 @@ class Map {
                 GetPoint(point_id)->UpdatePoint(toCvMat(vPoint->estimate()).t()/median_depth);
             }    
         }
+
+
+        void LocalBundleAdjustement(bool tracking, cv::Mat K, bool scale=false, bool verbose = false, int n_iterations = 10){
+            double fx = K.at<double>(0,0); double fy = K.at<double>(1,1); double cx = K.at<double>(0,2); double cy = K.at<double>(1,2);
+            // set up BA solver
+            typedef g2o::BlockSolver< g2o::BlockSolverTraits<6,3> > Block; 
+            std::unique_ptr<Block::LinearSolverType> linearSolver (new g2o::LinearSolverEigen<Block::PoseMatrixType>()); 
+            std::unique_ptr<Block> solver_ptr( new Block(std::move(linearSolver)));
+            g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg ( std::move(solver_ptr) );
+            g2o::SparseOptimizer optimizer;
+            optimizer.setAlgorithm ( solver );
+            // Get the frame ids to be optimized
+            std::vector<int> frame_id_list;
+            //if tracking optimize only the poses up to last keyframe
+            if(tracking){
+                frame_id_list = this->GetAllFrameIDs();
+                std::vector<int> tracked_frames;
+                while (!frame_id_list.empty() && !this->GetFrame(frame_id_list.back())->IsKeyFrame()) {
+                    tracked_frames.push_back(frame_id_list.back());
+                    frame_id_list.pop_back();
+                }
+                tracked_frames.push_back(frame_id_list.back()); // also put the last keyframe back in
+                frame_id_list = tracked_frames;
+            }else{
+                // Optimize only covisible frames to the lastly added
+                frame_id_list.push_back(this->GetAllFrameIDs().back());
+                for(auto covisible_frame_id : GetFrame(this->GetAllFrameIDs().back())->GetParentIDs()){
+                    frame_id_list.push_back(covisible_frame_id);
+                }
+            }
+
+
+            std::vector<int> point_id_list = this->GetAllPointIDs();
+
+            // loop trough all the frames
+            for(auto it = frame_id_list.begin(); it != frame_id_list.end(); ++it) {
+                int frame_id = *it;
+                if( this->GetFrame(frame_id)->IsKeyFrame() && !tracking){
+                    cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();
+                    g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
+                    vSE3->setEstimate(toSE3Quat(pose_cv));
+                    vSE3->setId((*it)*2);
+                    vSE3->setFixed(*it==0);
+                    optimizer.addVertex(vSE3);
+                    //std::cout << "Adding to graph pose: " << frame_id << std::endl;
+                }else if(tracking){
+                    cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();
+                    g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
+                    vSE3->setEstimate(toSE3Quat(pose_cv));
+                    vSE3->setId((*it)*2);
+                    vSE3->setFixed(*it==0);
+                    optimizer.addVertex(vSE3);
+                }
+                
+            }
+            const float thHuber2D = sqrt(5.99);
+            // loop through all points and (inside) create edges to frames that see the point
+            for(auto it = point_id_list.begin(); it != point_id_list.end(); ++it) {
+                int point_id = *it;
+                g2o::VertexPointXYZ* vPoint = new g2o::VertexPointXYZ();
+                vPoint->setEstimate(toVector3d((this->GetPoint(point_id)->Get3dPoint()).t()));
+                vPoint->setId(point_id*2+1);
+                vPoint->setMarginalized(true);
+                vPoint->setFixed(tracking);
+                optimizer.addVertex(vPoint);
+                // GetFrames() returns std::map<int, std::tuple<std::shared_ptr<Frame>, cv::Mat, cv::Mat>> frames_; // map of frames that see this  particular point object
+                auto it2_start = this->GetPoint(point_id)->GetFrames().begin();
+                auto it2_end = this->GetPoint(point_id)->GetFrames().end();
+                for(auto it2 = it2_start; it2 != it2_end; it2++){
+
+                    if(optimizer.vertex((it2->first)*2) == NULL){
+                        continue;
+                    }
+
+                    Eigen::MatrixXd uv;
+                    cv::cv2eigen(std::get<1>(it2->second).t(), uv);
+                    ////std::cout << "Image projection on frame " << (it2->first)*2 << ": " << uv << std::endl;
+                    g2o::EdgeSE3ProjectXYZ* e = new g2o::EdgeSE3ProjectXYZ();
+                    e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(point_id*2+1)));
+                    e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex((it2->first)*2)));
+                    e->setMeasurement(uv);
+                    e->setId(point_id+100000);
+                    e->setInformation(Eigen::Matrix2d::Identity());
+                    g2o::RobustKernelHuber* rk = new g2o::RobustKernelHuber;
+                    e->setRobustKernel(rk);
+                    rk->setDelta(thHuber2D);
+                    e->fx = fx;
+                    e->fy = fy;
+                    e->cx = cx;
+                    e->cy = cy;
+                    optimizer.addEdge(e);
+                }
+            }
+            //optimizer.save("beforeopt.g2o");
+            optimizer.initializeOptimization();
+            optimizer.setVerbose(verbose);
+            optimizer.optimize(n_iterations);
+            //optimizer.save("afteropt.g2o");
+
+            double median_depth = 1;
+            if(scale){
+                int num_points = 0;
+                std::vector<double> median_vec;
+                for(auto it = point_id_list.begin(); it != point_id_list.end(); ++it) {
+                    int point_id = *it;
+                    g2o::VertexPointXYZ* vPoint = static_cast<g2o::VertexPointXYZ*>(optimizer.vertex(point_id*2+1));
+                    ////std::cout << "Updating to 3D location: " << toCvMat(vPoint->estimate()) << std::endl;
+                    median_vec.push_back( cv::norm(toCvMat(vPoint->estimate()).t()) );
+                }
+                std::sort(median_vec.begin(), median_vec.end()); // sort so that median depth is middle element
+                median_depth = median_vec[median_vec.size()/2];
+            }
+            for(auto it = frame_id_list.begin(); it != frame_id_list.end(); ++it) {
+                int frame_id = *it;
+                if(optimizer.vertex(frame_id*2) == NULL){
+                    continue;
+                }
+                g2o::VertexSE3Expmap* vSE3 = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(frame_id*2));
+                g2o::SE3Quat SE3quat = vSE3->estimate();
+                ////std::cout << "BundleAdjustement updates pose " << frame_id << " to: " << toCvMat(SE3quat) << std::endl;
+                GetFrame(frame_id)->UpdatePose(NormalizeTranslation(toCvMat(SE3quat), median_depth));
+            }
+            for(auto it = point_id_list.begin(); it != point_id_list.end(); ++it) {
+                int point_id = *it;
+                g2o::VertexPointXYZ* vPoint = static_cast<g2o::VertexPointXYZ*>(optimizer.vertex(point_id*2+1));
+                ////std::cout << "Updating to 3D location: " << toCvMat(vPoint->estimate()) << std::endl;
+                GetPoint(point_id)->UpdatePoint(toCvMat(vPoint->estimate()).t()/median_depth);
+            }    
+        }
+
+
+
 
         void saveMap(cv::Mat K){
         //remove the (old) folder
