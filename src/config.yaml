@@ -8,7 +8,7 @@ max_iterations: 1000
 # for tracking
 min_inliers_tracking: 80
 max_translation_tracking: 0.1
-
+max_radius: 20 # in tracking matching
 
 # # four seasons
 # K: "501.4757919305817 0 421.7953735163109  0 501.4757919305817  167.65799492501083 0 0 1.0"

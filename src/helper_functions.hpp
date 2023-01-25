@@ -111,7 +111,7 @@ cv::Mat AddRowOfOnes(cv::Mat x) {
     return ret;
 }
 
-std::vector<cv::DMatch> MatchInRadius(cv::Mat map_features, cv::Mat estimated_image_points, cv::Mat image_points, cv::Mat image_features, double radius=10) {
+std::vector<cv::DMatch> MatchInRadius(cv::Mat map_features, cv::Mat estimated_image_points, cv::Mat image_points, cv::Mat image_features, int radius=10) {
     std::vector<cv::DMatch> matches;
     cv::BFMatcher matcher(cv::NORM_HAMMING);
 
@@ -126,22 +126,27 @@ std::vector<cv::DMatch> MatchInRadius(cv::Mat map_features, cv::Mat estimated_im
         image_points.convertTo(image_points_32f, CV_32F);
         cv::flann::Index flannIndex(image_points_32f, cv::flann::KDTreeIndexParams());
         flannIndex.radiusSearch(current_point, indices, distances, radius, 10);
-        std::cout << "Tekköö radiuksen" << std::endl;
-        double best_distance = cv::NORM_INF;
+        double best_distance = 1000;
         cv::DMatch match;
         for (int j = 0; j < indices.rows; j++) {
             int index = indices.at<uchar>(j);
             std::cout << index << std::endl;
-            double distance = cv::norm(map_features.row(i), image_features.row(index), cv::NORM_HAMMING);
+            std::cout << "Comparing estimated image point " << current_point << " to " << image_points.row(index) << std::endl; 
+            cv::Mat map_feature = map_features.row(i);
+            cv::Mat image_feature = image_features.row(index);
+            std::cout << map_feature.type() << std::endl;
+            std::cout << image_feature.type() << std::endl;
+            double distance = cv::norm(map_feature, image_feature, cv::NORM_L2);
+            std::cout << "Distance between features: " << distance << std::endl;
             if(distance < best_distance){
                 best_distance = distance;
                 match = cv::DMatch(i, index, distance);
             }
         }
+        std::cout << "Best found distance: " << best_distance << std::endl;
         if(best_distance != cv::NORM_INF){
             matches.push_back(match);
         }
-        std::cout << "Tekköö radiuksen2" << std::endl;
     }
     return matches;
     // matches now contains the best matches

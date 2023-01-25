@@ -172,11 +172,13 @@ class Map {
                 }
 
                 // Given the camera pose, project the map points observed by the last key frame into the current frame and search for feature correspondences at certain radius.
-                
                 cv::Mat known3d = std::get<2>(map_points); // 3d locations of the map points seen by the last keyframe as Nx3
                 cv::Mat imagePoints;
                 cv::projectPoints(known3d, rvec, tvec, cameraIntrinsicsMatrix, cv::Mat(), imagePoints);
-                matches = MatchInRadius(std::get<1>(map_points), imagePoints, cur_frame->GetKeyPoints(), cur_frame->GetFeatures());
+                for(int i=0; i < imagePoints.rows; i++){
+                    std::cout << "Last keyframe imagepoint" << std::get<0>(map_points).row(i) << std::endl;
+                }
+                matches = MatchInRadius(std::get<1>(map_points), imagePoints, cur_frame->GetKeyPoints(), cur_frame->GetFeatures(), config["max_radius"].as<int>());
                 
                 if(visualize){
                     cv::Mat dispImg;
