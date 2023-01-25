@@ -172,11 +172,12 @@ class Map {
                 }
 
                 // Given the camera pose, project the map points observed by the last key frame into the current frame and search for feature correspondences at certain radius.
+                
                 cv::Mat known3d = std::get<2>(map_points); // 3d locations of the map points seen by the last keyframe as Nx3
                 cv::Mat imagePoints;
                 cv::projectPoints(known3d, rvec, tvec, cameraIntrinsicsMatrix, cv::Mat(), imagePoints);
                 matches = MatchInRadius(std::get<1>(map_points), imagePoints, cur_frame->GetKeyPoints(), cur_frame->GetFeatures());
-
+                
                 if(visualize){
                     cv::Mat dispImg;
                     cv::drawMatches(GetFrame(lastkeyframe_idx)->GetRGB(), Frame::GetKeyPointsAsVector(std::get<0>(map_points)), cur_frame->GetRGB(), cur_frame->GetKeyPointsAsVector(), matches, dispImg);
@@ -210,7 +211,7 @@ class Map {
                 AddParentAndPose(id_frame-1, id_frame, cur_frame, Relative_pose_trans, W_T_curr);
                 id_frame++;
                 AddPointToFrameCorrespondances(corresponding_point_ids, curMatchedPoints, curMatchedFeatures, cur_frame, inliers);
-                LocalBundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
+                BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
                          
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
