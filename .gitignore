@@ -1,7 +1,6 @@
 data/
 build/
 libs/
-misc/
 plan/
 tests/
 cmake_modules/

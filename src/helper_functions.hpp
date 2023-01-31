@@ -74,10 +74,10 @@ cv::Mat parseCameraIntrinsics(std::string data_string){
         * @param fp_iterator iterator that goes through png file paths
         * @returns img - the read image as cv::Mat
 */
-cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator, bool undistort = false){
+cv::Mat readFrame(std::vector<std::filesystem::path>::iterator& fp_iterator, bool undistort = false, int skip_frames = 1){
     cv::Mat img;
     img = cv::imread(*fp_iterator);
-    for(int i=0; i<1; i++){
+    for(int i=0; i<skip_frames; i++){
         fp_iterator++;
     }
     if(config["do_undistort"].as<int>()==1){
@@ -111,45 +111,56 @@ cv::Mat AddRowOfOnes(cv::Mat x) {
     return ret;
 }
 
-std::vector<cv::DMatch> MatchInRadius(cv::Mat map_features, cv::Mat estimated_image_points, cv::Mat image_points, cv::Mat image_features, int radius=10) {
-    std::vector<cv::DMatch> matches;
-    cv::BFMatcher matcher(cv::NORM_HAMMING);
+
+
+
+std::vector<int> findPointsInRadius(cv::Mat& neighborPoints, cv::Mat centerPoint, double radius) {
+    std::vector<int> index;
+    int rows = neighborPoints.rows;
+    int cols = neighborPoints.cols;
+    for (int i = 0; i < rows; i++) {
+        cv::Mat diff = neighborPoints.row(i) - centerPoint;
+        double sqrDist = diff.at<double>(0)*diff.at<double>(0) + diff.at<double>(1)*diff.at<double>(1);
+        if (sqrDist < radius*radius) {
+            index.push_back(i);
+        }
+    }
+    return index;
+}
+
+void MatchInRadius(cv::Mat map_features, cv::Mat estimated_image_points, cv::Mat image_points, cv::Mat image_features,  std::vector<cv::DMatch>& matches, double radius=10){
+    
+    // If matches is not empty, do not overwrite previous matches, instead skip them
+    std::vector<int> matchedIndices;
+    for (auto match : matches) {
+        matchedIndices.push_back(match.queryIdx);
+    }
+    std::sort(matchedIndices.begin(), matchedIndices.end());
+    
 
     for (int i = 0; i < estimated_image_points.rows; i++) {
-        cv::Point2f current_point_2f = estimated_image_points.at<cv::Point2f>(i);
-        cv::Mat current_point(current_point_2f);
-        current_point = current_point.reshape(1);
-        current_point.convertTo(current_point,CV_32F);
-        cv::Mat indices;
-        cv::Mat distances;
-        cv::Mat_<float> image_points_32f;
-        image_points.convertTo(image_points_32f, CV_32F);
-        cv::flann::Index flannIndex(image_points_32f, cv::flann::KDTreeIndexParams());
-        flannIndex.radiusSearch(current_point, indices, distances, radius, 10);
-        double best_distance = 1000;
+        if (std::binary_search(matchedIndices.begin(), matchedIndices.end(), i)) {
+            continue; // skip already matched point
+        }
+        cv::Mat current_point = estimated_image_points.row(i);
+        std::vector<int> indices = findPointsInRadius(image_points, current_point, radius);
+        // store for best feature distance (shortest norm)  
+        double best_distance = 1000000;
         cv::DMatch match;
-        for (int j = 0; j < indices.rows; j++) {
-            int index = indices.at<uchar>(j);
-            std::cout << index << std::endl;
-            std::cout << "Comparing estimated image point " << current_point << " to " << image_points.row(index) << std::endl; 
+        for (int j = 0; j < indices.size(); j++) {
+            int index = indices[j];
             cv::Mat map_feature = map_features.row(i);
             cv::Mat image_feature = image_features.row(index);
-            std::cout << map_feature.type() << std::endl;
-            std::cout << image_feature.type() << std::endl;
             double distance = cv::norm(map_feature, image_feature, cv::NORM_L2);
-            std::cout << "Distance between features: " << distance << std::endl;
             if(distance < best_distance){
                 best_distance = distance;
                 match = cv::DMatch(i, index, distance);
             }
         }
-        std::cout << "Best found distance: " << best_distance << std::endl;
-        if(best_distance != cv::NORM_INF){
+        if(best_distance != 1000000){
             matches.push_back(match);
         }
     }
-    return matches;
-    // matches now contains the best matches
 }
 
 
@@ -357,12 +368,83 @@ cv::Mat GetQueryMatches(cv::Mat m, std::vector<cv::DMatch> matches){
     return matched_m;
 }
 
-std::vector<int> GetQueryMatches(std::vector<int> point_ids, std::vector<cv::DMatch> matches){
+cv::Mat GetUnMatchedQueryMat(cv::Mat m, std::vector<cv::DMatch> matches) {
+    std::vector<int> matchedIndices;
+    for (auto match : matches) {
+        matchedIndices.push_back(match.queryIdx);
+    }
+
+    std::sort(matchedIndices.begin(), matchedIndices.end());
+
+    cv::Mat unmatched;
+    for (int i = 0; i < m.rows; i++) {
+        if (!std::binary_search(matchedIndices.begin(), matchedIndices.end(), i)) {
+            unmatched.push_back(m.row(i));
+        }
+    }
+
+    return unmatched;
+}
+
+std::vector<int> GetUnMatchedQueryVec(std::vector<int> point_ids, std::vector<cv::DMatch> matches) {
+    std::vector<int> matchedIndices;
+    for (auto match : matches) {
+        matchedIndices.push_back(match.queryIdx);
+    }
+
+    std::sort(matchedIndices.begin(), matchedIndices.end());
+
+    std::vector<int> unmatched;
+    for (int i = 0; i < point_ids.size(); i++) {
+        if (std::binary_search(matchedIndices.begin(), matchedIndices.end(), i)) {
+            unmatched.push_back(point_ids[i]);
+        }
+    }
+
+    return unmatched;
+}
+
+std::vector<int> GetUnMatchedIndices(std::vector<int> point_ids, std::vector<cv::DMatch> matches) {
+    std::vector<int> matchedIndices;
+    for (auto match : matches) {
+        matchedIndices.push_back(match.queryIdx);
+    }
+
+    std::sort(matchedIndices.begin(), matchedIndices.end());
+
+    std::vector<int> unmatched;
+    for (int i = 0; i < point_ids.size(); i++) {
+        if (std::binary_search(matchedIndices.begin(), matchedIndices.end(), i)) {
+            unmatched.push_back(i);
+        }
+    }
+
+    return unmatched;
+}
+
+
+std::vector<int> GetQueryMatchesVec(std::vector<int> point_ids, std::vector<cv::DMatch> matches){
     std::vector<int> matching_point_ids;
     for(auto it = matches.begin(); it != matches.end(); it++){
         matching_point_ids.push_back( point_ids[(*it).queryIdx]);
     }
     return matching_point_ids;
+}
+
+cv::Mat GetQueryMatchesMat(cv::Mat m, std::vector<cv::DMatch> matches){
+    cv::Mat matching_m;
+    for(auto it = matches.begin(); it != matches.end(); it++){
+        matching_m.push_back( m.row((*it).queryIdx));
+    }
+    return matching_m;
+}
+
+cv::Mat GetTrainMatches(cv::Mat m, std::vector<cv::DMatch> matches){
+    cv::Mat matching_m;
+    for(auto it = matches.begin(); it != matches.end(); it++){
+        matching_m.push_back( m.row((*it).trainIdx));
+    }
+    return matching_m;
 }
 
 /** @brief gets image points
@@ -682,4 +764,41 @@ cv::Mat get3DPoints(const cv::Mat& depth_map, const cv::Mat& intrinsics) {
     return points3D;
 }
 
+
+void cameraPoseToExtrinsics(cv::Mat camera_pose, cv::Mat& rvec, cv::Mat& tvec){
+    tvec = GetTranslation(camera_pose);
+    cv::Rodrigues(GetRotation((camera_pose)), rvec);
+}
+
+/*void cameraPoseToExtrinsics(cv::Mat camera_pose, cv::Mat& rvec, cv::Mat& tvec){
+    cv::Mat orientation = GetRotation(camera_pose);
+    cv::Mat location = GetTranslation(camera_pose).t();
+    cv::Mat R = orientation.t();
+    cv::Rodrigues(R, rvec);
+    tvec = (-location * R).t();
+}*/
+
+cv::Mat getCameraPose(cv::Mat& rvec, cv::Mat& tvec) {
+    cv::Mat R;
+    cv::Rodrigues(rvec, R); // R is 3x3
+    R = R.t();  // rotation of inverse
+    tvec = -R * tvec; // translation of inverse
+    cv::Mat T = cv::Mat::eye(4, 4, R.type()); // T is 4x4
+    T( cv::Range(0,3), cv::Range(0,3) ) = R * 1; // copies R into T
+    T( cv::Range(0,3), cv::Range(3,4) ) = tvec * 1; // copies tvec into T
+    if (cv::determinant(T) < 0.01) {
+        std::cout << "WARNING, Det(T) ILL CONDITIONED" << std::endl;
+    }
+    return T.inv();
+}
+/*
+cv::Mat getCameraPose(cv::Mat rvec, cv::Mat tvec) {
+    cv::Mat R;
+    cv::Rodrigues(rvec, R); //Convert rotation vector to rotation matrix
+    cv::Mat T = cv::Mat::eye(4, 4, R.type()); // T is 4x4
+    T( cv::Range(0,3), cv::Range(0,3) ) = R * 1; // copies R into T
+    T( cv::Range(0,3), cv::Range(3,4) ) = tvec * 1; // copies tvec into T
+    return T;
+}
+*/
 #endif

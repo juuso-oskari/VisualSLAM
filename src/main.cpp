@@ -67,7 +67,7 @@ int main(int argc, char** argv )
     FeatureMatcher feature_matcher = FeatureMatcher();
     Map global_map;
     // skip few initial frames
-    for(int i=0; i<500; i++){
+    for(int i=0; i<50; i++){
         image_file_iterator++;
     }
     // initialize map with first two good frames called keyframes, i.e. estimation of pose transform and point locations succeeds  
