@@ -5,6 +5,12 @@ This visual SLAM implementation follows the ORB-SLAM paper (Mur-Artal et al., 20
 ![](misc/modeling.gif)
 ![](misc/modeling2.gif)
 
+## Next steps
+
+Aim is to migrate this program to ROS environment, and use deep learning to do 3D modeling in real-time. Here is what is currently being produced offline using https://github.com/ardaduz/deep-video-mvs. 
+
+![](misc/modeling3d.gif)
+
 # How to compile:
 
 Requirements: 
