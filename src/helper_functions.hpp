@@ -764,10 +764,18 @@ cv::Mat get3DPoints(const cv::Mat& depth_map, const cv::Mat& intrinsics) {
     return points3D;
 }
 
-
+// input: camera pose is 4x4 matrix describing transformation from world frame to camera frame
+// output: rvec and tvec should be usable with cv::projectPoints(known_3d, rvec, tvec, K, cv::Mat(), projected_image_points);
 void cameraPoseToExtrinsics(cv::Mat camera_pose, cv::Mat& rvec, cv::Mat& tvec){
-    tvec = GetTranslation(camera_pose);
-    cv::Rodrigues(GetRotation((camera_pose)), rvec);
+    // Extract the rotation matrix and translation vector from the camera pose matrix
+    cv::Mat R = camera_pose(cv::Range(0,3), cv::Range(0,3));
+    cv::Mat t = camera_pose(cv::Range(0,3), cv::Range(3,4));
+
+    // Convert the rotation matrix to a rotation vector using the Rodrigues formula
+    cv::Rodrigues(R, rvec);
+
+    // Assign the translation vector to the output parameter tvec
+    tvec = t.clone();
 }
 
 /*void cameraPoseToExtrinsics(cv::Mat camera_pose, cv::Mat& rvec, cv::Mat& tvec){
@@ -778,14 +786,14 @@ void cameraPoseToExtrinsics(cv::Mat camera_pose, cv::Mat& rvec, cv::Mat& tvec){
     tvec = (-location * R).t();
 }*/
 
-cv::Mat getCameraPose(cv::Mat& rvec, cv::Mat& tvec) {
+cv::Mat getCameraPose(cv::Mat rvec, cv::Mat tvec) {
     cv::Mat R;
     cv::Rodrigues(rvec, R); // R is 3x3
     R = R.t();  // rotation of inverse
-    tvec = -R * tvec; // translation of inverse
+    cv::Mat inv_tvec = -R * tvec; // translation of inverse
     cv::Mat T = cv::Mat::eye(4, 4, R.type()); // T is 4x4
     T( cv::Range(0,3), cv::Range(0,3) ) = R * 1; // copies R into T
-    T( cv::Range(0,3), cv::Range(3,4) ) = tvec * 1; // copies tvec into T
+    T( cv::Range(0,3), cv::Range(3,4) ) = inv_tvec * 1; // copies tvec into T
     if (cv::determinant(T) < 0.01) {
         std::cout << "WARNING, Det(T) ILL CONDITIONED" << std::endl;
     }
@@ -801,4 +809,37 @@ cv::Mat getCameraPose(cv::Mat rvec, cv::Mat tvec) {
     return T;
 }
 */
+
+// Helper function to calculate skew-symmetric matrix from a vector
+cv::Mat skew(const cv::Mat& v)
+{
+    return (cv::Mat_<double>(3,3) <<
+        0, -v.at<double>(2), v.at<double>(1),
+        v.at<double>(2), 0, -v.at<double>(0),
+        -v.at<double>(1), v.at<double>(0), 0);
+}
+
+void computeFundamentalMatrix(const cv::Mat& pose1, const cv::Mat& pose2, const cv::Mat& K, cv::Mat& F)
+{
+    // Extract rotation and translation from camera poses
+    cv::Mat R1, t1, R2, t2;
+    R1 = pose1.rowRange(0,3).colRange(0,3);
+    t1 = pose1.rowRange(0,3).col(3);
+    R2 = pose2.rowRange(0,3).colRange(0,3);
+    t2 = pose2.rowRange(0,3).col(3);
+
+    // Calculate essential matrix
+    cv::Mat E = R1.t() * skew(t2) * R2 + R1.t() * t1 * t2.t() * R2;
+
+    // Calculate fundamental matrix from essential matrix
+    F = K.inv().t() * E * K.inv();
+
+    // Normalize the fundamental matrix
+    F /= F.at<double>(2, 2);
+}
+
+
+
+
+
 #endif

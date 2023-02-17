@@ -6,6 +6,7 @@ enable_language(CXX)
 # use C++ standard version 17
 set(CMAKE_CXX_STANDARD 17)
 # produce non-optimized code with debug symbols
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_BUILD_TYPE Debug)
 
 message(STATUS "BUILD directory is ${CMAKE_BINARY_DIR}")

@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.rmd": "markdown",
         "array": "cpp",
         "atomic": "cpp",
         "hash_map": "cpp",
@@ -77,6 +78,7 @@
         "strstream": "cpp",
         "filesystem": "cpp",
         "numericaldiff": "cpp",
-        "specialfunctions": "cpp"
+        "specialfunctions": "cpp",
+        "*.ipp": "cpp"
     }
 }

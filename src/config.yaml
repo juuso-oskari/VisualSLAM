@@ -8,8 +8,10 @@ max_iterations: 1000
 # for tracking
 num_skipframes: 1
 min_inliers_tracking: 80
-max_translation_tracking: 0.1
-max_radius: 4.0 # in tracking matching
+max_translation_tracking: 10
+max_radius: 4 # in radius matching
+max_SIFT_match_distance: 200 # maximum euclidean distance between SIFT features for them to be considered matching
+max_epipolar_distance: 4 # maximum euclidean distance from epipolar line for a new match in local mapping
 
 # # four seasons
 # K: "501.4757919305817 0 421.7953735163109  0 501.4757919305817  167.65799492501083 0 0 1.0"

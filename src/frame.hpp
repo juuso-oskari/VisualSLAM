@@ -75,6 +75,40 @@ private:
 
 };
 
+// Kd tree is used in tracking for efficient radius search
+struct Point {
+    double x, y;
+    int idx;
+};
+
+
+
+
+struct KdNode {
+    Point point;
+    int axis;
+     std::shared_ptr<KdNode> left, right;
+};
+
+ std::shared_ptr<KdNode> buildKdTree(std::vector<Point>& points, int depth, int low, int high) {
+    if (low > high) return nullptr;
+    int mid = (low + high) / 2 ;
+    int axis = depth % 2;
+
+    std::nth_element(points.begin() + low, points.begin() + mid, points.begin() + high,
+                     [axis](const Point &a, const Point &b) {
+                         return axis == 0 ? a.x < b.x : a.y < b.y;
+                     });
+
+    std::shared_ptr<KdNode> node =  std::make_shared<KdNode>();
+    node->point = points[mid];
+    node->axis = axis;
+    node->left = buildKdTree(points, depth + 1, low, mid - 1);
+    node->right = buildKdTree(points, depth + 1, mid + 1, high);
+    return node;
+}
+
+
 /** @brief Frame class is used to store extracted information about the video frames.
     
     @author Juuso Korhonen
@@ -110,34 +144,6 @@ public:
 
     }
 
-
-    
-//     /** Copy constructor 
-//         @param f std::shared_ptr<Frame> smart shared pointer to Frame object
-//         */
-//     Frame(const std::shared_ptr<Frame> f){
-//         //std::cout << "Copy constructor called " << std::endl;
-//         rgb = f->rgb;
-//         keypoints = f->keypoints;
-//         features = f->features;
-//         pose = f->pose;
-//         ID = f->ID;
-//         parents = f->parents;
-//         keyframe = f->keyframe;
-
-//     }
-
-
-//     /** method operator= performs copy assignment
-//    * @param t constant reference to Frame object 
-//    * @returns reference to t
-//    */
-//     Frame& operator=(const Frame& t)
-//     {
-//         //std::cout << "Assignment operator called " << std::endl;
-//         return *this;
-//     }
-    
 
     /** matches 2 Frame objects
    * @param prev_frame shared pointer to previous frame
@@ -192,18 +198,29 @@ public:
     }
 
 
+
+
+
+    
     /** method process frame and return keypoints, features and the rgb image from where they were found
      * @param FeatureExtractor intance of class FeatureExtractor
      * @return std::tuple<cv::Mat, cv::Mat, cv::Mat> type corresponding to keypoints, features and the rgb image
    */ 
+    /*
     std::tuple<cv::Mat, cv::Mat, cv::Mat> process_frame(FeatureExtractor feature_extractor){
         std::tuple<cv::Mat, cv::Mat> ft;
         ft = this->feature_extract(rgb, feature_extractor);
         SetKeyPoints(std::get<0>(ft)); // set private vars with setter
+        
+
         SetFeatures(std::get<1>(ft));
         return std::tuple(std::get<0>(ft), std::get<1>(ft), rgb);
     }
 
+
+    */
+    
+    
     /**
     * @brief method process extracts features and processes the frame
     * @param FeatureExtractor intance of class FeatureExtractor
@@ -213,6 +230,93 @@ public:
         ft = this->feature_extract(rgb, feature_extractor);
         SetKeyPoints(std::get<0>(ft)); // set private vars with setter
         SetFeatures(std::get<1>(ft));
+        // build kd tree for fast radius search
+        cv::Mat kp = std::get<0>(ft);
+        std::vector<Point> point_vector;
+        for(int i = 0; i<kp.rows; i++){
+            Point point;
+            point.idx = i;
+            point.x = kp.at<double>(i,0);
+            point.y = kp.at<double>(i,1);
+            point_vector.push_back(point);
+        }
+        
+        this->node = buildKdTree(point_vector, 0, 0, point_vector.size());
+    }
+
+    double dist(const Point &a, const Point &b) {
+        return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+    }
+
+    void rangeSearch(const  std::shared_ptr<KdNode> node, const Point &target, double radius, std::vector<int> &results) {
+        // if reached the end of kd tree, stop search
+        if (node == nullptr){
+            return;
+        } 
+
+        //std::cout << "Evaluating point with x: " << node->point.x << ", y: " << node->point.y << ", idx: " << node->point.idx << std::endl;
+        // euclidean distance between target point and current node point
+        double d = dist(node->point, target);
+        if (d <= radius && node->point.idx >= 0 && node->point.idx < keypoints.rows){
+            results.push_back(node->point.idx);
+        }
+        // Get the split axis, and set the pivot value accordingly (every second level for x comparison)
+        int axis = node->axis;
+        double pivot = node->point.x;
+        double target_value = target.x;
+        if (axis == 1){
+            pivot = node->point.y;
+            target_value = target.y;
+        } 
+
+        if (target_value - pivot <= radius) rangeSearch(node->left, target, radius, results); // if target-radius is less than pivot, search left
+        if (pivot - target_value <= radius) rangeSearch(node->right, target, radius, results); 
+    }
+
+    void FindMatchesInsideRadius(cv::Mat map_features, cv::Mat estimated_image_points, std::vector<cv::DMatch>& matches, double radius=4, double threshold = 200){
+        cv::Mat image_points = GetKeyPoints();
+        cv::Mat image_features = GetFeatures();
+        // If matches is not empty, do not overwrite previous matches, instead skip them
+        std::vector<int> matchedIndices;
+        for (auto match : matches) {
+            matchedIndices.push_back(match.queryIdx);
+        }
+        int temp_match_idx = 0; // iterator for matches, increase when skipping
+
+        for (int i = 0; i < estimated_image_points.rows; i++) {
+            if (temp_match_idx < matchedIndices.size() && i == matchedIndices[temp_match_idx]) {
+                temp_match_idx++;
+                continue; // skip already matched point
+            }
+            Point current_point;
+            current_point.x = estimated_image_points.at<double>(i,0);
+            current_point.y = estimated_image_points.at<double>(i,1);
+            current_point.idx = i;
+
+            std::vector<int> indices;
+
+            rangeSearch(this->node, current_point, radius, indices);
+
+            if(indices.empty()){continue;}
+            // store for best feature distance (shortest norm)  
+            double best_distance = threshold;
+            cv::DMatch match;
+            for (int j = 0; j < indices.size(); j++) {
+                int index = indices[j];
+                if(i >= map_features.rows){continue;}
+                if(index >= image_features.rows){continue;}
+                cv::Mat map_feature = map_features.row(i);
+                cv::Mat image_feature = image_features.row(index);
+                double distance = cv::norm(map_feature, image_feature, cv::NORM_L2);
+                if(distance < best_distance){
+                    best_distance = distance;
+                    match = cv::DMatch(i, index, distance);
+                }
+            }
+            if(best_distance < threshold){ // if we have actually found a good match
+                matches.push_back(match);
+            }
+        }
     }
 
 
@@ -376,6 +480,7 @@ private:
     int ID; //!<  unique identifier for the frame when stored in map
     std::map<int, cv::Mat> parents; //!<  std::map storing parents of this frame (useful when building a graph)
     bool keyframe = false; //!<  boolean flag indicating if the frame is considered keyframe
+    std::shared_ptr<KdNode> node; // for fast search from keypoints
 };
 
 #endif

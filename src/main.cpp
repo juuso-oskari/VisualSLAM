@@ -72,7 +72,7 @@ int main(int argc, char** argv )
     }
     // initialize map with first two good frames called keyframes, i.e. estimation of pose transform and point locations succeeds  
     std::cout << "INITIALIZING MAP" << std::endl;
-    global_map.InitializeMap(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, true);
+    global_map.InitializeMap(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, false);
     global_map.BundleAdjustement(false, K, do_scale_depth);
     int last_kf_idx = id_frame-1;
     int iterations_count = 0;
@@ -80,7 +80,7 @@ int main(int argc, char** argv )
         std::cout << "TRACKING" << std::endl;
         global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true, false);
         std::cout << "MAPPING" << std::endl;
-        global_map.localMapping(id_frame, id_point, feature_extractor, feature_matcher, K, D, last_kf_idx);
+        global_map.localMapping(id_frame, id_point, feature_extractor, feature_matcher, K, D, last_kf_idx, true);
         global_map.BundleAdjustement(false, K, false, false, 10);
         // visualize all points
         std::vector<cv::Mat> created_points = global_map.GetAll3DPoints();
