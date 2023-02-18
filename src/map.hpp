@@ -194,7 +194,7 @@ class Map {
                 // 4. Do motion only bundleadjustement
                 MotionOnlyBundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization);
                 
-                // 5. Do the projection again and motion only
+                // 5. Do the projection and motion only bundleadjustement again
                 int n_matches = matches.size();
                 ProjectUnMatchedMapPointsAndMatchInRadius(map_points, cur_frame, cameraIntrinsicsMatrix, rvec, tvec, matches);
                 // visualize (optionally) the feature matches         
@@ -1101,14 +1101,14 @@ class Map {
             
             cv::Mat pts2 = MakeHomogeneous(kp2); // Mx3 array of points
             for(int j = 0; j < linesIn2.size(); j++){
-                // display keypoint
-                /*
+                
+                // display keypoint on img1
                 cv::Mat img_with_kp;
                 cv::drawKeypoints(img1, Frame::GetKeyPointsAsVector(kp1.row(j)), img_with_kp, cv::Scalar(127,200,10));
                 cv::imshow("Image 1 with keypoint", img_with_kp);
-                */
+                
                 cv::Point3d line = linesIn2[j];
-                /*
+                
                 // Draw the epipolar line on img2
                 cv::Mat img2_line = img2.clone();
                 cv::Point2d pt3(0, -line.z / line.y);
@@ -1116,7 +1116,7 @@ class Map {
                 cv::line(img2_line, pt3, pt4, cv::Scalar(0, 0, 255), 1);
                 cv::imshow("Image 2 with epipolar line", img2_line);
                 cv::waitKey(500);
-                */
+                
                 
                 cv::Mat line_ = (cv::Mat_<double>(1, 3) << line.x, line.y, line.z);
                 // find best match within distance_threshold from epipolar line
@@ -1140,12 +1140,10 @@ class Map {
                 if(best_index != -1 && best_feature_distance < 0.9 * second_best_feature_distance){ // if we found one below threshold and it is unique enough
                     matches.push_back(cv::DMatch(j, best_index, best_feature_distance));
 
-                    // display match on img2
-                    /*
+                    // display found match on img2
                     cv::drawKeypoints(img2_line, Frame::GetKeyPointsAsVector(kp2.row(best_index)), img2_line, cv::Scalar(127,200,10));
                     cv::imshow("Image 2 with epipolar line", img2_line);
                     cv::waitKey(0);
-                    */
                 }
 
             }
