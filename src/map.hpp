@@ -201,7 +201,7 @@ class Map {
                 id_frame++;
                 AddPointToFrameCorrespondances(corresponding_point_ids, curMatchedPoints, curMatchedFeatures, cur_frame);   
                 
-                BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
+                //BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
                 // 2. The map points tracked are fewer than 90% of the map points seen by the last key frame
@@ -228,9 +228,12 @@ class Map {
         */
 
         void localMapping(int& id_frame, int& id_point, FeatureExtractor feature_extractor, FeatureMatcher feature_matcher, cv::Mat cameraIntrinsicsMatrix, cv::Mat DistCoefficients,int& last_key_frame_id, bool visualize = true, bool verbose = false){
+            
+            GetFrame(id_frame-1)->SetAsKeyFrame(); // Set lastly added frame to be a new keyframe
+
             // cleanup bad points from map (seen by less than 3 frames)
             CleanUpBadPoints();
-            GetFrame(id_frame-1)->SetAsKeyFrame(); // Set lastly added frame to be a new keyframe
+
             // Get unmatched points for the new keyframe
             cv::Mat image_points_already_in_map = std::get<0>(GetImagePointsWithFrameID(id_frame-1));
             cv::Mat kp1 = GetFrame(id_frame-1)->GetKeyPoints(); // this contains all the image points (matched and unmatched)
@@ -241,8 +244,8 @@ class Map {
             cv::Mat unmatched_desc1 = GetImageDescWithIdxList(idx_list, desc1);
 
             // Get covisible keyframes: keyframes that see over 15 of those points that the new keyframe also sees
-            std::vector<int> covisible_keyframes; //= GetCovisibleFrames(id_frame-1, 15);
-            covisible_keyframes.push_back(last_key_frame_id);
+            std::vector<int> covisible_keyframes = GetCovisibleFrames(id_frame-1, 15);
+            //covisible_keyframes.push_back(last_key_frame_id);
             for(auto keyframe_id: covisible_keyframes){
                 // Creation of covisibility graph
                 // Add relative pose transformation information between connected keyframe and new keyframe

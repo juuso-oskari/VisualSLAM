@@ -202,18 +202,29 @@ public:
     }
 
 
-    /** Method IsBad for determining if point should be used
-   * @returns bool if point is seen with less than 3 frames return true, else false
+  /** Method IsBad for determining if point should be used
+   * @returns bool if point is seen with less than 3 keyframes return true, else false
    */
     bool IsBad() {
-        if (frames_.size() < 3) {
+        int n_keyframes = 0;
+        for(auto it: frames_){
+            if(std::get<0>(it.second)->IsKeyFrame()){
+                n_keyframes += 1;
+                if(n_keyframes >= 3){
+                    return false;
+                }
+            }
+        }
+
+
+        //if (frames_.size() < 3) {
+        if(n_keyframes < 3){
             return true;
         }
         else {
             return false;
         }
     }
-
     friend std::ostream& operator<<(std::ostream& os, const Point3D& p);
 
 private:
