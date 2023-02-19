@@ -200,7 +200,7 @@ class Map {
                 AddParentAndPose(id_frame-1, id_frame, cur_frame, Relative_pose_trans, W_T_curr);
                 id_frame++;
                 AddPointToFrameCorrespondances(corresponding_point_ids, curMatchedPoints, curMatchedFeatures, cur_frame);   
-                
+                //MotionOnlyBundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization);
                 //BundleAdjustement(true, cameraIntrinsicsMatrix, false, verbose_optimization); // Do motion only (=points are fixed) bundleadjustement by setting tracking to true
                 // Check if current frame is a key frame:
                 // 1. at least 20 frames has passed or current frame tracks less than 80 map points
@@ -803,7 +803,8 @@ class Map {
         }
 
 
-        void LocalBundleAdjustement(bool tracking, cv::Mat K, bool scale=false, bool verbose = false, int n_iterations = 10){
+        // Bundleadjustement of the tracking set (frames up until last keyframe), keeps the points fixed and optimizes only poses
+        void MotionOnlyBundleAdjustement(bool tracking, cv::Mat K, bool scale=false, bool verbose = false, int n_iterations = 10){
             double fx = K.at<double>(0,0); double fy = K.at<double>(1,1); double cx = K.at<double>(0,2); double cy = K.at<double>(1,2);
             // set up BA solver
             typedef g2o::BlockSolver< g2o::BlockSolverTraits<6,3> > Block; 
@@ -814,50 +815,31 @@ class Map {
             optimizer.setAlgorithm ( solver );
             // Get the frame ids to be optimized
             std::vector<int> frame_id_list;
-            //if tracking optimize only the poses up to last keyframe
-            if(tracking){
-                frame_id_list = this->GetAllFrameIDs();
-                std::vector<int> tracked_frames;
-                while (!frame_id_list.empty() && !this->GetFrame(frame_id_list.back())->IsKeyFrame()) {
-                    tracked_frames.push_back(frame_id_list.back());
-                    frame_id_list.pop_back();
-                }
-                tracked_frames.push_back(frame_id_list.back()); // also put the last keyframe back in
-                frame_id_list = tracked_frames;
-            }else{
-                // Optimize only covisible frames to the lastly added
-                frame_id_list.push_back(this->GetAllFrameIDs().back());
-                for(auto covisible_frame_id : GetFrame(this->GetAllFrameIDs().back())->GetParentIDs()){
-                    frame_id_list.push_back(covisible_frame_id);
-                }
+            // in tracking optimize only the poses up to last keyframe
+            frame_id_list = this->GetAllFrameIDs();
+            std::vector<int> tracked_frames;
+            while (!frame_id_list.empty() && !this->GetFrame(frame_id_list.back())->IsKeyFrame()) {
+                tracked_frames.push_back(frame_id_list.back());
+                frame_id_list.pop_back();
             }
-
-
+            tracked_frames.push_back(frame_id_list.back()); // also put the last keyframe back in
+            frame_id_list = tracked_frames;
             std::vector<int> point_id_list = this->GetAllPointIDs();
-
-            // loop trough all the frames
+            // loop trough all the frames and create vertexes for poses
             for(auto it = frame_id_list.begin(); it != frame_id_list.end(); ++it) {
                 int frame_id = *it;
-                if( this->GetFrame(frame_id)->IsKeyFrame() && !tracking){
-                    cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();
-                    g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
-                    vSE3->setEstimate(toSE3Quat(pose_cv));
-                    vSE3->setId((*it)*2);
-                    vSE3->setFixed(*it==0);
-                    optimizer.addVertex(vSE3);
-                    //std::cout << "Adding to graph pose: " << frame_id << std::endl;
-                }else if(tracking){
-                    cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();
-                    g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
-                    vSE3->setEstimate(toSE3Quat(pose_cv));
-                    vSE3->setId((*it)*2);
-                    vSE3->setFixed(*it==0);
-                    optimizer.addVertex(vSE3);
-                }
+                cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();
+                g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
+                vSE3->setEstimate(toSE3Quat(pose_cv));
+                vSE3->setId((*it)*2);
+                // set the keyframe to be fixed
+                vSE3->setFixed(this->GetFrame(frame_id)->IsKeyFrame());
+                // add vertex to graph
+                optimizer.addVertex(vSE3);
                 
             }
             const float thHuber2D = sqrt(5.99);
-            // loop through all points and (inside) create edges to frames that see the point
+            // loop through all points and create edges to frames that see the point
             for(auto it = point_id_list.begin(); it != point_id_list.end(); ++it) {
                 int point_id = *it;
                 g2o::VertexPointXYZ* vPoint = new g2o::VertexPointXYZ();
@@ -870,14 +852,13 @@ class Map {
                 auto it2_start = this->GetPoint(point_id)->GetFrames().begin();
                 auto it2_end = this->GetPoint(point_id)->GetFrames().end();
                 for(auto it2 = it2_start; it2 != it2_end; it2++){
-
+                    // if frame has not been added to the graph -> skip
                     if(optimizer.vertex((it2->first)*2) == NULL){
                         continue;
                     }
-
                     Eigen::MatrixXd uv;
                     cv::cv2eigen(std::get<1>(it2->second).t(), uv);
-                    ////std::cout << "Image projection on frame " << (it2->first)*2 << ": " << uv << std::endl;
+                    ////////std::cout << "Image projection on frame " << (it2->first)*2 << ": " << uv << std::endl;
                     g2o::EdgeSE3ProjectXYZ* e = new g2o::EdgeSE3ProjectXYZ();
                     e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(point_id*2+1)));
                     e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex((it2->first)*2)));
@@ -894,25 +875,12 @@ class Map {
                     optimizer.addEdge(e);
                 }
             }
-            //optimizer.save("beforeopt.g2o");
+            // do the optimization
             optimizer.initializeOptimization();
             optimizer.setVerbose(verbose);
             optimizer.optimize(n_iterations);
-            //optimizer.save("afteropt.g2o");
-
+            // retrieve optimized poses and update the map
             double median_depth = 1;
-            if(scale){
-                int num_points = 0;
-                std::vector<double> median_vec;
-                for(auto it = point_id_list.begin(); it != point_id_list.end(); ++it) {
-                    int point_id = *it;
-                    g2o::VertexPointXYZ* vPoint = static_cast<g2o::VertexPointXYZ*>(optimizer.vertex(point_id*2+1));
-                    ////std::cout << "Updating to 3D location: " << toCvMat(vPoint->estimate()) << std::endl;
-                    median_vec.push_back( cv::norm(toCvMat(vPoint->estimate()).t()) );
-                }
-                std::sort(median_vec.begin(), median_vec.end()); // sort so that median depth is middle element
-                median_depth = median_vec[median_vec.size()/2];
-            }
             for(auto it = frame_id_list.begin(); it != frame_id_list.end(); ++it) {
                 int frame_id = *it;
                 if(optimizer.vertex(frame_id*2) == NULL){
@@ -920,13 +888,101 @@ class Map {
                 }
                 g2o::VertexSE3Expmap* vSE3 = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(frame_id*2));
                 g2o::SE3Quat SE3quat = vSE3->estimate();
-                ////std::cout << "BundleAdjustement updates pose " << frame_id << " to: " << toCvMat(SE3quat) << std::endl;
+                ////////std::cout << "BundleAdjustement updates pose " << frame_id << " to: " << toCvMat(SE3quat) << std::endl;
+                GetFrame(frame_id)->UpdatePose(NormalizeTranslation(toCvMat(SE3quat), median_depth));
+            }
+        }
+        
+        void LocalBundleAdjustement(bool tracking, cv::Mat K, bool scale=false, bool verbose = false, int n_iterations = 10){
+            double fx = K.at<double>(0,0); double fy = K.at<double>(1,1); double cx = K.at<double>(0,2); double cy = K.at<double>(1,2);
+            // set up BA solver
+            typedef g2o::BlockSolver< g2o::BlockSolverTraits<6,3> > Block; 
+            std::unique_ptr<Block::LinearSolverType> linearSolver (new g2o::LinearSolverEigen<Block::PoseMatrixType>()); 
+            std::unique_ptr<Block> solver_ptr( new Block(std::move(linearSolver)));
+            g2o::OptimizationAlgorithmLevenberg* solver = new g2o::OptimizationAlgorithmLevenberg ( std::move(solver_ptr) );
+            g2o::SparseOptimizer optimizer;
+            optimizer.setAlgorithm ( solver );
+            // Get the frame ids to be optimized
+            std::vector<int> frame_id_list;
+            // Optimize only the local scene, i.e covisible keyframes to the lastly added keyframe
+            frame_id_list.push_back(this->GetAllFrameIDs().back());
+            for(auto covisible_frame_id : GetFrame(this->GetAllFrameIDs().back())->GetParentIDs()){
+                frame_id_list.push_back(covisible_frame_id);
+            }
+            std::sort(frame_id_list.begin(), frame_id_list.end()); // sort frames in descending order
+            
+            std::vector<int> point_id_list = this->GetAllPointIDs();
+            
+            // loop trough all the frames
+            int fixed_iter = 0;
+            for(auto it = frame_id_list.begin(); it != frame_id_list.end(); ++it) {
+                int frame_id = *it;
+                std::cout << frame_id << std::endl;
+                cv::Mat pose_cv = this->GetFrame(frame_id)->GetPose();
+                g2o::VertexSE3Expmap* vSE3 = new g2o::VertexSE3Expmap();
+                vSE3->setEstimate(toSE3Quat(pose_cv));
+                vSE3->setId((*it)*2);
+                vSE3->setFixed(fixed_iter < 2); // set 2 earliest keyframes to fixed
+                fixed_iter++;
+                optimizer.addVertex(vSE3);
+            }
+            const float thHuber2D = sqrt(5.99);
+            // loop through all points and create edges to frames that see the point
+            for(auto it = point_id_list.begin(); it != point_id_list.end(); ++it) {
+                int point_id = *it;
+                g2o::VertexPointXYZ* vPoint = new g2o::VertexPointXYZ();
+                vPoint->setEstimate(toVector3d((this->GetPoint(point_id)->Get3dPoint()).t()));
+                vPoint->setId(point_id*2+1);
+                vPoint->setMarginalized(true);
+                vPoint->setFixed(tracking);
+                optimizer.addVertex(vPoint);
+                // GetFrames() returns std::map<int, std::tuple<std::shared_ptr<Frame>, cv::Mat, cv::Mat>> frames_; // map of frames that see this  particular point object
+                auto it2_start = this->GetPoint(point_id)->GetFrames().begin();
+                auto it2_end = this->GetPoint(point_id)->GetFrames().end();
+                for(auto it2 = it2_start; it2 != it2_end; it2++){
+                    // if corresponding frame has not been added to the graph -> skip
+                    if(optimizer.vertex((it2->first)*2) == NULL){
+                        continue;
+                    }
+                    Eigen::MatrixXd uv;
+                    cv::cv2eigen(std::get<1>(it2->second).t(), uv);
+                    ////////std::cout << "Image projection on frame " << (it2->first)*2 << ": " << uv << std::endl;
+                    g2o::EdgeSE3ProjectXYZ* e = new g2o::EdgeSE3ProjectXYZ();
+                    e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex(point_id*2+1)));
+                    e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex*>(optimizer.vertex((it2->first)*2)));
+                    e->setMeasurement(uv);
+                    e->setId(point_id+100000);
+                    e->setInformation(Eigen::Matrix2d::Identity());
+                    g2o::RobustKernelHuber* rk = new g2o::RobustKernelHuber;
+                    e->setRobustKernel(rk);
+                    rk->setDelta(thHuber2D);
+                    e->fx = fx;
+                    e->fy = fy;
+                    e->cx = cx;
+                    e->cy = cy;
+                    optimizer.addEdge(e);
+                }
+            }
+            // do the optimization 
+            optimizer.initializeOptimization();
+            optimizer.setVerbose(verbose);
+            optimizer.optimize(n_iterations);
+            // retrieve optimized poses and points and update the map
+            double median_depth = 1;
+            for(auto it = frame_id_list.begin(); it != frame_id_list.end(); ++it) {
+                int frame_id = *it;
+                if(optimizer.vertex(frame_id*2) == NULL){
+                    continue;
+                }
+                g2o::VertexSE3Expmap* vSE3 = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(frame_id*2));
+                g2o::SE3Quat SE3quat = vSE3->estimate();
+                ////////std::cout << "BundleAdjustement updates pose " << frame_id << " to: " << toCvMat(SE3quat) << std::endl;
                 GetFrame(frame_id)->UpdatePose(NormalizeTranslation(toCvMat(SE3quat), median_depth));
             }
             for(auto it = point_id_list.begin(); it != point_id_list.end(); ++it) {
                 int point_id = *it;
                 g2o::VertexPointXYZ* vPoint = static_cast<g2o::VertexPointXYZ*>(optimizer.vertex(point_id*2+1));
-                ////std::cout << "Updating to 3D location: " << toCvMat(vPoint->estimate()) << std::endl;
+                ////////std::cout << "Updating to 3D location: " << toCvMat(vPoint->estimate()) << std::endl;
                 GetPoint(point_id)->UpdatePoint(toCvMat(vPoint->estimate()).t()/median_depth);
             }    
         }
