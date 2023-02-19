@@ -31,6 +31,7 @@ YAML::Node config = YAML::LoadFile("../src/config.yaml");
 #include <sys/stat.h>
 #include <cstdio>
 #include <unistd.h>
+#include <termios.h>
 
 
 // {} defines scope for compound statement, statically declared variables (stored in stack memory) get destroyed when leaving the scope
@@ -76,7 +77,15 @@ int main(int argc, char** argv )
     global_map.BundleAdjustement(false, K, do_scale_depth);
     int last_kf_idx = id_frame-1;
     int iterations_count = 0;
-    while(iterations_count < config["max_iterations"].as<int>() && image_file_iterator != files_in_directory.end()){
+    // for early stopping
+    // set the input mode of the terminal to non-canonical
+    struct termios old_tio, new_tio;
+    tcgetattr(STDIN_FILENO, &old_tio);
+    new_tio = old_tio;
+    new_tio.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_tio);
+
+    while(iterations_count < config["max_iterations"].as<int>() && image_file_iterator < files_in_directory.end()){
         std::cout << "TRACKING" << std::endl;
         global_map.localTracking(image_file_iterator, id_frame, id_point, feature_extractor, feature_matcher, K, D, true, false);
         std::cout << "MAPPING" << std::endl;
@@ -92,7 +101,22 @@ int main(int argc, char** argv )
         last_kf_idx = id_frame - 1 ; // update last keyframe index
         iterations_count++;
         std::cout << "ITERATION: " << iterations_count << std::endl;
+        // check if the 'q' key has been pressed
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(STDIN_FILENO, &fds);
+        struct timeval tv = { 0, 0 };
+        if (select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv) == 1) {
+            char c;
+            if (read(STDIN_FILENO, &c, 1) == 1 && c == 'q') {
+                std::cout << "'q' pressed on keyboard. Saving map and quitting." << std::endl;
+                break;
+            }
+        }
     }
+     // restore the input mode of the terminal
+    tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
+
     // Save map into folder: images into folder/images, poses into folder/poses.txt, K into folder/K.txt
     global_map.saveMap(K);
     return 0;

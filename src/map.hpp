@@ -1003,12 +1003,15 @@ class Map {
         appendToFile(folderPath + "/K.txt", K);
         for(auto it: GetAllFrameIDs()){
             // Image
-            std::stringstream ss;
-            ss << std::setw(4) << std::setfill('0') << it;
-            std::string fileName = ss.str();
-            fileName = folderPath + "/images/" + fileName + ".png";
-            cv::imwrite(fileName, GetFrame(it)->GetRGB());
-            appendToFile(folderPath + "/poses.txt", GetFrame(it)->GetPose().inv());
+            if(GetFrame(it)->IsKeyFrame()){
+                std::stringstream ss;
+                ss << std::setw(4) << std::setfill('0') << it;
+                std::string fileName = ss.str();
+                fileName = folderPath + "/images/" + fileName + ".png";
+                cv::imwrite(fileName, GetFrame(it)->GetRGB());
+                appendToFile(folderPath + "/poses.txt", GetFrame(it)->GetPose().inv());
+            }
+            
         }
 
         }
