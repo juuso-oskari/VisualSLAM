@@ -94,7 +94,7 @@ int main(int argc, char** argv )
         // visualize all points
         std::vector<cv::Mat> created_points = global_map.GetAll3DPoints();
         std::vector<cv::Mat> camera_locs = global_map.GetAllCameraLocations();
-        std::vector<cv::Mat> camera_poses = global_map.GetAllPoses(true);
+        std::vector<cv::Mat> camera_poses = global_map.GetAllPoses(false);
         // update viewer
         viewer.SetPoints(CvMatToEigenVector(created_points));
         viewer.SetPoses(CvMatToEigenIsometry(camera_poses));
@@ -118,7 +118,7 @@ int main(int argc, char** argv )
     tcsetattr(STDIN_FILENO, TCSANOW, &old_tio);
 
     // Save map into folder: images into folder/images, poses into folder/poses.txt, K into folder/K.txt
-    global_map.saveMap(K);
+    global_map.saveMap(K, false);
     return 0;
 }
 #endif

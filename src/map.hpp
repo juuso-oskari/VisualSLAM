@@ -990,7 +990,7 @@ class Map {
 
 
 
-        void saveMap(cv::Mat K){
+        void saveMap(cv::Mat K, bool keyframe_only = true){
         //remove the (old) folder
         boost::filesystem::path dir_path("../data/depth_estimation/office");
         boost::filesystem::remove_all(dir_path);
@@ -1003,7 +1003,7 @@ class Map {
         appendToFile(folderPath + "/K.txt", K);
         for(auto it: GetAllFrameIDs()){
             // Image
-            if(GetFrame(it)->IsKeyFrame()){
+            if(!keyframe_only || GetFrame(it)->IsKeyFrame()){
                 std::stringstream ss;
                 ss << std::setw(4) << std::setfill('0') << it;
                 std::string fileName = ss.str();
