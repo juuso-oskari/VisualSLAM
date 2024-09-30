@@ -35,3 +35,4 @@ This creates a run file named “run_slam”.
 
 # TODOs
 - Add filtering for bad poses and points
+- create Docker container to run
